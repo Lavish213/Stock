@@ -96,3 +96,21 @@ def test_classify_and_route_skips_ambiguous_text():
                         designed_kind="ambiguous")
     r = classify_and_route(a)
     assert r["outcome"] == "skip:ticker_found_no_clear_direction"
+
+
+def test_classify_and_route_a_plain_equity_call_is_not_skipped_for_low_confidence():
+    # Real bug found and fixed in alert_handler.py this session: a plain
+    # equity alert's confidence (from extract_signal.py's options-weighted
+    # score) can never reach CONF_FLOOR, which used to classify every
+    # single one of these as skip:below_confidence_floor here too -
+    # this mirrored that exact bug instead of the real, now-fixed
+    # pipeline behavior. Re-running the full 250-alert simulation this
+    # fixed: trade:equity went from 6 (2.4%) to 65 (26.0%), and the
+    # skip:below_confidence_floor bucket (59 cases, 23.6%) disappeared
+    # entirely.
+    from simulate_ticker_watch import SyntheticAlert
+    a = SyntheticAlert(ticker="NVDA", date=date.today(), text="BUY NVDA now, breaking out",
+                        designed_kind="equity_buy")
+    r = classify_and_route(a)
+    assert r["outcome"] == "trade:equity"
+    assert r["action"] == "BUY"

@@ -96,7 +96,20 @@ def handle_alert_text(
         log.info("[%s] No ticker found in alert, skipping: %r", source, (text or "")[:200])
         return
 
-    confidence = parsed.get("confidence") or DEFAULT_CONFIDENCE
+    # extract_signal.py's confidence score is weighted for OPTIONS fields
+    # specifically (side/strike/expiry are worth 0.50 of it combined) - an
+    # equity-only alert structurally cannot earn those points, capping it
+    # at ticker+entry+target/stop (0.45 at best), always under CONF_FLOOR
+    # (0.55 default) no matter how clearly worded the buy/sell intent was.
+    # Confirmed directly: "BUY NVDA now, breaking out" - completely
+    # unambiguous - scored 0.25 and was silently skipped by
+    # trade_handler's confidence-floor check before this fix, meaning NO
+    # plain equity alert from either Patreon or Discord could ever
+    # actually execute. _equity_action_from_text() succeeding below is
+    # itself the real confidence signal for an equity call - it's a
+    # separate, dedicated classifier, not a numeric score meant to be
+    # compared against the options heuristic at all.
+    options_confidence = parsed.get("confidence") or DEFAULT_CONFIDENCE
 
     if parsed.get("side") in ("CALL", "PUT") and parsed.get("strike") and parsed.get("expiry"):
         signal = {
@@ -105,7 +118,7 @@ def handle_alert_text(
             "side": parsed["side"],
             "strike": parsed["strike"],
             "expiry": parsed["expiry"],
-            "confidence": confidence,
+            "confidence": options_confidence,
             "target_hint": parsed.get("target_hint"),
             "stop_hint": parsed.get("stop_hint"),
             "note": note or parsed.get("notes_excerpt", ""),
@@ -125,7 +138,7 @@ def handle_alert_text(
         "source": source,
         "action": action,
         "symbol": ticker,
-        "confidence": confidence,
+        "confidence": DEFAULT_CONFIDENCE,
         "note": note or parsed.get("notes_excerpt", ""),
         "amount_usd": amount_usd,
         # She doesn't always give these on equity calls either, but when she

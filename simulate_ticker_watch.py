@@ -51,7 +51,7 @@ logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lavish_core.vision.extract_signal import parse_text
-from lavish_core.trading.alert_handler import _is_perp_or_leveraged, _equity_action_from_text
+from lavish_core.trading.alert_handler import _is_perp_or_leveraged, _equity_action_from_text, DEFAULT_CONFIDENCE
 from lavish_core.trading.trade_handler import CONF_FLOOR
 from ml.backtester import BacktestSignal, run_backtest, print_report, fetch_price_history
 from lavish_core.reporting.option_estimator import estimate_option_pnl, print_estimate
@@ -192,20 +192,28 @@ def classify_and_route(alert: SyntheticAlert) -> dict:
         return {"outcome": "skip:perp"}
     r = parse_text(alert.text)
     ticker = r.get("ticker")
-    conf = r.get("confidence", 0.0)
     if not ticker:
         return {"outcome": "skip:no_ticker_or_not_whitelisted"}
     if r.get("side") in ("CALL", "PUT") and r.get("strike") and r.get("expiry"):
-        if conf < CONF_FLOOR:
+        # Options-weighted score (side/strike/expiry are worth 0.50 of it
+        # combined) - meaningful here, unlike the equity branch below.
+        options_conf = r.get("confidence", 0.0)
+        if options_conf < CONF_FLOOR:
             return {"outcome": "skip:below_confidence_floor"}
         return {"outcome": "trade:options", "ticker": ticker, "side": r["side"],
                 "strike": r["strike"], "expiry": r["expiry"], "target": r.get("target_hint"),
-                "stop": r.get("stop_hint"), "confidence": conf}
+                "stop": r.get("stop_hint"), "confidence": options_conf}
     action = _equity_action_from_text(alert.text)
     if action:
-        if conf < CONF_FLOOR:
-            return {"outcome": "skip:below_confidence_floor"}
-        return {"outcome": "trade:equity", "ticker": ticker, "action": action, "confidence": conf}
+        # Real bug found and fixed in alert_handler.py this session: the
+        # options-weighted score above structurally cannot reach
+        # CONF_FLOOR for an equity-only alert (max achievable without
+        # side/strike is well under it), which used to skip every single
+        # plain equity call here regardless of how clearly worded it was -
+        # this mirrored that exact bug rather than the real, now-fixed
+        # pipeline behavior. _equity_action_from_text() succeeding IS the
+        # confidence signal for equity, same as the real pipeline.
+        return {"outcome": "trade:equity", "ticker": ticker, "action": action, "confidence": DEFAULT_CONFIDENCE}
     return {"outcome": "skip:ticker_found_no_clear_direction"}
 
 
