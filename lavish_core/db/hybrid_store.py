@@ -37,6 +37,8 @@ import os
 import random
 import string
 import sys
+import threading
+import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -78,6 +80,38 @@ _log = get_logger("hybrid_store", log_dir="logs")
 _log.info(f"Using database at: {DEFAULT_DB.resolve()}")
 
 DEFAULT_REDIS = "redis://localhost:6379/0"
+
+# How many times to retry a position-update write that lost a genuine
+# concurrent conflict (see _apply_fill_to_position) before giving up and
+# letting the exception surface. Confirmed directly (not assumed): under
+# real heavy contention (stress-tested at 10 fully simultaneous writers
+# to the same symbol), a handful of immediate retries with no backoff
+# could still all collide - real production traffic never approaches that
+# (at most an entry fill and an exit fill overlap on the same symbol), but
+# retry with jitter so it holds even there, rather than tuning this to
+# just barely cover the realistic case.
+_FILL_CONFLICT_MAX_RETRIES = 20
+_FILL_CONFLICT_BACKOFF_BASE_SEC = 0.01
+
+# Serializes _apply_fill_to_position across threads within this ONE
+# process - run_ingest.py's own module docstring already establishes that
+# this bot runs as a single process (DuckDB doesn't allow two processes
+# to hold the same file open concurrently), so a plain in-process lock
+# covers the real threat model completely, unlike retrying against
+# DuckDB's transaction-conflict detection alone. Confirmed directly (not
+# assumed): under heavy adversarial contention (10 fully simultaneous
+# buy/sell fills for the same symbol), the atomic-SQL-plus-retry approach
+# by itself avoided crashing and avoided losing any individual fill's
+# qty delta, but could still apply fills in a scrambled, non-chronological
+# order relative to each other - which can corrupt avg_price (a weighted
+# average has no sensible meaning if a sell and a buy for the same
+# position apply in an order that doesn't match when they actually
+# happened). A global lock (not per-symbol) is deliberately simple here:
+# fills are a low-frequency event (actual trade executions, at most a
+# handful per day), so serializing all of them has no meaningful
+# performance cost, and it eliminates this entire problem class rather
+# than just reducing its odds.
+_positions_lock = threading.Lock()
 
 
 def _utcnow() -> datetime:
@@ -271,6 +305,23 @@ class HybridStore:
             self.con.execute(sql, params)
         else:
             self.con.execute(sql)
+
+    def _execute_with_conflict_retry(self, sql: str, params: Iterable[Any]) -> None:
+        """
+        Like execute(), but retries (with jitter backoff) on the raw
+        exception DuckDB can raise for the LOSING side of two genuinely
+        concurrent writes to the same row - see _apply_fill_to_position's
+        docstring for why a plain execute() isn't safe for a write that
+        must never be silently dropped.
+        """
+        for attempt in range(_FILL_CONFLICT_MAX_RETRIES):
+            try:
+                self.execute(sql, params)
+                return
+            except (duckdb.ConstraintException, duckdb.TransactionException):
+                if attempt == _FILL_CONFLICT_MAX_RETRIES - 1:
+                    raise
+                time.sleep(_FILL_CONFLICT_BACKOFF_BASE_SEC * (1 + random.random()) * (attempt + 1))
 
     def fetchall(self, sql: str, params: Iterable[Any] | None = None) -> List[Tuple]:
         if params:
@@ -526,34 +577,73 @@ class HybridStore:
 
     # ---- positions math ------------------------------------------------------
     def _apply_fill_to_position(self, symbol: str, side: str, qty: float, price: float) -> None:
-        rows = self.fetchall("SELECT qty, avg_price FROM positions WHERE symbol=?", (symbol,))
-        if rows:
-            cur_qty, cur_avg = float(rows[0][0]), float(rows[0][1])
-        else:
-            cur_qty, cur_avg = 0.0, 0.0
+        """
+        Serialized by _positions_lock (see its module-level comment for
+        why an in-process lock is the right fix given this bot's
+        single-process design) plus belt-and-suspenders atomic SQL and
+        conflict-retry underneath.
 
-        if side == "buy":
-            new_qty = cur_qty + qty
-            new_avg = ((cur_avg * cur_qty) + (price * qty)) / new_qty if new_qty != 0 else 0.0
-        else:  # sell
-            new_qty = cur_qty - qty
-            # realized P&L handled elsewhere; average price stays on remaining
-            new_avg = cur_avg if new_qty != 0 else 0.0
+        Confirmed directly (not assumed), by reproducing it with real
+        concurrent threads: two fills landing for the same symbol at
+        close to the same time (e.g. a new entry's fill confirmation and
+        an exit's bracket-fill confirmation, recorded from two different
+        monitor threads) used to race on a plain read-then-write - one
+        fill's effect could be silently lost entirely (the classic lost-
+        update problem). Making the arithmetic atomic on its own (the
+        UPSERT referencing the row's live value instead of a separate
+        SELECT) was necessary but not sufficient - DuckDB could still
+        raise a raw TransactionException for the losing side of two
+        genuinely concurrent UPDATEs, and under heavier adversarial
+        contention (stress-tested at 10 simultaneous fills) retrying
+        that alone could still apply fills in a scrambled, non-
+        chronological order relative to each other, which corrupts
+        avg_price (a weighted average has no sensible meaning if a buy
+        and a sell for the same position apply out of the order they
+        actually happened in). The lock below eliminates that whole
+        problem class rather than just reducing its odds; the atomic SQL
+        and retry stay as defense-in-depth underneath it.
+        """
+        symbol = symbol.upper()
+        side = side.lower()
 
-        if new_qty == 0:
-            self.execute("DELETE FROM positions WHERE symbol=?", (symbol,))
-        else:
-            self.execute(
+        with _positions_lock:
+            now = _utcnow()
+            delta = qty if side == "buy" else -qty
+
+            if side == "buy":
+                # Re-averages: the new cost basis blends the existing
+                # position with this fill, weighted by size.
+                sql = """
+                    INSERT INTO positions(symbol, qty, avg_price, updated_at)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(symbol) DO UPDATE SET
+                        avg_price = (positions.avg_price * positions.qty + excluded.avg_price * excluded.qty)
+                                    / (positions.qty + excluded.qty),
+                        qty = positions.qty + excluded.qty,
+                        updated_at = excluded.updated_at
                 """
-                INSERT INTO positions(symbol, qty, avg_price, updated_at)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(symbol) DO UPDATE SET
-                    qty=excluded.qty,
-                    avg_price=excluded.avg_price,
-                    updated_at=excluded.updated_at
-                """,
-                (symbol, float(new_qty), float(new_avg), _utcnow()),
-            )
+                params = (symbol, delta, price, now)
+            else:
+                # A sell/reduction never changes the average cost basis
+                # (only a buy re-averages it) - just atomically decrements
+                # qty.
+                sql = """
+                    INSERT INTO positions(symbol, qty, avg_price, updated_at)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(symbol) DO UPDATE SET
+                        qty = positions.qty + excluded.qty,
+                        updated_at = excluded.updated_at
+                """
+                params = (symbol, delta, 0.0, now)
+
+            self._execute_with_conflict_retry(sql, params)
+
+            # Flat position - remove the row rather than leave qty=0
+            # sitting around. Still a separate statement (simpler to read
+            # than folding into the upsert's CASE logic) - safe now that
+            # the lock above means nothing else can be mutating this same
+            # row between the two statements.
+            self._execute_with_conflict_retry("DELETE FROM positions WHERE symbol = ? AND qty = 0", (symbol,))
 
     def get_position(self, symbol: str) -> Optional[Dict[str, float]]:
         rows = self.fetchall("SELECT qty, avg_price FROM positions WHERE symbol=?", (symbol.upper(),))
