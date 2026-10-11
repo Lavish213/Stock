@@ -1,21 +1,31 @@
 # lavish_core/trade/equity_exit_monitor.py
 # Equity entries go out as a real Alpaca bracket order (take_profit/
 # stop_loss) - unlike options, Alpaca DOES manage the OCO exit itself
-# server-side (whichever leg fills first auto-cancels the other), so this
-# doesn't submit anything the way options_exit_monitor.py has to. It only
-# watches the bracket's child leg orders and logs whichever one fills back
-# into this bot's own audit trail. Without this, an equity buy's DB order
-# just sat "filled" forever with no linked exit fill, even though the
-# position closed correctly on Alpaca's side - track_record.py's "open
-# entries with no recorded exit fill" bucket exists specifically because
-# of this gap.
+# server-side (whichever leg fills first auto-cancels the other), so
+# watch_bracket() below doesn't submit anything the way
+# options_exit_monitor.py has to - it only watches the bracket's child leg
+# orders and logs whichever one fills back into this bot's own audit
+# trail. Without this, an equity buy's DB order just sat "filled" forever
+# with no linked exit fill, even though the position closed correctly on
+# Alpaca's side - track_record.py's "open entries with no recorded exit
+# fill" bucket exists specifically because of this gap.
+#
+# Tradier (and any other broker without a native bracket/OCO order) has no
+# child legs to watch - watch_and_exit_active() below is the real exit
+# plan for those: it polls price itself and submits its own closing order
+# the moment take_profit/stop_loss is hit, mirroring
+# options_exit_monitor.watch_and_exit's already-proven pattern (same
+# reasoning: a stated exit level only means something if something
+# actively watches for it and acts). trade_handler.py picks whichever of
+# the two this broker actually supports - see broker.SUPPORTS_NATIVE_BRACKETS.
 from __future__ import annotations
 import os, time, threading, logging
 from typing import Optional, Dict, Any, Callable, List
 
-from lavish_core.trade.broker_alpaca import get_order
+from lavish_core.trade.broker import get_order, latest_quote, place_order, cancel_order
 from lavish_core.trade.circuit_breaker import record_trade_outcome
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
+from lavish_core.utils.alerts import post_discord
 
 log = logging.getLogger("equity_exit_monitor")
 
@@ -25,7 +35,14 @@ POLL_INTERVAL_SEC = float(os.getenv("EQUITY_EXIT_POLL_INTERVAL_SEC", "15"))
 # own TIF already bounds this to at most one trading session anyway.
 MAX_MONITOR_HOURS = float(os.getenv("EQUITY_EXIT_MAX_MONITOR_HOURS", "12"))
 
+# Exit-fill confirmation poll for the active monitor's own closing order -
+# same names/defaults/reasoning as trade_agent.place_trade's and
+# options_exit_monitor's entry/exit fill confirmation.
+EXIT_FILL_POLL_ATTEMPTS = int(os.getenv("EQUITY_EXIT_FILL_POLL_ATTEMPTS", "5"))
+EXIT_FILL_POLL_INTERVAL_SEC = float(os.getenv("EQUITY_EXIT_FILL_POLL_INTERVAL_SEC", "1.0"))
+
 _TERMINAL_NO_FILL = {"canceled", "expired", "rejected"}
+_TERMINAL_STATUSES = ("filled", "canceled", "expired", "rejected")
 
 
 def watch_bracket(
@@ -98,5 +115,171 @@ def watch_bracket(
 def watch_bracket_async(*args, **kwargs) -> threading.Thread:
     """Fire-and-forget version of watch_bracket() for callers that can't block."""
     t = threading.Thread(target=watch_bracket, args=args, kwargs=kwargs, daemon=True)
+    t.start()
+    return t
+
+
+def watch_and_exit_active(
+    symbol: str,
+    qty: float,
+    entry_price: float,
+    take_profit: Optional[float] = None,
+    stop_loss: Optional[float] = None,
+    venue: str = "paper",
+    on_exit: Optional[Callable[[Dict[str, Any]], None]] = None,
+) -> Dict[str, Any]:
+    """
+    Active equity exit monitor for brokers with no native bracket/OCO
+    order (Tradier, currently) - take_profit/stop_loss here are already
+    fully-resolved price levels (trade_handler.py has already merged her
+    stated target/stop with this bot's own fixed-pct defaults before
+    calling this), so unlike options_exit_monitor there's no separate
+    "our own guardrails" layer to run underneath hers - there's exactly
+    one exit plan to watch, the same one Alpaca would otherwise manage
+    server-side via a bracket order's child legs.
+
+    This bot only ever brackets new LONG entries (see trade_handler.py's
+    _execute_equity_trade) - direction is always "price rising = target,
+    price falling = stop", no call/put-style branching needed.
+    """
+    deadline = time.time() + MAX_MONITOR_HOURS * 3600
+    consecutive_failures = 0
+    log.info("Watching active equity exit for %s x%s (entry=%.2f) target=%s stop=%s",
+              symbol, qty, entry_price, take_profit, stop_loss)
+
+    def _alert_failure(reason: str, detail: str) -> None:
+        if consecutive_failures == 1 or consecutive_failures % 10 == 0:
+            post_discord(
+                f"\U0001F6A8 Exit attempt #{consecutive_failures} failed for {symbol} "
+                f"(trigger: {reason}): {detail}. Retrying automatically - this position is NOT "
+                f"unmanaged, still being watched."
+            )
+
+    def _finish(result: Dict[str, Any]) -> Dict[str, Any]:
+        if on_exit:
+            on_exit(result)
+        return result
+
+    def _exit(reason: str, price_at_trigger: Optional[float] = None) -> Optional[Dict[str, Any]]:
+        """
+        One exit attempt: submit a closing market sell, then poll for a
+        real fill - mirrors options_exit_monitor._exit's pattern (never
+        marks "exited" on submission alone; an unconfirmed attempt is
+        retried next loop iteration rather than trusted or abandoned).
+        """
+        nonlocal consecutive_failures
+        try:
+            order = place_order(symbol=symbol, side="sell", qty=qty, type_="market", time_in_force="day")
+        except Exception as e:
+            consecutive_failures += 1
+            log.error("Exit order submission failed for %s (%s), attempt %d: %s",
+                      symbol, reason, consecutive_failures, e)
+            _alert_failure(reason, str(e))
+            return None
+
+        broker_oid = order.get("id")
+        final_status = order.get("status", "submitted")
+        filled_qty = order.get("filled_qty")
+        filled_avg_price = order.get("filled_avg_price")
+        if broker_oid:
+            for _ in range(EXIT_FILL_POLL_ATTEMPTS):
+                if final_status in _TERMINAL_STATUSES:
+                    break
+                time.sleep(EXIT_FILL_POLL_INTERVAL_SEC)
+                try:
+                    polled = get_order(broker_oid)
+                    final_status = polled.get("status", final_status)
+                    filled_qty = polled.get("filled_qty", filled_qty)
+                    filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
+                except Exception as e:
+                    log.warning("Exit order status poll failed for %s: %s", broker_oid, e)
+                    break
+
+        if final_status == "filled":
+            consecutive_failures = 0
+            exit_price = float(filled_avg_price) if filled_avg_price else float(price_at_trigger or entry_price)
+            filled_amt = float(filled_qty) if filled_qty else qty
+            pnl = (exit_price - entry_price) * filled_amt
+            store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
+            store.log_fill(order_id=order.get("id", ""), symbol=symbol, side="sell",
+                            qty=filled_amt, price=exit_price, fee=0.0, venue=venue)
+            record_trade_outcome(store, pnl)
+            log.info("Active equity exit (%s) CONFIRMED FILLED for %s @ %.2f (entry=%.2f pnl=%.2f)",
+                      reason, symbol, exit_price, entry_price, pnl)
+            result = {"status": "exited", "reason": reason, "exit_price": exit_price, "pnl": pnl, "order": order}
+            if reason == "max_hold_timeout":
+                post_discord(f"⏱️ {symbol} force-closed ({reason}) at {exit_price:.2f} - "
+                             f"neither target nor stop fired before this cutoff.")
+            return result
+
+        consecutive_failures += 1
+        log.warning(
+            "Exit order for %s (%s) never confirmed filled after %d polls (status=%s), attempt %d - "
+            "canceling, will retry.",
+            symbol, reason, EXIT_FILL_POLL_ATTEMPTS, final_status, consecutive_failures,
+        )
+        if broker_oid:
+            try:
+                cancel_order(broker_oid)
+            except Exception as e:
+                log.warning("Cancel of unconfirmed exit order %s failed: %s", broker_oid, e)
+        _alert_failure(reason, f"never confirmed filled (status={final_status})")
+        return None
+
+    loop_errors = 0
+    while time.time() < deadline:
+        try:
+            triggered_reason: Optional[str] = None
+            price = latest_quote(symbol)
+
+            if price is not None:
+                if take_profit is not None and price >= take_profit:
+                    triggered_reason = "target"
+                elif stop_loss is not None and price <= stop_loss:
+                    triggered_reason = "stop"
+
+            if triggered_reason:
+                result = _exit(triggered_reason, price)
+                if result is not None:
+                    return _finish(result)
+                # else: unconfirmed/failed attempt - already logged/alerted
+                # inside _exit(); fall through and retry next iteration.
+        except Exception as e:
+            # Same crash-resilience requirement as options_exit_monitor's
+            # loop: must never let an uncaught exception (e.g. missing/
+            # invalid broker credentials mid-run) silently kill this
+            # position's entire exit watch with nobody told.
+            loop_errors += 1
+            log.error("%s: active exit-monitor loop error (attempt %d, still watching): %s",
+                      symbol, loop_errors, e)
+            if loop_errors == 1 or loop_errors % 10 == 0:
+                post_discord(f"🚨 {symbol}: exit monitor hit an unexpected error ({e}) - "
+                              f"retrying automatically, this position is NOT unmanaged yet, but "
+                              f"needs a look if this keeps happening.")
+
+        time.sleep(POLL_INTERVAL_SEC)
+
+    # Max hold time reached with nothing else triggering - force out rather
+    # than abandon the position unmanaged. This one must actually succeed:
+    # keep retrying past the deadline (already spent) rather than return a
+    # failure that would falsely read as "handled".
+    log.warning("%s: max hold time (%.1fh) reached with no other exit - forcing close.", symbol, MAX_MONITOR_HOURS)
+    while True:
+        try:
+            result = _exit("max_hold_timeout")
+            if result is not None:
+                return _finish(result)
+        except Exception as e:
+            loop_errors += 1
+            log.error("%s: forced-close retry error (attempt %d, still retrying): %s", symbol, loop_errors, e)
+            if loop_errors == 1 or loop_errors % 10 == 0:
+                post_discord(f"🚨 {symbol}: forced-close exit hit an unexpected error ({e}) - "
+                              f"retrying automatically, needs a look if this keeps happening.")
+        time.sleep(POLL_INTERVAL_SEC)
+
+
+def watch_and_exit_active_async(*args, **kwargs) -> threading.Thread:
+    """Fire-and-forget version of watch_and_exit_active() for callers that can't block."""
+    t = threading.Thread(target=watch_and_exit_active, args=args, kwargs=kwargs, daemon=True)
     t.start()
     return t

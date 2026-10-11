@@ -12,7 +12,7 @@ import os, time, logging
 from typing import Optional
 
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
-from lavish_core.trade.broker_alpaca import get_account
+from lavish_core.trade.broker import get_account
 
 log = logging.getLogger("account_monitor")
 

@@ -16,7 +16,7 @@ import json, os, re, time, threading, logging
 from datetime import date, datetime
 from typing import Optional, Dict, Any, Set, Tuple
 
-from lavish_core.trade.broker_alpaca import get_positions
+from lavish_core.trade.broker import get_positions
 from lavish_core.trade.options_exit_monitor import watch_and_exit_async
 from lavish_core.utils.alerts import post_discord
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB

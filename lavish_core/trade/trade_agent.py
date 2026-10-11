@@ -45,7 +45,7 @@ from lavish_core.trade.circuit_breaker import check_ok as _circuit_breaker_check
 from lavish_core.logger_setup import configure_root_logging
 
 try:
-    from lavish_core.trade.broker_alpaca import (
+    from lavish_core.trade.broker import (
         get_account,
         get_position as broker_position,
         place_order as broker_place_order,
@@ -117,13 +117,10 @@ def _soft_quote(symbol: str) -> Optional[float]:
     """
     if not HAS_ALPACA:
         return None
-    # Duck-typed: if broker_alpaca later adds latest_quote(), we use it.
     try:
-        from lavish_core.trade import broker_alpaca  # type: ignore
-        fn = getattr(broker_alpaca, "latest_quote", None)
-        if callable(fn):
-            q = fn(symbol)
-            return float(q) if q else None
+        from lavish_core.trade.broker import latest_quote
+        q = latest_quote(symbol)
+        return float(q) if q else None
     except Exception:
         pass
     return None
@@ -680,8 +677,7 @@ class TradeAgent:
             LOG.error("flatten_all: Alpaca client unavailable - cannot read real broker positions.")
             return {"status": "error", "reason": "broker unavailable", "n": 0, "details": []}
 
-        from lavish_core.trade.broker_alpaca import get_positions
-        from lavish_core.trade.options_broker import place_option_order, latest_option_quote
+        from lavish_core.trade.broker import get_positions, place_option_order, latest_option_quote
 
         try:
             positions = get_positions()

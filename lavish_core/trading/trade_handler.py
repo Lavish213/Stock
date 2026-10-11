@@ -7,10 +7,13 @@ from typing import Dict, Any, Optional
 from lavish_core.logger_setup import get_logger
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
 from lavish_core.trade.trade_agent import place_trade, _dry_price  # dry-run fallback pricing only
-from lavish_core.trade.broker_alpaca import latest_quote, get_order as broker_get_order, cancel_order as broker_cancel_order, get_position as broker_get_position, get_clock
-from lavish_core.trade.options_broker import resolve_and_price_contract, place_option_order
+from lavish_core.trade.broker import (
+    latest_quote, get_order as broker_get_order, cancel_order as broker_cancel_order,
+    get_position as broker_get_position, get_clock, resolve_and_price_contract, place_option_order,
+    SUPPORTS_NATIVE_BRACKETS,
+)
 from lavish_core.trade.options_exit_monitor import watch_and_exit_async
-from lavish_core.trade.equity_exit_monitor import watch_bracket_async
+from lavish_core.trade.equity_exit_monitor import watch_bracket_async, watch_and_exit_active_async
 from lavish_core.trade.circuit_breaker import check_ok as circuit_breaker_check_ok, record_trade_outcome
 from lavish_core.trade.reconcile import mark_watched, unmark_watched
 from lavish_core.trade.portfolio_risk import check_correlation_ok
@@ -719,18 +722,37 @@ def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
     )
     log.info("Trade result: %s", out)
 
-    # A bracket's take_profit/stop_loss legs fill on Alpaca's side with no
-    # signal back to this bot unless something watches for it - without
-    # this, the entry's DB order just sits "filled" forever with no linked
-    # exit, and track_record.py has no way to know the position closed.
-    legs = out.get("legs") or []
-    if side == "buy" and out.get("status") == "filled" and (take_profit is not None or stop_loss is not None) and legs:
-        leg_ids = [leg.get("id") for leg in legs if leg.get("id")]
-        if leg_ids:
-            entry_price = float(out.get("filled_avg_price") or ref_price)
-            watch_bracket_async(
-                order_id=out["order_id"], symbol=sym, qty=qty,
-                entry_price=entry_price, leg_ids=leg_ids, venue=TRADE_MODE,
+    # An exit plan (take_profit/stop_loss) only means something if
+    # something watches for it and acts - without this, the entry's DB
+    # order just sits "filled" forever with no linked exit, and
+    # track_record.py has no way to know the position closed.
+    #
+    # Alpaca manages a bracket's legs server-side (whichever fills first
+    # auto-cancels the other) - watch_bracket_async just watches those
+    # legs and logs the result. Tradier (and any other broker without a
+    # native bracket) returns no legs at all, so there's nothing to watch
+    # passively - watch_and_exit_active_async actively polls price and
+    # submits its own closing order instead. SUPPORTS_NATIVE_BRACKETS
+    # picks which one matches the broker actually configured, rather than
+    # branching on whether legs happened to come back (which would
+    # silently no-op under Tradier instead of starting the real exit plan).
+    if side == "buy" and out.get("status") == "filled" and (take_profit is not None or stop_loss is not None):
+        entry_price = float(out.get("filled_avg_price") or ref_price)
+        legs = out.get("legs") or []
+        if SUPPORTS_NATIVE_BRACKETS:
+            leg_ids = [leg.get("id") for leg in legs if leg.get("id")]
+            if leg_ids:
+                watch_bracket_async(
+                    order_id=out["order_id"], symbol=sym, qty=qty,
+                    entry_price=entry_price, leg_ids=leg_ids, venue=TRADE_MODE,
+                )
+            else:
+                log.warning("No bracket legs came back for %s despite take_profit/stop_loss being set - "
+                            "position has no automated exit watch.", sym)
+        else:
+            watch_and_exit_active_async(
+                symbol=sym, qty=qty, entry_price=entry_price,
+                take_profit=take_profit, stop_loss=stop_loss, venue=TRADE_MODE,
             )
 
     # A broker-side failure inside place_trade (unreachable, request error)

@@ -99,7 +99,7 @@ def check_correlation_ok(new_ticker: str, get_positions_fn=None) -> Tuple[bool, 
     it's the same position) - only *other* symbols in the same group count.
     """
     if get_positions_fn is None:
-        from lavish_core.trade.broker_alpaca import get_positions as get_positions_fn
+        from lavish_core.trade.broker import get_positions as get_positions_fn
 
     target_group = group_of(new_ticker)
     new_ticker_u = new_ticker.upper()

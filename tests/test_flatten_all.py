@@ -28,7 +28,7 @@ def test_dry_mode_flattens_from_the_local_ledger_only(tmp_path, monkeypatch):
         "INSERT INTO positions(symbol, qty, avg_price, updated_at) VALUES (?, ?, ?, ?)",
         ("AAPL", 10.0, 150.0, __import__("datetime").datetime.now(__import__("datetime").timezone.utc)),
     )
-    with patch("lavish_core.trade.broker_alpaca.get_positions") as mock_broker_positions:
+    with patch("lavish_core.trade.broker.get_positions") as mock_broker_positions:
         result = agent.flatten_all()
 
     mock_broker_positions.assert_not_called()  # dry mode must never hit the real broker
@@ -42,9 +42,9 @@ def test_live_mode_closes_both_equity_and_options_positions(tmp_path, monkeypatc
         {"symbol": "AAPL", "qty": "10", "asset_class": "us_equity"},
         {"symbol": "AAPL260116C00200000", "qty": "2", "asset_class": "us_option"},
     ]
-    with patch("lavish_core.trade.broker_alpaca.get_positions", return_value=broker_positions), \
-         patch("lavish_core.trade.options_broker.latest_option_quote", return_value={"bid": 1.0, "ask": 1.2}), \
-         patch("lavish_core.trade.options_broker.place_option_order", return_value={"status": "filled"}) as mock_opt, \
+    with patch("lavish_core.trade.broker.get_positions", return_value=broker_positions), \
+         patch("lavish_core.trade.broker.latest_option_quote", return_value={"bid": 1.0, "ask": 1.2}), \
+         patch("lavish_core.trade.broker.place_option_order", return_value={"status": "filled"}) as mock_opt, \
          patch.object(ta, "place_trade", return_value={"status": "filled"}) as mock_equity:
         result = agent.flatten_all()
 
@@ -61,7 +61,7 @@ def test_live_mode_closes_both_equity_and_options_positions(tmp_path, monkeypatc
 def test_live_mode_short_equity_position_closes_with_a_buy(tmp_path, monkeypatch):
     agent = _agent(tmp_path, monkeypatch, "live")
     broker_positions = [{"symbol": "TSLA", "qty": "-5", "asset_class": "us_equity"}]
-    with patch("lavish_core.trade.broker_alpaca.get_positions", return_value=broker_positions), \
+    with patch("lavish_core.trade.broker.get_positions", return_value=broker_positions), \
          patch.object(ta, "place_trade", return_value={"status": "filled"}) as mock_equity:
         agent.flatten_all()
 
@@ -72,9 +72,9 @@ def test_live_mode_short_equity_position_closes_with_a_buy(tmp_path, monkeypatch
 def test_option_with_no_usable_quote_is_reported_not_silently_skipped(tmp_path, monkeypatch):
     agent = _agent(tmp_path, monkeypatch, "live")
     broker_positions = [{"symbol": "AAPL260116C00200000", "qty": "2", "asset_class": "us_option"}]
-    with patch("lavish_core.trade.broker_alpaca.get_positions", return_value=broker_positions), \
-         patch("lavish_core.trade.options_broker.latest_option_quote", return_value=None), \
-         patch("lavish_core.trade.options_broker.place_option_order") as mock_opt:
+    with patch("lavish_core.trade.broker.get_positions", return_value=broker_positions), \
+         patch("lavish_core.trade.broker.latest_option_quote", return_value=None), \
+         patch("lavish_core.trade.broker.place_option_order") as mock_opt:
         result = agent.flatten_all()
 
     mock_opt.assert_not_called()
@@ -88,7 +88,7 @@ def test_one_failed_close_does_not_abort_the_rest(tmp_path, monkeypatch):
         {"symbol": "AAPL", "qty": "10", "asset_class": "us_equity"},
         {"symbol": "MSFT", "qty": "5", "asset_class": "us_equity"},
     ]
-    with patch("lavish_core.trade.broker_alpaca.get_positions", return_value=broker_positions), \
+    with patch("lavish_core.trade.broker.get_positions", return_value=broker_positions), \
          patch.object(ta, "place_trade", side_effect=[RuntimeError("broker rejected"), {"status": "filled"}]):
         result = agent.flatten_all()
 
@@ -99,7 +99,7 @@ def test_one_failed_close_does_not_abort_the_rest(tmp_path, monkeypatch):
 
 def test_broker_read_failure_in_live_mode_is_reported_not_raised(tmp_path, monkeypatch):
     agent = _agent(tmp_path, monkeypatch, "paper")
-    with patch("lavish_core.trade.broker_alpaca.get_positions", side_effect=RuntimeError("broker down")):
+    with patch("lavish_core.trade.broker.get_positions", side_effect=RuntimeError("broker down")):
         result = agent.flatten_all()
 
     assert result["status"] == "error"
@@ -109,7 +109,7 @@ def test_broker_read_failure_in_live_mode_is_reported_not_raised(tmp_path, monke
 def test_zero_qty_positions_are_skipped(tmp_path, monkeypatch):
     agent = _agent(tmp_path, monkeypatch, "live")
     broker_positions = [{"symbol": "AAPL", "qty": "0", "asset_class": "us_equity"}]
-    with patch("lavish_core.trade.broker_alpaca.get_positions", return_value=broker_positions), \
+    with patch("lavish_core.trade.broker.get_positions", return_value=broker_positions), \
          patch.object(ta, "place_trade") as mock_equity:
         result = agent.flatten_all()
 

@@ -40,8 +40,7 @@ import os, time, logging, threading
 from datetime import date, datetime, timezone
 from typing import Optional, Dict, Any, Callable
 
-from lavish_core.trade.broker_alpaca import latest_quote, get_clock, get_order, cancel_order
-from lavish_core.trade.options_broker import latest_option_quote, place_option_order
+from lavish_core.trade.broker import latest_quote, get_clock, get_order, cancel_order, latest_option_quote, place_option_order
 from lavish_core.utils.alerts import post_discord
 
 log = logging.getLogger("options_exit_monitor")

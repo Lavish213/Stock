@@ -36,10 +36,14 @@ else:
     print(f"[warn] No .env at {_env_path} - relying on whatever's already in the shell environment.")
 
 # 2. Required credentials actually present (not just "the var exists with an empty default")
-required = {
-    "ALPACA_API_KEY": os.getenv("ALPACA_API_KEY"),
-    "ALPACA_SECRET_KEY": os.getenv("ALPACA_SECRET_KEY"),
-}
+broker_provider = os.getenv("BROKER_PROVIDER", "alpaca").strip().lower()
+if broker_provider == "tradier":
+    required = {"TRADIER_API_KEY": os.getenv("TRADIER_API_KEY")}
+else:
+    required = {
+        "ALPACA_API_KEY": os.getenv("ALPACA_API_KEY"),
+        "ALPACA_SECRET_KEY": os.getenv("ALPACA_SECRET_KEY"),
+    }
 has_patreon_static = bool(os.getenv("PATREON_ACCESS_TOKEN"))
 has_patreon_refresh = all(os.getenv(k) for k in ("PATREON_CLIENT_ID", "PATREON_CLIENT_SECRET", "PATREON_REFRESH_TOKEN"))
 
@@ -64,7 +68,11 @@ if trade_mode not in ("dry", "paper", "live"):
 else:
     print(f"[ok] TRADE_MODE={trade_mode}"
           + (" - will submit REAL orders with real money." if trade_mode == "live" else ""))
-if trade_mode in ("paper", "live") and "paper-api" not in os.getenv("ALPACA_BASE_URL", "") and trade_mode == "paper":
+if broker_provider == "tradier":
+    if trade_mode == "paper" and "sandbox" not in os.getenv("TRADIER_BASE_URL", "https://sandbox.tradier.com/v1"):
+        print(f"[warn] TRADE_MODE=paper but TRADIER_BASE_URL doesn't look like the sandbox endpoint "
+              f"({os.getenv('TRADIER_BASE_URL')!r}) - double check this isn't pointed at production by mistake.")
+elif trade_mode in ("paper", "live") and "paper-api" not in os.getenv("ALPACA_BASE_URL", "") and trade_mode == "paper":
     print(f"[warn] TRADE_MODE=paper but ALPACA_BASE_URL doesn't look like the paper endpoint "
           f"({os.getenv('ALPACA_BASE_URL')!r}) - double check this isn't pointed at live by mistake.")
 
@@ -75,8 +83,7 @@ modules = [
     "lavish_core.discord_ingest.listener",
     "lavish_core.trading.alert_handler",
     "lavish_core.trading.trade_handler",
-    "lavish_core.trade.broker_alpaca",
-    "lavish_core.trade.options_broker",
+    "lavish_core.trade.broker",
     "lavish_core.trade.circuit_breaker",
     "lavish_core.trade.reconcile",
     "lavish_core.vision.extract_signal",

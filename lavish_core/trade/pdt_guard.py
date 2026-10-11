@@ -17,7 +17,7 @@ from datetime import date, timedelta
 from typing import Optional, Tuple
 
 from lavish_core.db.hybrid_store import HybridStore
-from lavish_core.trade.broker_alpaca import get_account
+from lavish_core.trade.broker import get_account
 from lavish_core.utils.alerts import post_discord
 
 log = logging.getLogger("pdt_guard")
