@@ -1,6 +1,6 @@
 # lavish_core/trading/trade_handler.py
 from __future__ import annotations
-import os, json, time
+import os, json, time, threading
 from datetime import date, datetime, timezone, timedelta
 from typing import Dict, Any, Optional
 
@@ -18,6 +18,8 @@ from lavish_core.trade.circuit_breaker import check_ok as circuit_breaker_check_
 from lavish_core.trade.reconcile import mark_watched, unmark_watched
 from lavish_core.trade.portfolio_risk import check_correlation_ok
 from lavish_core.trade.pdt_guard import check_pdt_ok
+from lavish_core.trade.candle_gatekeeper import confirm_entry, ENABLED as GATEKEEPER_ENABLED
+from lavish_core.utils.alerts import post_discord
 
 log = get_logger("trade", log_dir="logs")
 
@@ -306,6 +308,62 @@ def _execute_option_trade(signal: Dict[str, Any]) -> bool:
         log.warning("Skip options trade: unparseable expiry %r: %s", expiry_raw, e)
         return True
 
+    # Candle-confirmation gate - this bot only ever opens long options
+    # (buy_to_open, never a new short), so every options signal that
+    # reaches here is a new entry and gating applies to all of them,
+    # unlike the equity path where a SELL is exempt. Same reasoning as
+    # _execute_equity_trade's gate on why this can't block synchronously
+    # here (handle_alert_text() runs directly inside the Discord/Patreon
+    # asyncio event loops) - hands off to a background thread and returns.
+    if GATEKEEPER_ENABLED and TRADE_MODE in ("paper", "live"):
+        direction = "bullish" if option_side == "CALL" else "bearish"
+        log.info("Gatekeeper: queuing %s %s for candle confirmation before placing an order.", ticker, option_side)
+        threading.Thread(
+            target=_gated_option_buy,
+            args=(signal, ticker, option_side, direction, strike, expiry, conf, target_hint, stop_hint, amt, note),
+            daemon=True,
+        ).start()
+        return True
+
+    return _finish_option_entry(signal, ticker, option_side, strike, expiry, conf,
+                                 target_hint, stop_hint, amt, note, skip_drift_check=False)
+
+
+def _gated_option_buy(
+    signal: Dict[str, Any], ticker: str, option_side: str, direction: str, strike: Any, expiry: date,
+    conf: float, target_hint: Optional[float], stop_hint: Optional[float], amt: Optional[float], note: str,
+) -> None:
+    """Background-thread target for a gated options entry - see
+    _execute_option_trade's comment on why this can't run inline. Same
+    crash-resilience rule as every other daemon-thread target in this
+    codebase: must never let an uncaught exception die silently."""
+    try:
+        result = confirm_entry(ticker, direction)
+        if not result.get("confirmed"):
+            log.info("Gatekeeper did not confirm %s %s $%.2f exp %s (%s) - no order placed.",
+                      ticker, option_side, float(strike), expiry, result.get("reason"))
+            return
+        _finish_option_entry(signal, ticker, option_side, strike, expiry, conf,
+                              target_hint, stop_hint, amt, note, skip_drift_check=True)
+    except Exception as e:
+        log.error("Gated options entry for %s %s %s hit an unexpected error: %s", ticker, option_side, strike, e)
+        post_discord(f"🚨 Gated {option_side} entry for {ticker} ${strike} failed unexpectedly ({e}) - "
+                      f"no order was placed, needs a look.")
+
+
+def _finish_option_entry(
+    signal: Dict[str, Any], ticker: str, option_side: str, strike: Any, expiry: date, conf: float,
+    target_hint: Optional[float], stop_hint: Optional[float], amt: Optional[float], note: str,
+    skip_drift_check: bool,
+) -> bool:
+    """
+    Everything from contract resolution through order placement and exit-
+    monitor start - shared by the synchronous (gatekeeper disabled) and
+    gated-async (confirmed entry) paths. Contract resolution/pricing is
+    deliberately done HERE, not before gating, so a gated entry prices
+    and sizes off a contract quote taken right before it actually trades,
+    not one that's been stale for up to 15 minutes.
+    """
     contract = resolve_and_price_contract(
         ticker, expiry, option_side, float(strike), strike_tolerance=OPTION_STRIKE_TOLERANCE,
     )
@@ -324,7 +382,11 @@ def _execute_option_trade(signal: Dict[str, Any]) -> bool:
     # Price-drift-since-alert, against the underlying (what she actually
     # called), not the option premium itself (which moves on its own
     # schedule - gamma/theta - independent of pure underlying drift).
-    if TRADE_MODE in ("paper", "live"):
+    # Skipped for anything that went through the candle gate above - same
+    # reasoning as _finish_equity_entry's identical skip: that gate's
+    # entire purpose is to WAIT FOR and REQUIRE a favorable move, which a
+    # flat max-drift check would often reject right after confirming.
+    if not skip_drift_check and TRADE_MODE in ("paper", "live"):
         try:
             underlying_now = latest_quote(ticker)
         except Exception:
@@ -580,12 +642,14 @@ def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
     # Open HybridStore (DuckDB/Redis) for audit + risk gates
     store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
 
-    # Size: if amount_usd provided → qty = amount / ref_price; else default $500 block.
-    # In paper/live mode a missing real quote must fail closed - _dry_price()
-    # is a deterministic pseudo-price (hash of the ticker string) with no
-    # connection to the market; sizing and bracket levels computed from it
-    # would be real orders built on a fabricated number. Only dry mode (no
-    # real order submitted regardless) may fall back to it.
+    # Fast, synchronous quote-availability check - stays synchronous (and
+    # keeps its "return False to allow retry" contract) regardless of
+    # whether this entry ends up gated below: there's no point watching
+    # candles for a symbol with no real quote at all right now. A gated
+    # BUY still re-fetches a FRESH quote after confirmation (see
+    # _finish_equity_entry) rather than reusing this one - price may have
+    # moved meaningfully during the wait, same reason sizing/bracket
+    # levels are computed fresh there too.
     ref_price = None
     try:
         ref_price = latest_quote(sym)
@@ -604,11 +668,111 @@ def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
             return False
         ref_price = _dry_price(sym)  # dry mode only - no real order will be submitted
 
+    # Candle-confirmation gate: only new long entries get delayed - a sell
+    # is reducing/closing exposure (never halted or slowed, same reasoning
+    # as every other entry-only gate below). Dry mode is excluded too -
+    # there's no slippage/real money at stake to protect there, so
+    # delaying the "would trade" log by up to 15 minutes would only hurt
+    # testing/demoing for no benefit.
+    #
+    # This can't block synchronously here: handle_alert_text() is called
+    # directly (no thread, no await) from inside the Discord listener's
+    # and Patreon poller's own asyncio event loops - a multi-minute wait
+    # in this call stack would freeze BOTH entirely (no heartbeats, no
+    # other alerts processed) for the duration. Confirmation + the actual
+    # order placement run on a background thread instead, mirroring the
+    # exit monitors' already-proven async pattern - this function hands
+    # off and returns immediately, same as those do for exits.
+    if side == "buy" and GATEKEEPER_ENABLED and TRADE_MODE in ("paper", "live"):
+        log.info("Gatekeeper: queuing %s BUY for candle confirmation before placing an order.", sym)
+        threading.Thread(
+            target=_gated_equity_buy,
+            args=(signal, sym, conf, note, amt, target_hint, stop_hint),
+            daemon=True,
+        ).start()
+        return True
+
+    return _finish_equity_entry(signal, store, sym, side, conf, note, amt, target_hint, stop_hint,
+                                 ref_price, skip_drift_check=False)
+
+
+def _gated_equity_buy(
+    signal: Dict[str, Any], sym: str, conf: float, note: str, amt: Optional[float],
+    target_hint: Optional[float], stop_hint: Optional[float],
+) -> None:
+    """
+    Background-thread target for a gated BUY - see _execute_equity_trade's
+    comment on why this can't run inline. Nothing upstream of this is
+    watching for an exception here (it's a daemon thread kicked off and
+    forgotten), so - same rule as every exit-monitor loop in this
+    codebase - this must never let an uncaught exception die silently.
+    """
+    try:
+        result = confirm_entry(sym, "bullish")
+        store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
+
+        if not result.get("confirmed"):
+            store.submit_order(
+                symbol=sym, side="buy", qty=0, order_type="market", tif="day", venue=TRADE_MODE,
+                status="rejected",
+                meta={"reason": f"gatekeeper_{result.get('reason')}",
+                      "source": signal.get("source", "patreon"), "note": note},
+            )
+            log.info("Gatekeeper did not confirm %s BUY (%s) - no order placed.", sym, result.get("reason"))
+            return
+
+        # Fresh quote, not the pre-gate one - price has had up to
+        # GATEKEEPER_MAX_WAIT_SECONDS to move since that was fetched.
+        # Falls back to the confirming bar's own close price if a live
+        # quote isn't available right at this instant, rather than
+        # treating a momentary quote-fetch hiccup immediately after a
+        # confirmed breakout as "no data" and losing the entry.
+        fresh_price = None
+        try:
+            fresh_price = latest_quote(sym)
+        except Exception as e:
+            log.warning("Post-confirmation latest_quote failed for %s: %s", sym, e)
+        if not fresh_price or fresh_price <= 0:
+            fresh_price = result.get("price")
+        if not fresh_price or fresh_price <= 0:
+            store.submit_order(
+                symbol=sym, side="buy", qty=0, order_type="market", tif="day", venue=TRADE_MODE,
+                status="rejected",
+                meta={"reason": "no_real_quote_available_post_confirmation",
+                      "source": signal.get("source", "patreon"), "note": note},
+            )
+            log.error("Gatekeeper confirmed %s but no usable price afterward - refusing to size off nothing.", sym)
+            return
+
+        _finish_equity_entry(signal, store, sym, "buy", conf, note, amt, target_hint, stop_hint,
+                              fresh_price, skip_drift_check=True)
+    except Exception as e:
+        log.error("Gated equity BUY for %s hit an unexpected error: %s", sym, e)
+        post_discord(f"🚨 Gated BUY for {sym} failed unexpectedly ({e}) - no order was placed, needs a look.")
+
+
+def _finish_equity_entry(
+    signal: Dict[str, Any], store: HybridStore, sym: str, side: str, conf: float, note: str,
+    amt: Optional[float], target_hint: Optional[float], stop_hint: Optional[float],
+    ref_price: float, skip_drift_check: bool,
+) -> bool:
+    """
+    Everything from the price-drift gate through order placement and exit-
+    monitor start - shared by the synchronous (gatekeeper disabled, or a
+    SELL) and gated-async (confirmed BUY) paths, which differ only in
+    whether the drift gate still applies and where ref_price came from.
+    """
     # Price-drift-since-alert: only gates new entries (a sell is reducing/
     # closing exposure, same reasoning as every other entry-only gate
     # below) - getting out of a position should never be blocked by how
-    # much the underlying has moved.
-    if side == "buy" and TRADE_MODE in ("paper", "live"):
+    # much the underlying has moved. Also skipped for anything that went
+    # through the candle gate above: that gate's entire purpose is to WAIT
+    # FOR and REQUIRE a favorable price move before confirming - re-
+    # applying a flat max-drift-since-alert check afterward would often
+    # reject exactly the breakouts the gate just confirmed. The gate is a
+    # stricter, better-informed replacement for this check on anything
+    # routed through it, not an additional hurdle on top of it.
+    if side == "buy" and not skip_drift_check and TRADE_MODE in ("paper", "live"):
         drift_reason = _price_drift_reason(signal.get("_alert_time_price"), ref_price)
         if drift_reason:
             store.submit_order(

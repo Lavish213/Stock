@@ -38,6 +38,7 @@ if BROKER_PROVIDER == "tradier":
         cancel_order,
         latest_quote,
         get_clock,
+        get_bars,
     )
     from lavish_core.trade.options_broker_tradier import (
         find_contract,
@@ -56,6 +57,7 @@ elif BROKER_PROVIDER == "alpaca":
         cancel_order,
         latest_quote,
         get_clock,
+        get_bars,
     )
     from lavish_core.trade.options_broker import (
         find_contract,

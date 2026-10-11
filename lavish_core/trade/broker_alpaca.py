@@ -197,6 +197,63 @@ def latest_quote(symbol: str) -> Optional[float]:
 
     return None
 
+
+def _yfinance_fallback_bars(symbol: str, limit: int) -> list:
+    """Same reasoning/fallback tier as _yfinance_fallback_quote above, for
+    1-minute bars instead of a single price - used by candle_gatekeeper.py,
+    which needs real OHLCV (not just a last-trade price) to check a wick
+    breakout or a volume spike."""
+    try:
+        import yfinance as yf
+        t = yf.Ticker(symbol)
+        hist = t.history(period="1d", interval="1m")
+        if hist is None or hist.empty:
+            return []
+        hist = hist.tail(limit)
+        return [
+            {
+                "t": idx.isoformat(), "o": float(row["Open"]), "h": float(row["High"]),
+                "l": float(row["Low"]), "c": float(row["Close"]), "v": float(row["Volume"]),
+            }
+            for idx, row in hist.iterrows()
+        ]
+    except Exception as e:
+        log.warning(f"yfinance fallback bars failed for {symbol}: {e}")
+        return []
+
+
+def get_bars(symbol: str, limit: int = 20) -> list:
+    """
+    Recent 1-minute OHLCV bars, oldest first - used by candle_gatekeeper.py
+    for wick-breakout/volume confirmation before a new entry fires. Never
+    raises; returns [] on total failure so the gatekeeper can fail open
+    (treat "no data" as "can't confirm yet", not crash the entry thread).
+    """
+    _check_keys()
+    symbol = symbol.upper()
+    try:
+        r = SESSION.get(
+            f"{DATA_URL}/v2/stocks/{symbol}/bars",
+            headers=HEADERS, params={"timeframe": "1Min", "limit": limit}, timeout=10,
+        )
+        if r.status_code == 200:
+            bars = r.json().get("bars") or []
+            if bars:
+                return [
+                    {"t": b.get("t"), "o": float(b["o"]), "h": float(b["h"]),
+                     "l": float(b["l"]), "c": float(b["c"]), "v": float(b.get("v", 0))}
+                    for b in bars
+                ]
+    except Exception as e:
+        log.warning(f"get_bars failed for {symbol}: {e}")
+
+    fallback = _yfinance_fallback_bars(symbol, limit)
+    if fallback:
+        log.warning(f"get_bars: Alpaca data unavailable for {symbol}, used yfinance fallback bars")
+        return fallback
+
+    return []
+
 def place_order(symbol: str, side: str, qty: str,
                 type_: str = "market", time_in_force: str = "day",
                 limit_price: Optional[float] = None,

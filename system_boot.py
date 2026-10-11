@@ -84,6 +84,7 @@ modules = [
     "lavish_core.trading.alert_handler",
     "lavish_core.trading.trade_handler",
     "lavish_core.trade.broker",
+    "lavish_core.trade.candle_gatekeeper",
     "lavish_core.trade.circuit_breaker",
     "lavish_core.trade.reconcile",
     "lavish_core.vision.extract_signal",

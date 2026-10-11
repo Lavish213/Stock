@@ -17,3 +17,18 @@ import pytest
 def _default_market_open(monkeypatch):
     import lavish_core.trading.trade_handler as th
     monkeypatch.setattr(th, "get_clock", lambda: {"is_open": True})
+
+
+# Default the candle-confirmation gatekeeper OFF for every test. Same
+# reasoning/precedent as _default_market_open above: most existing tests
+# exercise entry logic (sizing, risk gates, fill confirmation, broker
+# errors) that has nothing to do with candle confirmation, and that logic
+# now runs on a background thread only once the gate confirms - without
+# this, those tests would just see "handled=True, nothing called yet"
+# (the gate thread hasn't run) and silently stop testing what they were
+# written to cover. test_candle_gatekeeper*.py explicitly re-enables this
+# to exercise the gate itself.
+@pytest.fixture(autouse=True)
+def _default_gatekeeper_disabled(monkeypatch):
+    import lavish_core.trading.trade_handler as th
+    monkeypatch.setattr(th, "GATEKEEPER_ENABLED", False)

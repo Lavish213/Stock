@@ -18,6 +18,7 @@
 # it, same as it would be for a change to the Alpaca side.
 from __future__ import annotations
 import os, json, logging, re, time, uuid
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 import requests
 from requests.adapters import HTTPAdapter
@@ -289,6 +290,51 @@ def latest_quote(symbol: str) -> Optional[float]:
     except Exception as e:
         log.warning(f"latest_quote failed for {symbol}: {e}")
     return None
+
+
+def get_bars(symbol: str, limit: int = 20) -> List[Dict[str, Any]]:
+    """
+    Recent 1-minute OHLCV bars via /markets/timesales, oldest first -
+    same purpose/contract as broker_alpaca.get_bars (candle_gatekeeper.py
+    reads this generically through the dispatcher). Never raises; returns
+    [] on failure so the gatekeeper fails open rather than crashing the
+    entry thread.
+
+    Field names (time/open/high/low/close/volume under series.data) are
+    from Tradier's documented timesales response - same "researched, not
+    yet confirmed against a real sandbox call" caveat as the rest of this
+    module. interval="1min" has a documented 20-day lookback limit for
+    open-market data, far more than the few minutes this ever needs.
+    """
+    _check_keys()
+    try:
+        now = datetime.now(timezone.utc)
+        start = (now - timedelta(minutes=max(limit * 2, 30))).strftime("%Y-%m-%d %H:%M")
+        r = SESSION.get(
+            f"{BASE_URL}/markets/timesales", headers=HEADERS,
+            params={"symbol": symbol.upper(), "interval": "1min",
+                    "start": start, "session_filter": "all"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return []
+        series = r.json().get("series")
+        if not series or series == "null":
+            return []
+        data = series.get("data")
+        if data is None:
+            return []
+        if not isinstance(data, list):
+            data = [data]
+        bars = [
+            {"t": d.get("time"), "o": float(d["open"]), "h": float(d["high"]),
+             "l": float(d["low"]), "c": float(d["close"]), "v": float(d.get("volume", 0))}
+            for d in data
+        ]
+        return bars[-limit:]
+    except Exception as e:
+        log.warning(f"get_bars failed for {symbol}: {e}")
+        return []
 
 
 def place_order(symbol: str, side: str, qty: str,
