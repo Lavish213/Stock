@@ -159,14 +159,33 @@ def execute_trade_from_post(signal: Dict[str, Any]) -> None:
 
     store = None
     strike = expiry = None
+    claim_key = None
     if symbol and dedup_side:
         store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
         strike = float(signal["strike"]) if is_option else None
         expiry = str(signal.get("expiry")) if is_option else None
+
+        # Atomic first line of defense, on top of the fuzzy check right
+        # below - confirmed directly (not assumed) that two threads can
+        # both pass that SELECT-based duplicate check before either has
+        # recorded anything, so the same real-world alert landing on
+        # Patreon and Discord within milliseconds of each other could
+        # otherwise both proceed to trade. A single INSERT ... ON CONFLICT
+        # claim on the exact (symbol, side, strike, expiry) key closes that
+        # gap; the fuzzy check still catches near-but-not-exactly-equal
+        # duplicates (e.g. a strike that round-trips with tiny float drift)
+        # that an exact key would miss.
+        claim_key = f"{symbol}|{dedup_side}|{strike if strike is not None else ''}|{expiry or ''}"
+        if not store.try_claim_signal(claim_key, SIGNAL_DEDUP_WINDOW_SECONDS):
+            log.info("Skip %s %s: duplicate claim already held within %.0fs (source=%s)",
+                      dedup_side.upper(), symbol, SIGNAL_DEDUP_WINDOW_SECONDS, source)
+            return
+
         dup_source = _find_duplicate_signal(store, symbol, dedup_side, strike, expiry)
         if dup_source:
             log.info("Skip %s %s: duplicate of %s's alert within %.0fs (source=%s)",
                       dedup_side.upper(), symbol, dup_source, SIGNAL_DEDUP_WINDOW_SECONDS, source)
+            store.release_claim(claim_key)
             return
 
     # Recorded AFTER dispatch, not before - a transient technical failure
@@ -184,6 +203,13 @@ def execute_trade_from_post(signal: Dict[str, Any]) -> None:
         log.error("Unhandled error executing %s %s: %s (not recording as seen - may be retried)",
                    dedup_side.upper() if dedup_side else "?", symbol, e)
         handled = False
+
+    # Same "don't occupy the slot past a technical failure" rule the fuzzy
+    # dedup record already follows (see above) - the atomic claim grabbed
+    # above would otherwise outlive a transient error for the rest of
+    # SIGNAL_DEDUP_WINDOW_SECONDS and block a legitimate retry.
+    if store is not None and claim_key is not None and not handled:
+        store.release_claim(claim_key)
 
     if store is not None and handled:
         store.log_signal(

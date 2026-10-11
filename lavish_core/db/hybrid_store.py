@@ -37,6 +37,7 @@ import os
 import random
 import string
 import sys
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -193,6 +194,22 @@ SCHEMA_SQL: List[str] = [
         enabled     BOOLEAN,
         reason      TEXT,
         updated_at  TIMESTAMP
+    )
+    """,
+
+    # -- atomic dedup claims. A separate check-then-insert (SELECT for a
+    # duplicate, then INSERT a signal row) has a real race window: two
+    # threads can both see "nothing yet" and both proceed - confirmed
+    # directly, not assumed (concurrent inserts into an already-created
+    # schema succeed without conflict, so nothing stops both from
+    # landing). This table exists so claiming a (symbol, side, strike,
+    # expiry) key can be ONE atomic INSERT ... ON CONFLICT DO NOTHING
+    # instead of two separate statements with a gap between them.
+    """
+    CREATE TABLE IF NOT EXISTS signal_claims (
+        claim_key   TEXT PRIMARY KEY,
+        claimed_at  TIMESTAMP,
+        token       TEXT
     )
     """,
 
@@ -360,6 +377,84 @@ class HybridStore:
             return False, ""
         enabled, reason = rows[0]
         return bool(enabled), str(reason or "")
+
+    def try_claim_signal(self, claim_key: str, window_seconds: float) -> bool:
+        """
+        Atomic alternative to a separate check-then-insert for the same
+        real-world alert arriving on Patreon and Discord within
+        milliseconds of each other - confirmed directly (not assumed)
+        that two threads can both pass a plain "is there already a
+        matching signal" SELECT before either has INSERTed, so both
+        proceed. One INSERT ... ON CONFLICT DO NOTHING, then reading back
+        which attempt's unique token actually landed, closes that gap.
+
+        Returns True if this call now owns the claim (it was first, or
+        the existing claim is older than window_seconds and was just
+        taken over), False if someone else holds a live claim within the
+        window - the caller should treat that as a duplicate.
+        """
+        token = uuid.uuid4().hex
+        now = _utcnow()
+        try:
+            self.execute(
+                "INSERT INTO signal_claims(claim_key, claimed_at, token) VALUES (?, ?, ?) "
+                "ON CONFLICT (claim_key) DO NOTHING",
+                (claim_key, now, token),
+            )
+        except (duckdb.ConstraintException, duckdb.TransactionException):
+            # Confirmed directly (not assumed) by reproducing this with real
+            # concurrent threads: under genuine concurrency, DuckDB can
+            # surface the LOSING side of this exact race as a raised
+            # exception at commit time rather than quietly honoring
+            # "ON CONFLICT DO NOTHING" - a plain try/except around the
+            # read-then-insert isn't enough on its own, this is that losing
+            # side. Fall through to read back whichever row actually won.
+            pass
+
+        rows = self.fetchall("SELECT claimed_at, token FROM signal_claims WHERE claim_key = ?", (claim_key,))
+        if not rows:
+            return False  # shouldn't happen - fail closed (treat as already claimed) if it ever does
+        existing_ts, existing_token = rows[0]
+        if existing_ts.tzinfo is None:
+            # DuckDB's TIMESTAMP column round-trips a tz-aware Python
+            # datetime back as naive - confirmed directly, not assumed
+            # (a plain subtraction against the tz-aware `now` below raises
+            # TypeError otherwise). This table only ever stores our own
+            # _utcnow() values, so naive-on-read always means UTC.
+            existing_ts = existing_ts.replace(tzinfo=timezone.utc)
+        if existing_token == token:
+            return True  # our own insert won the race outright
+
+        age = (now - existing_ts).total_seconds()
+        if age <= window_seconds:
+            return False  # someone else's live claim - this is the duplicate
+
+        # Existing claim is stale - safe to take over, but guard against a
+        # third concurrent caller doing the same thing at the same moment:
+        # only count it as ours if this exact UPDATE (keyed to the stale
+        # token we just read) is the one that actually applies.
+        try:
+            self.execute(
+                "UPDATE signal_claims SET claimed_at = ?, token = ? WHERE claim_key = ? AND token = ?",
+                (now, token, claim_key, existing_token),
+            )
+        except (duckdb.ConstraintException, duckdb.TransactionException):
+            pass  # lost the takeover race too - fall through to see who actually won
+
+        rows2 = self.fetchall("SELECT token FROM signal_claims WHERE claim_key = ?", (claim_key,))
+        return bool(rows2) and rows2[0][0] == token
+
+    def release_claim(self, claim_key: str) -> None:
+        """
+        Frees a claim early. Used when the side that won try_claim_signal's
+        race then failed to actually trade for a technical (retryable)
+        reason - without this, that transient failure would occupy the
+        claim for the rest of window_seconds and block a legitimate retry
+        from either alert source, the same hazard execute_trade_from_post
+        already avoids for its own fuzzy dedup record by only logging a
+        signal as seen after a real, final outcome.
+        """
+        self.execute("DELETE FROM signal_claims WHERE claim_key = ?", (claim_key,))
 
     # =========================================================================
     # Section 6 — Orders / Fills / Positions

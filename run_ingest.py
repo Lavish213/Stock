@@ -49,6 +49,7 @@ from lavish_core.discord_ingest import listener as discord_listener
 from lavish_core.trade.reconcile import reconcile_open_positions, run_periodic_reconciliation
 from lavish_core.trade.account_monitor import run_periodic_snapshot
 from lavish_core.utils import sd_notify
+from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
 
 log = get_logger("run_ingest", log_dir="logs")
 
@@ -99,6 +100,18 @@ def _log_startup_config() -> None:
 
 def main() -> None:
     _log_startup_config()
+
+    # Forces schema creation (CREATE TABLE IF NOT EXISTS, etc.) to happen
+    # exactly once, synchronously, in the main thread - BEFORE any of the
+    # threads below get a chance to each construct their own first
+    # HybridStore() and race to create the schema concurrently. Confirmed
+    # directly (not assumed): two threads racing to initialize a
+    # HybridStore against a brand-new database file can raise
+    # "TransactionException: Catalog write-write conflict" - a real crash
+    # risk specifically on a fresh deploy's very first start, before this
+    # fix. Every later HybridStore(...) call anywhere in the process just
+    # opens a connection to an already-fully-created schema from here on.
+    HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
 
     # Every exit-guardrail thread lives only in this process's memory - on
     # every start (including a crash-restart) any option position already
