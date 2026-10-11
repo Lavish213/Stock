@@ -56,7 +56,7 @@ deploy key instead, if you'd rather not have a token in shell history.
 ```bash
 sudo mkdir -p /opt/lavish-bot
 sudo chown lavish:lavish /opt/lavish-bot
-git clone -b claude/lavish-bot-audit-4m7e1o https://YOUR_TOKEN@github.com/lavish213/lavish.git /opt/lavish-bot
+git clone -b claude/lavish-bot-audit-4m7e1o https://YOUR_TOKEN@github.com/Lavish213/Stock.git /opt/lavish-bot
 cd /opt/lavish-bot
 
 python3 -m venv venv
