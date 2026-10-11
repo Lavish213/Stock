@@ -201,52 +201,73 @@ def watch_and_exit(
         _alert_failure(reason, f"never confirmed filled (status={final_status})")
         return None
 
+    loop_errors = 0
     while time.time() < deadline:
-        triggered_reason: Optional[str] = None
-        underlying_price = latest_quote(underlying_symbol)
+        try:
+            triggered_reason: Optional[str] = None
+            underlying_price = latest_quote(underlying_symbol)
 
-        # --- her stated levels (checked first - this is the call being copied) ---
-        if underlying_price is not None:
-            if is_call:
-                if target_underlying is not None and underlying_price >= target_underlying:
-                    triggered_reason = "her_target"
-                elif stop_underlying is not None and underlying_price <= stop_underlying:
-                    triggered_reason = "her_stop"
-            else:
-                if target_underlying is not None and underlying_price <= target_underlying:
-                    triggered_reason = "her_target"
-                elif stop_underlying is not None and underlying_price >= stop_underlying:
-                    triggered_reason = "her_stop"
+            # --- her stated levels (checked first - this is the call being copied) ---
+            if underlying_price is not None:
+                if is_call:
+                    if target_underlying is not None and underlying_price >= target_underlying:
+                        triggered_reason = "her_target"
+                    elif stop_underlying is not None and underlying_price <= stop_underlying:
+                        triggered_reason = "her_stop"
+                else:
+                    if target_underlying is not None and underlying_price <= target_underlying:
+                        triggered_reason = "her_target"
+                    elif stop_underlying is not None and underlying_price >= stop_underlying:
+                        triggered_reason = "her_stop"
 
-        # --- our own guardrails (always run, regardless of whether she gave levels) ---
-        if triggered_reason is None:
-            premium = _option_limit_price(contract_symbol)
-            if premium is not None and entry_price > 0:
-                pnl_pct = (premium - entry_price) / entry_price
-                high_water_pct = max(high_water_pct, pnl_pct)
-                if not trailing_active and high_water_pct >= OUR_TRAIL_TRIGGER_PCT:
-                    trailing_active = True
-                    log.info("%s: trailing stop armed at high-water +%.1f%%", contract_symbol, high_water_pct * 100)
+            # --- our own guardrails (always run, regardless of whether she gave levels) ---
+            if triggered_reason is None:
+                premium = _option_limit_price(contract_symbol)
+                if premium is not None and entry_price > 0:
+                    pnl_pct = (premium - entry_price) / entry_price
+                    high_water_pct = max(high_water_pct, pnl_pct)
+                    if not trailing_active and high_water_pct >= OUR_TRAIL_TRIGGER_PCT:
+                        trailing_active = True
+                        log.info("%s: trailing stop armed at high-water +%.1f%%", contract_symbol, high_water_pct * 100)
 
-                if pnl_pct <= -OUR_STOP_LOSS_PCT:
-                    triggered_reason = "our_stop_loss"
-                elif trailing_active and (high_water_pct - pnl_pct) >= OUR_TRAIL_DRAWDOWN_PCT:
-                    triggered_reason = "our_trailing_stop"
+                    if pnl_pct <= -OUR_STOP_LOSS_PCT:
+                        triggered_reason = "our_stop_loss"
+                    elif trailing_active and (high_water_pct - pnl_pct) >= OUR_TRAIL_DRAWDOWN_PCT:
+                        triggered_reason = "our_trailing_stop"
 
-        # --- forced close near expiration, regardless of P&L ---
-        if triggered_reason is None and expiry is not None and datetime.now(timezone.utc).date() >= expiry:
-            mins_left = _minutes_to_close()
-            if mins_left is not None and mins_left <= EXPIRY_FORCE_CLOSE_MINUTES:
-                triggered_reason = "expiry_force_close"
+            # --- forced close near expiration, regardless of P&L ---
+            if triggered_reason is None and expiry is not None and datetime.now(timezone.utc).date() >= expiry:
+                mins_left = _minutes_to_close()
+                if mins_left is not None and mins_left <= EXPIRY_FORCE_CLOSE_MINUTES:
+                    triggered_reason = "expiry_force_close"
 
-        if triggered_reason:
-            result = _exit(triggered_reason, underlying_price)
-            if result is not None:
-                if on_exit:
-                    on_exit(result)
-                return result
-            # else: this attempt failed/unconfirmed - already logged/alerted
-            # inside _exit(); fall through and retry next iteration.
+            if triggered_reason:
+                result = _exit(triggered_reason, underlying_price)
+                if result is not None:
+                    if on_exit:
+                        on_exit(result)
+                    return result
+                # else: this attempt failed/unconfirmed - already logged/alerted
+                # inside _exit(); fall through and retry next iteration.
+        except Exception as e:
+            # Real gap found and fixed: every call above is supposed to
+            # swallow its own errors (latest_quote/_option_limit_price are
+            # documented "never raises"), but that chain shares
+            # _check_keys(), which DOES raise unguarded if Alpaca
+            # credentials ever go missing/invalid mid-run - and nothing
+            # upstream of this loop was catching that. An uncaught
+            # exception here used to kill this one position's entire exit
+            # monitor silently - no stop, no target, no expiry-force-close,
+            # nobody told, until the next reconcile_open_positions() sweep
+            # (if even that could reach the broker). Must never let this
+            # loop die; log, alert, and keep retrying instead.
+            loop_errors += 1
+            log.error("%s: exit-monitor loop error (attempt %d, still watching): %s",
+                      contract_symbol, loop_errors, e)
+            if loop_errors == 1 or loop_errors % 10 == 0:
+                post_discord(f"🚨 {contract_symbol}: exit monitor hit an unexpected error ({e}) - "
+                              f"retrying automatically, this position is NOT unmanaged yet, but "
+                              f"needs a look if this keeps happening.")
 
         time.sleep(POLL_INTERVAL_SEC)
 
@@ -257,11 +278,23 @@ def watch_and_exit(
     log.warning("%s: max hold time (%.1fh) reached with no other exit - forcing close.",
                 contract_symbol, MAX_MONITOR_HOURS)
     while True:
-        result = _exit("max_hold_timeout")
-        if result is not None:
-            if on_exit:
-                on_exit(result)
-            return result
+        try:
+            result = _exit("max_hold_timeout")
+            if result is not None:
+                if on_exit:
+                    on_exit(result)
+                return result
+        except Exception as e:
+            # Same unguarded-_check_keys() gap as the main loop above -
+            # _exit() itself calls _option_limit_price() before its own
+            # try block, so this must not let an uncaught exception end
+            # this "must actually succeed" retry loop either.
+            loop_errors += 1
+            log.error("%s: forced-close retry error (attempt %d, still retrying): %s",
+                      contract_symbol, loop_errors, e)
+            if loop_errors == 1 or loop_errors % 10 == 0:
+                post_discord(f"🚨 {contract_symbol}: forced-close exit hit an unexpected error ({e}) - "
+                              f"retrying automatically, needs a look if this keeps happening.")
         time.sleep(POLL_INTERVAL_SEC)
 
 

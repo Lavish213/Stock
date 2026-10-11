@@ -10,6 +10,7 @@ from lavish_core.logger_setup import get_logger
 from lavish_core.trading.alert_handler import handle_alert_text
 from lavish_core.patreon.patreon_refresh import refresh_patreon_token
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
+from lavish_core.utils.alerts import post_discord
 
 ROOT = Path(__file__).resolve().parents[1]
 VISION_RAW = ROOT / "vision" / "raw"
@@ -115,7 +116,41 @@ def _handle_post(post: Dict[str, Any]) -> None:
         amount_usd=float(patron_dollars) if patron_dollars else None,
     )
 
+# A restart here means the WHOLE setup (campaign id resolution, cursor
+# load, etc.) failed, not a single poll inside the loop - the inner loop
+# below already retries individual poll failures forever on its own, so
+# only a setup-time failure should ever reach this.
+POLL_LOOP_RESTART_DELAY_SECONDS = int(os.getenv("PATREON_RESTART_DELAY_SECONDS", "30"))
+
+
 def poll_loop():
+    """
+    Thin restart wrapper around _poll_loop_inner(). Real bug found and
+    fixed: _ensure_campaign_id() used to run BEFORE the inner loop's own
+    try/except even existed, so any failure there (a transient Patreon
+    blip at the exact moment the bot started, a token refresh failing
+    once) killed this entire background thread permanently and silently -
+    the rest of the process (including the watchdog ping thread) kept
+    looking perfectly healthy with nobody watching Patreon ever again.
+    This must never let the thread die; log, alert, back off, and retry
+    the whole setup instead.
+    """
+    restart_count = 0
+    while True:
+        try:
+            _poll_loop_inner()
+            return  # _poll_loop_inner() only returns on its own deliberate exit, if ever
+        except Exception as e:
+            restart_count += 1
+            log.error("patreon poll_loop: setup/fatal error (restart #%d, retrying in %ds): %s",
+                      restart_count, POLL_LOOP_RESTART_DELAY_SECONDS, e)
+            post_discord(f"🚨 Patreon poller crashed ({e}) - restarting automatically "
+                          f"(restart #{restart_count}). New alerts may be missed until it recovers; "
+                          f"check if this keeps happening.")
+            time.sleep(POLL_LOOP_RESTART_DELAY_SECONDS)
+
+
+def _poll_loop_inner():
     global ACCESS
     cid = _ensure_campaign_id()
     log.info(f"📬 Patreon listening (campaign={cid}) — poll={POLL_SECONDS}s vision_auto={VISION_AUTO}")

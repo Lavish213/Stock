@@ -75,6 +75,65 @@ def test_exit_retries_after_submission_failure_instead_of_dying():
     assert mock_discord.called  # at least the first failure got alerted
 
 
+def test_an_unexpected_error_in_the_loop_body_does_not_kill_the_monitor():
+    # Real bug found and fixed: latest_quote()/_option_limit_price() are
+    # documented "never raises", but they share _check_keys(), which DOES
+    # raise unguarded if Alpaca credentials ever go missing/invalid mid-
+    # run - and the main loop had no top-level try/except, so that one
+    # uncaught exception used to kill this position's entire exit monitor
+    # silently (no stop, no target, no expiry-force-close, nobody told).
+    # This proves the loop survives an unexpected exception and keeps
+    # watching instead of dying.
+    with patch.object(oem, "time") as mock_time, \
+         patch.object(oem, "latest_quote", side_effect=[RuntimeError("Missing ALPACA_API_KEY"), 100.0, 100.0]), \
+         patch.object(oem, "latest_option_quote", return_value={"bid": 3.9, "ask": 4.1}), \
+         patch.object(oem, "place_option_order",
+                       return_value={"id": "o1", "status": "filled", "filled_avg_price": "4.0", "filled_qty": "1"}), \
+         patch.object(oem, "get_order") as mock_get, \
+         patch.object(oem, "post_discord") as mock_discord:
+        mock_time.sleep.side_effect = _no_sleep
+        mock_time.time.side_effect = list(range(20))
+
+        result = oem.watch_and_exit(
+            underlying_symbol="TSLA", contract_symbol="TSLA260101C00100000",
+            qty=1, option_side="call", entry_price=10.0,
+        )
+
+    # Survived the first iteration's exception and still reached a normal
+    # exit on a later iteration - proof the thread kept running, not that
+    # it crashed and something else happened to look okay.
+    assert result["status"] == "exited"
+    assert mock_discord.called  # alerted that something unexpected happened
+
+
+def test_the_forced_close_retry_loop_also_survives_an_unexpected_error():
+    # Same gap, in the final "must actually succeed" retry loop that runs
+    # after MAX_MONITOR_HOURS is reached with nothing else triggering.
+    with patch.object(oem, "time") as mock_time, \
+         patch.object(oem, "latest_quote", return_value=None), \
+         patch.object(oem, "latest_option_quote", side_effect=[
+             RuntimeError("Missing ALPACA_API_KEY"),
+             {"bid": 3.9, "ask": 4.1},
+         ]), \
+         patch.object(oem, "place_option_order",
+                       return_value={"id": "o1", "status": "filled", "filled_avg_price": "4.0", "filled_qty": "1"}), \
+         patch.object(oem, "get_order") as mock_get, \
+         patch.object(oem, "post_discord") as mock_discord:
+        mock_time.sleep.side_effect = _no_sleep
+        # First two time.time() calls (deadline computation + the main
+        # loop's one condition check) already exceed the deadline, so this
+        # drops straight into the forced-close retry loop.
+        mock_time.time.side_effect = [0, 10**9]
+
+        result = oem.watch_and_exit(
+            underlying_symbol="TSLA", contract_symbol="TSLA260101C00100000",
+            qty=1, option_side="call", entry_price=10.0,
+        )
+
+    assert result["status"] == "exited"
+    assert mock_discord.called
+
+
 def test_unconfirmed_fill_is_canceled_and_retried():
     # First attempt submits, never reaches a terminal status within the
     # poll budget -> must cancel that stale order and try again (a fresh
