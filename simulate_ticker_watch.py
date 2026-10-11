@@ -51,7 +51,7 @@ logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lavish_core.vision.extract_signal import parse_text
-from lavish_core.trading.alert_handler import _is_perp_or_leveraged, _equity_action_from_text, DEFAULT_CONFIDENCE
+from lavish_core.trading.alert_handler import _is_perp_or_leveraged, _equity_action_from_text, _equity_confidence
 from lavish_core.trading.trade_handler import CONF_FLOOR
 from ml.backtester import BacktestSignal, run_backtest, print_report, fetch_price_history
 from lavish_core.reporting.option_estimator import estimate_option_pnl, print_estimate
@@ -211,9 +211,15 @@ def classify_and_route(alert: SyntheticAlert) -> dict:
         # side/strike is well under it), which used to skip every single
         # plain equity call here regardless of how clearly worded it was -
         # this mirrored that exact bug rather than the real, now-fixed
-        # pipeline behavior. _equity_action_from_text() succeeding IS the
-        # confidence signal for equity, same as the real pipeline.
-        return {"outcome": "trade:equity", "ticker": ticker, "action": action, "confidence": DEFAULT_CONFIDENCE}
+        # pipeline behavior. Now calls the real, field-based equity
+        # scoring function directly (ticker match quality, target/stop
+        # bonus, hedge-language penalty) instead of a flat stand-in, so
+        # this simulation reflects the actual gate, including the
+        # hedge-language case that correctly does get skipped now.
+        equity_conf = _equity_confidence(r, alert.text)
+        if equity_conf < CONF_FLOOR:
+            return {"outcome": "skip:below_confidence_floor"}
+        return {"outcome": "trade:equity", "ticker": ticker, "action": action, "confidence": equity_conf}
     return {"outcome": "skip:ticker_found_no_clear_direction"}
 
 

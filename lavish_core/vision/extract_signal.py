@@ -85,6 +85,38 @@ if not KNOWN_TICKERS:
 # regardless of what KNOWN_TICKERS ends up containing.
 TICKER_STOPWORDS = {"HOLD", "HODL", "GOOD", "STRIKE", "MOST"}
 
+# A clear "buying AAPL calls" and a speculative "maybe thinking about AAPL
+# calls, not sure yet" extract the exact same ticker/side/strike, but they
+# are not the same conviction level - nothing before this scored that
+# difference. Kept small and literal (word/phrase matches, not sentiment
+# analysis) on purpose - this mirrors every other rule in this file:
+# deterministic and auditable, not a model guessing at tone. Deliberately
+# excludes conditional phrasing like "if it breaks 200" - a real,
+# actionable trigger level, not hedging, and a different problem
+# (deferred/conditional entries) than confidence scoring.
+HEDGE_PHRASES = (
+    "maybe", "might", "possibly", "potentially", "thinking about",
+    "considering", "not sure", "unsure", "small starter", "starter position",
+    "nibbl", "testing the waters", "just a taste",
+)
+_HEDGE_RE = re.compile(r"\b(" + "|".join(re.escape(p) for p in HEDGE_PHRASES) + r")", re.I)
+
+# How much a hedge phrase pulls confidence down. For options, where most
+# of the score comes from strike/side/expiry/target/stop, this is a minor
+# adjustment - a fully-specified trade card is still actionable even
+# phrased hesitantly. For a plain equity alert, where ticker+direction is
+# most of what there is to go on, the same flat penalty is deliberately
+# enough to push a baseline case (clear ticker, clear direction, nothing
+# else) below CONF_FLOOR's default - genuinely hedged language ("maybe",
+# "not sure") is the creator's own uncertainty, not something that should
+# scrape by as a borderline pass.
+HEDGE_CONFIDENCE_PENALTY = 0.20
+
+
+def has_hedge_language(text: str) -> bool:
+    return bool(_HEDGE_RE.search(text or ""))
+
+
 # ---------- Utilities ----------
 
 def _clean_text(s: str) -> str:
@@ -411,13 +443,19 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
     stop   = _find_stop(text)
 
     conf = 0.0
-    conf += 0.25 if ticker else 0.0
+    # Scaled by match quality (MIN_TICKER_SCORE=75 floor, 100=exact) - a
+    # borderline fuzzy match (OCR noise, a near-miss typo) is real signal
+    # that this ticker is less certain than an exact match, and used to
+    # get full credit either way.
+    conf += 0.25 * (ticker_score / 100.0) if ticker else 0.0
     conf += 0.20 if side else 0.0
     conf += 0.20 if strike else 0.0
     conf += 0.10 if entry else 0.0
     conf += 0.10 if expiry else 0.0
     conf += 0.10 if (target or stop) else 0.0
-    conf = round(min(0.99, conf), 2)
+    if has_hedge_language(text):
+        conf -= HEDGE_CONFIDENCE_PENALTY
+    conf = round(min(0.99, max(0.0, conf)), 2)
 
     return {
         "image": str(img_path),

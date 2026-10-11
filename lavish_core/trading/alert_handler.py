@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 from lavish_core.logger_setup import get_logger
-from lavish_core.vision.extract_signal import parse_alert
+from lavish_core.vision.extract_signal import parse_alert, has_hedge_language, HEDGE_CONFIDENCE_PENALTY
 from lavish_core.trading.trade_handler import execute_trade_from_post
 from lavish_core.utils.alerts import post_discord
 
@@ -20,8 +20,39 @@ log = get_logger("alert_handler", log_dir="logs")
 
 DEFAULT_CONFIDENCE = float(os.getenv("ALERT_DEFAULT_CONFIDENCE", "0.7"))
 
+# Equity confidence, broken into the same kind of auditable, field-based
+# components extract_signal.py already uses for options - a flat default
+# regardless of content was itself a blunt-instrument regression from
+# that per-field scoring (just miscalibrated for equity's structurally
+# different field set, which used to put every plain equity alert below
+# CONF_FLOOR - see execute_trade_from_post's history). Weights are chosen
+# so the common case (an exact ticker match, a clear single-direction
+# word, no stated target/stop, no hedging) lands at exactly the old flat
+# default (0.35 + 0.35 = 0.70) - this changes the GRADIENT around that
+# point, not the baseline.
+EQUITY_TICKER_MATCH_WEIGHT = 0.35
+EQUITY_DIRECTION_WEIGHT = 0.35
+EQUITY_TARGET_OR_STOP_BONUS = 0.15
+
 BUY_WORDS = ("BUY", "CALL", "LONG", "BTO", "ENTRY")
 SELL_WORDS = ("SELL", "PUT", "SHORT", "STC", "EXIT", "CLOSE")
+
+# Real gap found this round: "buying AAPL here" / "selling my position" /
+# "shorting this" / "exiting now" / "closing out" are completely normal,
+# common phrasing for the exact same intent as BUY/SELL/SHORT/EXIT/CLOSE -
+# but the \bBUYS?\b-style word-boundary match (optional plural "S" only)
+# never matched the "-ing" gerund form, so any alert phrased this way was
+# silently treated as "no clear direction" and skipped entirely, never
+# even reaching the confidence question. Deliberately NOT every word:
+# CALL/PUT's gerunds (CALLING/PUTTING) are common, everyday English words
+# with nothing to do with trading ("calling my broker", "putting my stop
+# at X") - adding them would be a real false-positive risk. LONG/BTO/STC/
+# ENTRY don't have a natural gerund that means anything here either
+# ("longing AAPL" isn't real trading phrasing - "going long" is, a
+# different pattern entirely). An explicit map, not naive "+ING"
+# concatenation, because "close" -> "closing" drops the silent E.
+_GERUND_FORMS = {"BUY": "BUYING", "SELL": "SELLING", "SHORT": "SHORTING",
+                  "EXIT": "EXITING", "CLOSE": "CLOSING"}
 
 # Real screenshots seen this session showed her also trading perpetual
 # futures/leveraged tokens on Hyperliquid ("MU/USDC-P", "QQQ tokenized
@@ -54,13 +85,43 @@ def _equity_action_from_text(text: str) -> Optional[str]:
     # otherwise miss "CALLS" entirely (the "L"->"S" boundary doesn't
     # exist, both are word characters).
     up = (text or "").upper()
-    has_buy = any(re.search(rf"\b{re.escape(w)}S?\b", up) for w in BUY_WORDS)
-    has_sell = any(re.search(rf"\b{re.escape(w)}S?\b", up) for w in SELL_WORDS)
+
+    def _any_match(words: tuple) -> bool:
+        for w in words:
+            if re.search(rf"\b{re.escape(w)}S?\b", up):
+                return True
+            gerund = _GERUND_FORMS.get(w)
+            if gerund and re.search(rf"\b{re.escape(gerund)}\b", up):
+                return True
+        return False
+
+    has_buy = _any_match(BUY_WORDS)
+    has_sell = _any_match(SELL_WORDS)
     if has_buy and not has_sell:
         return "BUY"
     if has_sell and not has_buy:
         return "SELL"
     return None
+
+
+def _equity_confidence(parsed: dict, text: str) -> float:
+    """
+    Field-based, same philosophy as extract_signal.py's options score,
+    calibrated for equity's structurally different field set (no side/
+    strike/expiry to lean on). Reaching this function already means
+    _equity_action_from_text() found an unambiguous single direction -
+    that binary classifier IS the real direction-confidence check (it
+    returns None on any ambiguity), so it earns full credit here rather
+    than a second, redundant numeric score.
+    """
+    ticker_score = parsed.get("ticker_score") or 100
+    conf = EQUITY_TICKER_MATCH_WEIGHT * (ticker_score / 100.0)
+    conf += EQUITY_DIRECTION_WEIGHT
+    if parsed.get("target_hint") or parsed.get("stop_hint"):
+        conf += EQUITY_TARGET_OR_STOP_BONUS
+    if has_hedge_language(text):
+        conf -= HEDGE_CONFIDENCE_PENALTY
+    return round(min(0.99, max(0.0, conf)), 4)
 
 
 def handle_alert_text(
@@ -134,11 +195,13 @@ def handle_alert_text(
                   source, ticker, (text or "")[:200])
         return
 
+    equity_confidence = _equity_confidence(parsed, text)
+
     signal = {
         "source": source,
         "action": action,
         "symbol": ticker,
-        "confidence": DEFAULT_CONFIDENCE,
+        "confidence": equity_confidence,
         "note": note or parsed.get("notes_excerpt", ""),
         "amount_usd": amount_usd,
         # She doesn't always give these on equity calls either, but when she

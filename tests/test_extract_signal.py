@@ -54,6 +54,27 @@ def test_expiry_too_far_out_is_dropped():
     assert r["expiry"] is None or r["ticker"] != "AAPL"
 
 
+def test_hedge_language_lowers_options_confidence():
+    clear = parse_text("AAPL $190 calls target 200 stop 180 exp 10/16")
+    hedged = parse_text("maybe AAPL $190 calls target 200 stop 180 exp 10/16")
+    assert hedged["confidence"] < clear["confidence"]
+    assert hedged["confidence"] == round(clear["confidence"] - 0.20, 2)
+
+
+def test_exact_ticker_match_gets_full_credit_weak_match_gets_less():
+    # ticker_score was computed but never actually used in the confidence
+    # formula before this - an exact match and a borderline (MIN_TICKER_
+    # SCORE=75) fuzzy match got identical credit either way. "APPL" (a
+    # plausible OCR/typo of AAPL) fuzzy-matches at exactly the
+    # MIN_TICKER_SCORE=75 floor - still accepted, but less certain.
+    exact = parse_text("AAPL $190 calls target 200 stop 180 exp 10/16")
+    fuzzy = parse_text("APPL $190 calls target 200 stop 180 exp 10/16")
+    assert exact["ticker_score"] == 100
+    assert fuzzy["ticker"] == "AAPL"
+    assert fuzzy["ticker_score"] == 75
+    assert fuzzy["confidence"] < exact["confidence"]
+
+
 def test_a_recently_past_numeric_expiry_is_kept_not_rolled_a_full_year_out():
     # Real bug: a numeric "MM/DD" expiry a few days in the past (a
     # backlogged alert processed late, or just posted close to its own

@@ -44,8 +44,54 @@ def test_plain_equity_alert_reaches_the_broker_call(monkeypatch):
 def test_plain_equity_alert_confidence_exceeds_the_floor():
     # Direct check of the actual number, independent of whether it's
     # dispatched - this is the number that matters for the gate.
-    parsed_confidence = ah.DEFAULT_CONFIDENCE
-    assert parsed_confidence >= th.CONF_FLOOR
+    parsed = ah.parse_alert(text="BUY NVDA now, breaking out")
+    conf = ah._equity_confidence(parsed, "BUY NVDA now, breaking out")
+    assert conf >= th.CONF_FLOOR
+
+
+def test_equity_confidence_baseline_matches_the_old_flat_default():
+    # Pins the calibration choice: a clear ticker + clear direction, no
+    # target/stop, no hedging, should land at exactly the old flat
+    # DEFAULT_CONFIDENCE value - the new scoring changes the gradient
+    # around that point, not the common-case baseline itself.
+    parsed = ah.parse_alert(text="BUY NVDA now, breaking out")
+    conf = ah._equity_confidence(parsed, "BUY NVDA now, breaking out")
+    assert conf == ah.DEFAULT_CONFIDENCE
+
+
+def test_equity_confidence_rises_with_an_explicit_target_or_stop():
+    parsed = ah.parse_alert(text="BUY NVDA now, target 150 stop 140")
+    conf = ah._equity_confidence(parsed, "BUY NVDA now, target 150 stop 140")
+    assert conf > ah.DEFAULT_CONFIDENCE
+
+
+def test_hedge_language_drops_a_plain_equity_alert_below_the_floor():
+    # Real improvement built this round: a clear ticker/direction with
+    # genuinely hedged language ("maybe", "not sure") used to score
+    # identically to a decisive call - nothing before this distinguished
+    # the creator's own uncertainty from a real, actionable signal.
+    text = "maybe thinking about buying NVDA here, not sure"
+    parsed = ah.parse_alert(text=text)
+    conf = ah._equity_confidence(parsed, text)
+    assert conf < th.CONF_FLOOR
+
+
+def test_hedge_language_alert_is_actually_skipped_end_to_end(monkeypatch):
+    import tempfile
+    monkeypatch.setattr(th, "DEFAULT_DB", tempfile.mktemp(suffix=".duckdb"))
+    monkeypatch.setattr(th, "TRADE_MODE", "paper")
+    with patch.object(th, "place_trade") as mock_place:
+        ah.handle_alert_text("maybe thinking about buying NVDA here, not sure", source="test")
+    mock_place.assert_not_called()
+
+
+def test_weaker_ticker_match_lowers_equity_confidence():
+    # A near-miss fuzzy match (accepted - above MIN_TICKER_SCORE=75 - but
+    # not exact) is less certain than an exact match and should score
+    # lower, not get the same full credit either way.
+    strong = ah._equity_confidence({"ticker_score": 100}, "BUY NVDA now, breaking out")
+    weak = ah._equity_confidence({"ticker_score": 76}, "BUY NVDA now, breaking out")
+    assert weak < strong
 
 
 def test_casual_sell_phrasing_also_reaches_the_broker_call(monkeypatch):

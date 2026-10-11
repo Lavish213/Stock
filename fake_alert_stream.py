@@ -107,15 +107,24 @@ def generate_alert(tickers: list[str]) -> str:
         letter = random.choice(["c", "p"])
         verb = random.choice(["grabbing", "in on", "adding"])
         return f"{ticker} {verb} {strike:.0f}{letter} here, {random.choice(['breaking out', 'looking strong', 'momentum building'])}"
-    elif roll < 0.80:
+    elif roll < 0.77:
         # Equity buy/sell, casual phrasing.
         if random.random() < 0.5:
             return f"BUY {ticker} now, {random.choice(['breaking out', 'strong volume', 'adding here'])}"
         return f"SELL {ticker}, {random.choice(['taking profit', 'closing here', 'locking it in'])}"
-    elif roll < 0.90:
+    elif roll < 0.85:
+        # Hedged/speculative equity phrasing - clear ticker and direction
+        # word present, but her own hedging language. Should still get
+        # flagged with a LOWER confidence than a decisive call, and often
+        # skipped outright (see HEDGE_CONFIDENCE_PENALTY in
+        # extract_signal.py) - watch for this one specifically to see the
+        # new confidence-scoring gradient in action, not just a pass/skip.
+        hedge = random.choice(["maybe", "might", "thinking about", "not sure but", "possibly"])
+        return f"{hedge} buying {ticker} here, {random.choice(['watching for now', 'testing the waters', 'small starter position'])}"
+    elif roll < 0.93:
         # Ambiguous - should be skipped (no clear direction).
         return f"{ticker} looking {random.choice(['spicy', 'interesting', 'volatile'])} today, watch this level"
-    elif roll < 0.95:
+    elif roll < 0.97:
         # Perp/leveraged noise - should be skipped with a warning.
         return f"{random.choice(tickers)}/USDC-P long here, {random.choice([5, 10, 20])}x leverage, big move incoming"
     else:
