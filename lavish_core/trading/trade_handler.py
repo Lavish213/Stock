@@ -465,6 +465,23 @@ def _execute_option_trade(signal: Dict[str, Any]) -> bool:
                 log.warning("Cancel of unfilled options order %s failed: %s", broker_oid, e)
         return False
 
+    if final_status == "partially_filled" and broker_oid and TRADE_MODE in ("paper", "live"):
+        # Real gap found and fixed: the poll loop above only waits up to
+        # OPTIONS_FILL_POLL_ATTEMPTS x OPTIONS_FILL_POLL_INTERVAL_SEC
+        # (~5s default) for the rest to fill too. Leaving the unfilled
+        # remainder resting at the broker uncanceled meant it could fill
+        # hours later, unpredictably, against market conditions none of
+        # this alert's own checks (confidence floor, kill switch, price-
+        # drift gate, risk gates) were ever re-validated against - and
+        # until the next reconcile sweep happened to catch it, that extra
+        # fill would sit with no exit monitor watching it at all. Cancel
+        # the remainder; the confirmed partial fill below is final.
+        try:
+            broker_cancel_order(broker_oid)
+            log.info("Canceled unfilled remainder of partially-filled options order for %s.", contract["symbol"])
+        except Exception as e:
+            log.warning("Cancel of partially-filled options order remainder %s failed: %s", contract["symbol"], e)
+
     # Use the real fill price (slippage vs. the mid_price we sized/quoted
     # against) for both the exit-monitor's entry baseline and P&L, not the
     # pre-fill estimate.

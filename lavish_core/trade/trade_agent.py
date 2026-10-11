@@ -51,6 +51,7 @@ try:
         place_order as broker_place_order,
         get_order as broker_get_order,
         get_order_by_client_id as broker_get_order_by_client_id,
+        cancel_order as broker_cancel_order,
     )
     HAS_ALPACA = True
 except Exception:
@@ -529,14 +530,21 @@ def place_trade(
                 client_id=client_ord_id,
                 meta={"broker": "alpaca", "raw": broker_resp, "expected_price": ref_price, **meta},
             )
-            if final_status == "filled":
+            if final_status in ("filled", "partially_filled") and filled_qty:
+                # Real gap found and fixed: this used to only log a fill
+                # when status was EXACTLY "filled" - a partial fill (rare
+                # for a liquid, small-size market order, but not
+                # impossible) was never recorded in the local positions/
+                # fills ledger at all, even though real shares were
+                # actually held at the broker.
                 actual_price = float(filled_avg_price or ref_price)
+                actual_qty = float(filled_qty)
                 slippage = round(actual_price - ref_price, 4)
                 store.log_fill(
                     order_id=oid,
                     symbol=symbol,
                     side=side,
-                    qty=float(filled_qty or qty),
+                    qty=actual_qty,
                     price=actual_price,
                     fee=0.00,
                     venue=mode,
@@ -544,6 +552,18 @@ def place_trade(
                 if abs(slippage) > 0:
                     LOG.info("Slippage %s %s: expected %.2f actual %.2f (%.4f)",
                              side.upper(), symbol, ref_price, actual_price, slippage)
+                if final_status == "partially_filled" and broker_oid:
+                    # A resting remainder left open after this bot's own
+                    # poll budget could fill hours later, unpredictably,
+                    # against conditions none of this alert's own checks
+                    # (confidence floor, kill switch, price-drift gate,
+                    # risk gates) were ever re-validated against. Cancel
+                    # it; the confirmed partial fill above is final.
+                    try:
+                        broker_cancel_order(broker_oid)
+                        LOG.info("Canceled unfilled remainder of partially-filled order for %s.", symbol)
+                    except Exception as e:
+                        LOG.warning("Cancel of partially-filled order remainder for %s failed: %s", symbol, e)
             LOG.info("%s %s %s×%s (order=%s broker_id=%s client_id=%s status=%s)",
                      mode.upper(), final_status.upper(), qty, symbol, oid, broker_oid, client_ord_id, final_status)
             return {

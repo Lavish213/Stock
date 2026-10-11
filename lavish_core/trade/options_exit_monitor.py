@@ -65,10 +65,26 @@ _TERMINAL_STATUSES = ("filled", "canceled", "expired", "rejected")
 
 
 def _option_limit_price(contract_symbol: str) -> Optional[float]:
+    """
+    None means "no usable quote data" (missing/unreachable - genuinely
+    retryable). A confirmed bid of exactly 0.0 is different information
+    entirely - the market saying this contract is worthless, not that
+    data is missing - and is returned as 0.0, not None, so callers can
+    tell the two apart. Conflating them used to make _exit() retry
+    forever trying to "sell" an option that will never have a positive
+    price again (a real, deep-OTM/near-expiry scenario, not contrived) -
+    looping past the position's actual expiration and alerting every
+    10th attempt indefinitely.
+    """
     q = latest_option_quote(contract_symbol)
-    if not q or not q.get("bid") or not q.get("ask"):
+    if not q or q.get("bid") is None or q.get("ask") is None:
         return None
-    return round((q["bid"] + q["ask"]) / 2, 2)
+    bid, ask = float(q["bid"]), float(q["ask"])
+    if bid == 0.0:
+        return 0.0
+    if ask == 0.0:
+        return None  # ask=0 with a real bid is bad/stale data, not "worthless"
+    return round((bid + ask) / 2, 2)
 
 
 def _minutes_to_close() -> Optional[float]:
@@ -141,6 +157,23 @@ def watch_and_exit(
         """
         nonlocal consecutive_failures
         limit_price = _option_limit_price(contract_symbol)
+
+        if limit_price == 0.0:
+            # Real corner case, not contrived: a confirmed $0.00 bid (a
+            # deep-OTM or near-expiry option - common right before
+            # expiration) means there is no positive price anyone would
+            # pay for this contract, ever again - not "a quote is
+            # temporarily missing." Treating it as a retryable failure
+            # used to retry forever, past the position's actual
+            # expiration, alerting every 10th attempt indefinitely for a
+            # position that's already functionally worthless either way.
+            log.warning("%s: confirmed $0.00 bid (%s) - nothing left to sell, recording as expired worthless "
+                        "rather than retrying a sale that can never price above zero.", contract_symbol, reason)
+            post_discord(f"⚪ {contract_symbol} confirmed worthless (bid=$0.00) while attempting exit "
+                          f"({reason}) - recorded as a total loss on this contract, no sell order submitted.")
+            return {"status": "exited", "reason": f"{reason}_worthless", "underlying_price": underlying_price,
+                    "option_price": 0.0, "order": None}
+
         try:
             if limit_price is None:
                 raise RuntimeError("no option quote available to price the exit")

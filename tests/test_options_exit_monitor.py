@@ -134,6 +134,64 @@ def test_the_forced_close_retry_loop_also_survives_an_unexpected_error():
     assert mock_discord.called
 
 
+def test_a_confirmed_worthless_option_exits_as_a_terminal_loss_not_a_retry():
+    # Real corner case found this round: a deep-OTM/near-expiry option
+    # with a confirmed $0.00 bid used to be treated identically to "no
+    # quote data available" (both collapsed to None), so _exit() retried
+    # forever trying to sell something that will never price above zero -
+    # looping past the position's actual expiration, alerting every 10th
+    # attempt indefinitely. A confirmed zero bid is market information,
+    # not missing data, and should record as a total loss immediately.
+    with patch.object(oem, "time") as mock_time, \
+         patch.object(oem, "latest_quote", return_value=100.0), \
+         patch.object(oem, "latest_option_quote", return_value={"bid": 0.0, "ask": 0.01}), \
+         patch.object(oem, "place_option_order") as mock_place, \
+         patch.object(oem, "post_discord") as mock_discord:
+        mock_time.sleep.side_effect = _no_sleep
+        mock_time.time.side_effect = list(range(20))
+
+        result = oem.watch_and_exit(
+            underlying_symbol="TSLA", contract_symbol="TSLA260101C00100000",
+            qty=1, option_side="call", entry_price=10.0,
+            stop_underlying=50.0,  # her stop never fires (price stays at 100) - forces our_stop_loss path
+        )
+
+    assert result["status"] == "exited"
+    assert result["option_price"] == 0.0
+    assert "worthless" in result["reason"]
+    mock_place.assert_not_called()  # never attempts to submit a sell for a confirmed-worthless contract
+    assert mock_discord.called
+
+
+def test_missing_quote_data_still_retries_unlike_a_confirmed_zero_bid():
+    # The distinction this fix relies on: latest_option_quote returning
+    # None (genuinely unknown) must still retry, not be treated as
+    # worthless.
+    with patch.object(oem, "time") as mock_time, \
+         patch.object(oem, "latest_quote", return_value=100.0), \
+         patch.object(oem, "latest_option_quote",
+                       side_effect=[None, None] + [{"bid": 3.9, "ask": 4.1}] * 10), \
+         patch.object(oem, "place_option_order",
+                       return_value={"id": "o1", "status": "filled", "filled_avg_price": "4.0", "filled_qty": "1"}), \
+         patch.object(oem, "get_order"), \
+         patch.object(oem, "post_discord"):
+        mock_time.sleep.side_effect = _no_sleep
+        mock_time.time.side_effect = list(range(30))
+
+        result = oem.watch_and_exit(
+            underlying_symbol="TSLA", contract_symbol="TSLA260101C00100000",
+            qty=1, option_side="call", entry_price=10.0,
+        )
+
+    assert result["status"] == "exited"
+    assert result["option_price"] == 4.0  # the real fill, once data became available again
+    assert "worthless" not in result["reason"]
+    # No alert expected here - missing quote data during routine polling
+    # (premium is None) is silently tolerated until something actually
+    # triggers; _alert_failure only fires on a real submission/confirm
+    # failure inside _exit(), which never happened in this run.
+
+
 def test_unconfirmed_fill_is_canceled_and_retried():
     # First attempt submits, never reaches a terminal status within the
     # poll budget -> must cancel that stale order and try again (a fresh

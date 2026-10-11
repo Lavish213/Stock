@@ -72,7 +72,18 @@ def find_contract(
 
 
 def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
-    """Best bid/ask for a contract, so callers can sanity-check spread before submitting."""
+    """
+    Best bid/ask for a contract, so callers can sanity-check spread before
+    submitting. Returns None if Alpaca has no bid/ask field at all for
+    this contract (missing/unreachable data) - deliberately NOT the same
+    as a confirmed 0.0 (a real, deep-OTM/near-expiry option really can
+    have a $0.00 bid, which is meaningful market information, not a data
+    gap). A caller that needs to tell "worthless" apart from "unknown"
+    (see options_exit_monitor.py's _option_limit_price, which used to
+    retry forever trying to sell an option that would never have a
+    positive price again) relies on this distinction - don't collapse it
+    back to a blanket `or 0` default.
+    """
     _check_keys()
     try:
         r = SESSION.get(
@@ -84,7 +95,10 @@ def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
         q = r.json().get("quotes", {}).get(contract_symbol)
         if not q:
             return None
-        return {"bid": float(q.get("bp", 0) or 0), "ask": float(q.get("ap", 0) or 0)}
+        bp, ap = q.get("bp"), q.get("ap")
+        if bp is None or ap is None:
+            return None
+        return {"bid": float(bp), "ask": float(ap)}
     except Exception as e:
         log.warning("latest_option_quote failed for %s: %s", contract_symbol, e)
         return None
