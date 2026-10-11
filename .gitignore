@@ -33,6 +33,7 @@ lavish_core/vision/logs/
 lavish_core/patreon/logs/
 logs/
 data/storage/
+sims_loop_results*.jsonl
 
 # OS
 .DS_Store
