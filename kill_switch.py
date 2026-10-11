@@ -7,9 +7,9 @@
 # existing open positions keep being watched and can still exit normally -
 # a kill switch that could trap you IN a position would be worse than no
 # kill switch at all. For an actual emergency flatten of everything
-# already open, use lavish_core.trade.trade_agent.TradeAgent.flatten_all()
-# separately - this script only stops new risk, it doesn't close existing
-# risk.
+# already open, run flatten_all.py separately (it also turns this kill
+# switch on by default) - this script only stops new risk, it doesn't
+# close existing risk.
 #
 # Usage:
 #   python3 kill_switch.py --on "reason text"
@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
+from lavish_core.utils.alerts import post_discord
 
 
 def main() -> None:
@@ -50,9 +51,11 @@ def main() -> None:
         store.set_kill_switch(True, args.on)
         print(f"Kill switch turned ON. New entries will be refused starting with the next alert. Reason: {args.on!r}")
         print("Existing open positions are unaffected and will keep exiting normally.")
+        post_discord(f"🛑 Kill switch turned ON: {args.on}. New entries blocked; open positions keep exiting normally.")
     else:
         store.set_kill_switch(False, "")
         print("Kill switch turned OFF. Trading resumes normally.")
+        post_discord("✅ Kill switch turned OFF. Trading resumes normally.")
 
 
 if __name__ == "__main__":

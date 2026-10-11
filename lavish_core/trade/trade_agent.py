@@ -630,19 +630,68 @@ class TradeAgent:
     # Emergency flatten (manual use)
     def flatten_all(self, reason: str = "manual_kill"):
         """
-        Emergency: close all positions in DB (dry) and broker (if live).
-        Safe to call even in dry mode.
+        Emergency: close every open position. In dry mode, "closes"
+        whatever this process's own local ledger (the `positions` table)
+        shows - no real broker call, same as every other dry-mode path in
+        this bot. In paper/live mode, reads the REAL broker position list
+        instead: previously this always read the local `positions` table,
+        which is equity-only (options fills are never written there -
+        reconcile.py already treats the broker's own list as the only
+        real source of truth for options) and could itself be stale
+        relative to the broker. An emergency "close everything" that
+        silently skipped every open option contract, or closed against a
+        stale qty, would be worse than useless. One position failing to
+        close doesn't abort the rest - each is attempted independently.
         """
-        rows = self.store.fetchall("SELECT symbol, qty FROM positions")
+        if self.default_mode == "dry":
+            rows = self.store.fetchall("SELECT symbol, qty FROM positions")
+            closed = []
+            for sym, q in rows:
+                sym = str(sym).upper()
+                q = float(q)
+                if q == 0:
+                    continue
+                side = "sell" if q > 0 else "buy"
+                closed.append(place_trade(self.store, sym, side, abs(q), mode=self.default_mode,
+                                         order_type="market", meta={"reason": reason, "flatten": True}))
+            return {"status": "flattened", "n": len(closed), "details": closed}
+
+        if not HAS_ALPACA:
+            LOG.error("flatten_all: Alpaca client unavailable - cannot read real broker positions.")
+            return {"status": "error", "reason": "broker unavailable", "n": 0, "details": []}
+
+        from lavish_core.trade.broker_alpaca import get_positions
+        from lavish_core.trade.options_broker import place_option_order, latest_option_quote
+
+        try:
+            positions = get_positions()
+        except Exception as e:
+            LOG.error("flatten_all: could not read broker positions: %s", e)
+            return {"status": "error", "reason": f"could not read broker positions: {e}", "n": 0, "details": []}
+
         closed = []
-        for sym, q in rows:
-            sym = str(sym).upper()
-            q = float(q)
-            if q == 0:
+        for pos in positions:
+            symbol = str(pos.get("symbol", "")).upper()
+            qty = float(pos.get("qty", 0) or 0)
+            if not symbol or qty == 0:
                 continue
-            side = "sell" if q > 0 else "buy"
-            closed.append(place_trade(self.store, sym, side, abs(q), mode=self.default_mode,
-                                     order_type="market", meta={"reason": reason, "flatten": True}))
+            side = "sell" if qty > 0 else "buy"
+            try:
+                if pos.get("asset_class") == "us_option":
+                    quote = latest_option_quote(symbol)
+                    if not quote or not quote.get("bid") or not quote.get("ask"):
+                        LOG.error("flatten_all: no usable quote for %s - could not close, needs manual attention.", symbol)
+                        closed.append({"status": "error", "symbol": symbol, "reason": "no usable quote"})
+                        continue
+                    limit_price = round((quote["bid"] + quote["ask"]) / 2, 2)
+                    closed.append(place_option_order(symbol, side, abs(qty), order_type="limit",
+                                                       limit_price=limit_price))
+                else:
+                    closed.append(place_trade(self.store, symbol, side, abs(qty), mode=self.default_mode,
+                                               order_type="market", meta={"reason": reason, "flatten": True}))
+            except Exception as e:
+                LOG.error("flatten_all: failed to close %s: %s", symbol, e)
+                closed.append({"status": "error", "symbol": symbol, "reason": str(e)})
         return {"status": "flattened", "n": len(closed), "details": closed}
 
 # ───────────────────────────────────────────────────────────────

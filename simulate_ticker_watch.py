@@ -252,26 +252,33 @@ def main() -> None:
     print(f"\nTotal would-trade: {len(equity_trades) + len(options_trades)} / {len(alerts)} "
           f"({100*(len(equity_trades)+len(options_trades))/len(alerts):.1f}%)")
 
-    # --- Bug-exposure diagnostic: a naive long-only ledger of this run's
-    # own BUY/CALL signals, flagging any SELL with nothing open to close -
-    # exactly the shape of the confirmed, still-unfixed accidental-short
-    # bug in trade_handler.py (qty computed from dollars, never checked
-    # against held position).
+    # --- Dataset diagnostic: a naive long-only ledger of this run's own
+    # BUY/CALL signals, counting any SELL with nothing open to close in
+    # THIS synthetic run. This used to flag a real accidental-short bug in
+    # trade_handler.py (qty computed from dollars, never checked against
+    # the actual held position) - that bug is now fixed (a real broker
+    # position check caps/rejects a SELL with nothing to close; see
+    # tests/test_trade_handler_equity_safety.py::
+    # test_sell_with_nothing_held_is_rejected_not_shorted and
+    # test_sell_qty_is_capped_to_what_is_actually_held). This count is now
+    # just a property of the synthetic dataset, not a live risk.
     open_qty: dict[str, int] = {}
-    accidental_short_risk = 0
+    unmatched_sells = 0
     for a, r in zip(alerts, results):
         if r["outcome"] == "trade:equity":
             if r["action"] == "BUY":
                 open_qty[r["ticker"]] = open_qty.get(r["ticker"], 0) + 1
             elif r["action"] == "SELL":
                 if open_qty.get(r["ticker"], 0) <= 0:
-                    accidental_short_risk += 1
+                    unmatched_sells += 1
                 else:
                     open_qty[r["ticker"]] -= 1
-    print(f"\n--- Bug-exposure diagnostic (current unfixed trade_handler.py) ---")
-    print(f"SELL signals with no matching open position in this run: {accidental_short_risk} "
+    print(f"\n--- Dataset diagnostic ---")
+    print(f"SELL signals with no matching open position in this synthetic run: {unmatched_sells} "
           f"/ {len(equity_trades)} equity trades")
-    print("(Each one would risk an accidental short under the current code - confirmed, unfixed bug.)")
+    print("(The real pipeline rejects/caps these against the actual broker position - fixed and "
+          "covered by tests/test_trade_handler_equity_safety.py; this count just describes the "
+          "synthetic dataset, not a live risk.)")
 
     # --- Real equity P&L via the existing, already-tested backtester ---
     equity_signals = []

@@ -14,10 +14,12 @@ from lavish_core.trade import circuit_breaker, portfolio_risk
 
 def test_circuit_breaker_fails_closed_on_account_read_error(tmp_path):
     store = HybridStore(duckdb_path=tmp_path / "test.duckdb")
-    with patch.object(circuit_breaker, "get_account", side_effect=RuntimeError("broker down")):
+    with patch.object(circuit_breaker, "get_account", side_effect=RuntimeError("broker down")), \
+         patch.object(circuit_breaker, "post_discord") as mock_alert:
         ok, reason = circuit_breaker.check_ok(store)
     assert ok is False
     assert "unavailable" in reason
+    mock_alert.assert_called_once()  # a broken risk gate must not fail silently
 
 
 def test_circuit_breaker_fails_open_with_explicit_opt_out(tmp_path, monkeypatch):
@@ -39,9 +41,11 @@ def test_circuit_breaker_still_works_normally_when_account_is_readable(tmp_path)
 def test_correlation_check_fails_closed_on_broker_read_error():
     def _raise():
         raise RuntimeError("broker down")
-    ok, reason = portfolio_risk.check_correlation_ok("AAPL", get_positions_fn=_raise)
+    with patch.object(portfolio_risk, "post_discord") as mock_alert:
+        ok, reason = portfolio_risk.check_correlation_ok("AAPL", get_positions_fn=_raise)
     assert ok is False
     assert "unavailable" in reason
+    mock_alert.assert_called_once()  # a broken risk gate must not fail silently
 
 
 def test_correlation_check_fails_open_with_explicit_opt_out(monkeypatch):

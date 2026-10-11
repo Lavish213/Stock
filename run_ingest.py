@@ -50,6 +50,7 @@ from lavish_core.trade.reconcile import reconcile_open_positions, run_periodic_r
 from lavish_core.trade.account_monitor import run_periodic_snapshot
 from lavish_core.utils import sd_notify
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
+from lavish_core.utils.alerts import post_discord
 
 log = get_logger("run_ingest", log_dir="logs")
 
@@ -98,6 +99,30 @@ def _log_startup_config() -> None:
         log.warning("TRADE_MODE=live - this process will submit REAL orders with real money.")
 
 
+def _reconcile_startup() -> None:
+    """
+    Every exit-guardrail thread lives only in this process's memory - on
+    every start (including a crash-restart) any option position already
+    open at the broker has no one watching it until this runs. Do it once
+    immediately (main() also schedules run_periodic_reconciliation for
+    ongoing coverage in case a single monitor thread dies without taking
+    the whole process down with it). Split out from main() so this - the
+    actual behavior, not the thread startup around it - is unit-testable.
+    """
+    try:
+        recovered = reconcile_open_positions()
+        if recovered:
+            log.warning("Startup reconciliation recovered %d unmanaged position(s).", recovered)
+            post_discord(f"⚠️ Lavish_bot started: recovered {recovered} unmanaged open position(s) "
+                          f"left over from a previous crash/restart - they now have an exit guardrail watching them again.")
+        else:
+            log.info("Startup reconciliation: no unmanaged positions found.")
+    except Exception as e:
+        log.error("Startup reconciliation failed: %s", e)
+        post_discord(f"🚨 Lavish_bot startup reconciliation FAILED ({e}) - any position left over from "
+                      f"a previous crash may have no exit guardrail watching it. Check manually.")
+
+
 def main() -> None:
     _log_startup_config()
 
@@ -113,19 +138,7 @@ def main() -> None:
     # opens a connection to an already-fully-created schema from here on.
     HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
 
-    # Every exit-guardrail thread lives only in this process's memory - on
-    # every start (including a crash-restart) any option position already
-    # open at the broker has no one watching it until this runs. Do it
-    # once immediately, then keep checking periodically in case a single
-    # monitor thread dies without taking the whole process down with it.
-    try:
-        recovered = reconcile_open_positions()
-        if recovered:
-            log.warning("Startup reconciliation recovered %d unmanaged position(s).", recovered)
-        else:
-            log.info("Startup reconciliation: no unmanaged positions found.")
-    except Exception as e:
-        log.error("Startup reconciliation failed: %s", e)
+    _reconcile_startup()
     threading.Thread(target=run_periodic_reconciliation, name="reconcile-loop", daemon=True).start()
     threading.Thread(target=run_periodic_snapshot, name="account-snapshot-loop", daemon=True).start()
     threading.Thread(target=_run_watchdog_pings, name="watchdog-ping-loop", daemon=True).start()

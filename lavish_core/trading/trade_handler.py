@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 from lavish_core.logger_setup import get_logger
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
 from lavish_core.trade.trade_agent import place_trade, _dry_price  # dry-run fallback pricing only
-from lavish_core.trade.broker_alpaca import latest_quote, get_order as broker_get_order, cancel_order as broker_cancel_order, get_position as broker_get_position
+from lavish_core.trade.broker_alpaca import latest_quote, get_order as broker_get_order, cancel_order as broker_cancel_order, get_position as broker_get_position, get_clock
 from lavish_core.trade.options_broker import resolve_and_price_contract, place_option_order
 from lavish_core.trade.options_exit_monitor import watch_and_exit_async
 from lavish_core.trade.equity_exit_monitor import watch_bracket_async
@@ -68,6 +68,24 @@ SIGNAL_DEDUP_WINDOW_SECONDS = float(os.getenv("SIGNAL_DEDUP_WINDOW_SECONDS", "30
 # happens to share a ticker. 0 disables the check.
 MAX_PRICE_DRIFT_SINCE_ALERT_PCT = float(os.getenv("MAX_PRICE_DRIFT_SINCE_ALERT_PCT", "0.03"))
 
+# A new entry submitted while the market is closed doesn't fail - it sits
+# queued at the broker and fills at the next open, at whatever price that
+# turns out to be. Every risk gate that ran before it (price-drift-since-
+# alert, sizing off a reference price, correlation/PDT checks) was computed
+# against a stale last-close quote at signal time, not the price it will
+# actually fill at - the exact gap the price-drift gate above exists to
+# close, just reintroduced at the next open instead of right now. Alerts
+# can genuinely arrive after hours (an overnight post), so this has to be
+# an explicit gate, not an assumption. False disables it entirely - e.g.
+# for a dry-mode-only deployment that never touches the real broker.
+REQUIRE_MARKET_OPEN = os.getenv("REQUIRE_MARKET_OPEN", "true").strip().lower() in ("1", "true", "yes", "on")
+
+# Same opt-out this codebase's other risk gates already use
+# (circuit_breaker.py/pdt_guard.py/portfolio_risk.py) - kept as its own
+# module-level flag rather than imported from one of them, since it's
+# purely an env knob, not shared state.
+RISK_CHECK_FAIL_OPEN = os.getenv("RISK_CHECK_FAIL_OPEN", "false").strip().lower() in ("1", "true", "yes", "on")
+
 def _coerce_side(action: str) -> Optional[str]:
     a = (action or "").strip().lower()
     if a in ("buy", "long"): return "buy"
@@ -86,6 +104,30 @@ def _kill_switch_reason() -> Optional[str]:
     enabled, reason = store.get_kill_switch()
     if enabled:
         return f"kill_switch: {reason}" if reason else "kill_switch: no reason given"
+    return None
+
+
+def _market_closed_reason() -> Optional[str]:
+    """Checked alongside the kill switch, before any other entry work -
+    see REQUIRE_MARKET_OPEN above for why a new entry can't just be
+    allowed to queue for the next open. Only meaningful in paper/live
+    (dry mode never touches the real broker, so it never calls out for a
+    clock). Exits are never affected, same philosophy as every other
+    entry-only gate in this file. Fails CLOSED (blocks new entries) if the
+    clock itself can't be read - same rule as every other risk check in
+    this codebase; set RISK_CHECK_FAIL_OPEN=true to restore fail-open."""
+    if not REQUIRE_MARKET_OPEN or TRADE_MODE not in ("paper", "live"):
+        return None
+    try:
+        clk = get_clock()
+    except Exception as e:
+        if RISK_CHECK_FAIL_OPEN:
+            log.warning("market_hours: could not read market clock (%s) - allowing trade "
+                        "(RISK_CHECK_FAIL_OPEN=true), but this needs attention.", e)
+            return None
+        return f"market_hours: could not verify market is open ({e})"
+    if not clk.get("is_open"):
+        return "market_hours: market is closed - refusing to queue a new entry for the next open"
     return None
 
 
@@ -230,6 +272,11 @@ def _execute_option_trade(signal: Dict[str, Any]) -> bool:
     kill_reason = _kill_switch_reason()
     if kill_reason:
         log.error("Skip options trade: %s - refusing all new entries.", kill_reason)
+        return True
+
+    closed_reason = _market_closed_reason()
+    if closed_reason:
+        log.error("Skip options trade: %s", closed_reason)
         return True
 
     ticker = str(signal.get("ticker") or signal.get("symbol") or "").upper().strip()
@@ -503,6 +550,11 @@ def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
         kill_reason = _kill_switch_reason()
         if kill_reason:
             log.error("Skip trade: %s - refusing all new entries.", kill_reason)
+            return True
+
+        closed_reason = _market_closed_reason()
+        if closed_reason:
+            log.error("Skip trade: %s", closed_reason)
             return True
 
     # Open HybridStore (DuckDB/Redis) for audit + risk gates

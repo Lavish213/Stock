@@ -154,7 +154,18 @@ def _find_all_dates(text: str, year: int) -> List[Tuple[date, int]]:
         try:
             d = date(y, mm, dd)
             if not yy and d < date.today():
-                d = date(year + 1, mm, dd)
+                rolled = date(year + 1, mm, dd)
+                # Every real expiry seen is a near-term weekly (0-14 days) -
+                # rolling a full year forward only makes sense for a
+                # year-boundary wraparound ("1/2" parsed in late December).
+                # For anything else, a slightly-past date (processing delay
+                # catching up on a backlogged alert, or a date a couple
+                # days stale) is far more plausible than one a year out -
+                # and the caller's own 45-day plausibility cap would reject
+                # that rolled candidate anyway, silently losing a real
+                # expiry instead of just using the as-parsed past date.
+                if (rolled - date.today()).days <= 45:
+                    d = rolled
             found.append((d, m.start()))
         except Exception:
             continue

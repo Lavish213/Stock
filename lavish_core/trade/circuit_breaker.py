@@ -71,6 +71,12 @@ def check_ok(store: HybridStore) -> Tuple[bool, str]:
             return True, "ok (equity check unavailable, fail-open configured)"
         log.error("circuit_breaker: could not read account equity (%s) - BLOCKING new entries "
                    "until this is verifiable.", e)
+        # This is the one case worth alerting unconditionally (no _alert_once
+        # dedup) - it means the risk gate itself is broken, not just that it
+        # correctly tripped, and that's strictly more urgent to know about.
+        # Only fires per incoming signal (never polled), so this can't spam.
+        post_discord(f"🚨 circuit_breaker: account equity unreadable ({e}) - ALL new entries "
+                      f"blocked until this is fixed or RISK_CHECK_FAIL_OPEN is set.")
         return False, f"equity check unavailable: {e}"
 
     if equity <= 0:

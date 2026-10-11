@@ -18,6 +18,7 @@ from typing import Optional, Tuple
 
 from lavish_core.db.hybrid_store import HybridStore
 from lavish_core.trade.broker_alpaca import get_account
+from lavish_core.utils.alerts import post_discord
 
 log = logging.getLogger("pdt_guard")
 
@@ -97,6 +98,11 @@ def check_pdt_ok(store: HybridStore) -> Tuple[bool, str]:
             return True, "ok (equity check unavailable, fail-open configured)"
         log.error("pdt_guard: could not read account equity (%s) - BLOCKING new entries "
                    "until this is verifiable.", e)
+        # Unconditional (no dedup) - only fires per incoming signal, never
+        # polled, so it can't spam. The risk gate itself being broken is
+        # strictly more urgent than it correctly tripping.
+        post_discord(f"🚨 pdt_guard: account equity unreadable ({e}) - ALL new entries "
+                      f"blocked until this is fixed or RISK_CHECK_FAIL_OPEN is set.")
         return False, f"equity check unavailable: {e}"
 
     if equity <= 0 or equity >= PDT_EQUITY_THRESHOLD:

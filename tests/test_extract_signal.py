@@ -52,3 +52,45 @@ def test_expiry_too_far_out_is_dropped():
     # ~45-day weekly-alert pattern should not resolve to a confident expiry.
     r = parse_text("AAPL $190 calls exp Dec 19 2026")
     assert r["expiry"] is None or r["ticker"] != "AAPL"
+
+
+def test_a_recently_past_numeric_expiry_is_kept_not_rolled_a_full_year_out():
+    # Real bug: a numeric "MM/DD" expiry a few days in the past (a
+    # backlogged alert processed late, or just posted close to its own
+    # expiry) used to always roll forward to next year to make it "future"
+    # again - but next year is ~365 days out, which the 45-day weekly-alert
+    # plausibility cap then correctly rejects, silently losing a real,
+    # valid near-term expiry and misclassifying the whole alert as equity
+    # instead of options. A date only a few days stale is far more likely
+    # than one a year out and should just be used as parsed.
+    from datetime import date, timedelta
+    import lavish_core.vision.extract_signal as es
+
+    a_few_days_ago = date.today() - timedelta(days=2)
+    text = f"AAPL $190 calls target 200 stop 180 exp {a_few_days_ago.month}/{a_few_days_ago.day}"
+    r = parse_text(text)
+    assert r["expiry"] == a_few_days_ago.isoformat()
+    assert r["side"] == "CALL"
+    assert r["strike"] == 190.0
+
+
+def test_a_long_past_numeric_expiry_still_rolls_forward_near_a_year_boundary():
+    # The rollover itself is correct and still needed for the genuine case
+    # it exists for: a date like "1/2" parsed in late December really does
+    # mean next January, which is near-term (within the 45-day cap), not a
+    # stale date.
+    import lavish_core.vision.extract_signal as es
+    from datetime import date
+
+    class FakeDate(date):
+        @classmethod
+        def today(cls):
+            return date(2026, 12, 28)
+
+    real_date = es.date
+    es.date = FakeDate
+    try:
+        candidates = es._find_all_dates("exp 1/2", year=2026)
+    finally:
+        es.date = real_date
+    assert candidates == [(date(2027, 1, 2), 4)]

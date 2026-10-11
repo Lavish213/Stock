@@ -31,6 +31,8 @@ from __future__ import annotations
 import os, json, logging, re
 from typing import Dict, List, Optional, Tuple
 
+from lavish_core.utils.alerts import post_discord
+
 log = logging.getLogger("portfolio_risk")
 
 # Static bucket map covering the tickers this bot actually whitelists/trades
@@ -114,6 +116,11 @@ def check_correlation_ok(new_ticker: str, get_positions_fn=None) -> Tuple[bool, 
         # Other independent gates (circuit breaker, PDT) still apply too.
         log.error("check_correlation_ok: get_positions failed - BLOCKING new entries "
                    "until this is verifiable: %s", e)
+        # Unconditional (no dedup) - only fires per incoming signal, never
+        # polled, so it can't spam. The risk gate itself being broken is
+        # strictly more urgent than it correctly tripping.
+        post_discord(f"🚨 portfolio_risk: could not read open positions ({e}) - ALL new "
+                      f"entries blocked until this is fixed or RISK_CHECK_FAIL_OPEN is set.")
         return False, f"correlation check unavailable: {e}"
 
     held_underlyings = set()
