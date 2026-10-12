@@ -57,7 +57,7 @@ def main() -> None:
             print("Kill switch is off - trading normally.")
         return
 
-    if args.on:
+    if args.on is not None:
         write_control(db_path,True,args.on)
         print(f"Kill switch turned ON. New entries will be refused starting with the next alert. Reason: {args.on!r}")
         print("Existing open positions are unaffected and will keep exiting normally.")

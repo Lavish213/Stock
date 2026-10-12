@@ -1,11 +1,11 @@
 {
   "date_utc": "2026-10-12",
   "pytest": {
-    "collected": 1525,
-    "passed": 1523,
+    "collected": 1565,
+    "passed": 1563,
     "skipped": 2,
     "failed": 0,
-    "seconds": 36.29
+    "seconds": 85.42
   },
   "hypothesis": {
     "unicode_inputs": 1500,
@@ -18,7 +18,7 @@
     "profitability_evidence": false
   },
   "python_compilation": {
-    "files": 315,
+    "files": 317,
     "errors": 0
   },
   "pip_check": "passed",
@@ -30,5 +30,19 @@
   },
   "authenticated_paper": "blocked_missing_credentials_and_paper_configuration",
   "orders_submitted_to_actual_brokers": 0,
-  "live_ready": false
+  "live_ready": false,
+  "coverage": {
+    "scope": "all lavish_core and ml Python",
+    "line_pct": 25.8,
+    "branch_pct": 27.9
+  },
+  "new_checks": [
+    "bounded paper cycle simulated failure paths",
+    "actual subprocess termination and ledger recovery",
+    "dated runtime/account-bound evidence",
+    "paper-only legacy simulation",
+    "full-suite CI pinned actions",
+    "empty kill-switch reason still halts",
+    "receipt/journal separation"
+  ]
 }

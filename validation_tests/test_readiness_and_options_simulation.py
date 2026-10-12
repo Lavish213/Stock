@@ -59,9 +59,9 @@ def approval(tmp_path):
     now=datetime.now(timezone.utc);checks={}
     for check,sources in REQUIRED.items():
         source=sorted(sources)[0];path=tmp_path/(check+'.json')
-        payload=json.dumps(dict(check=check,source=source,synthetic=False,passed=True)).encode();path.write_bytes(payload)
+        payload=json.dumps(dict(check=check,source=source,synthetic=False,passed=True,observed_at=(now-timedelta(minutes=2)).isoformat(),runtime_sha256=runtime_digest(),account_id_hash=hashlib.sha256(b'test-paper-account').hexdigest())).encode();path.write_bytes(payload)
         checks[check]=dict(status='passed',source=source,evidence_path=path.name,sha256=hashlib.sha256(payload).hexdigest())
-    data=dict(schema_version=1,operator_approved=True,issued_at=(now-timedelta(minutes=1)).isoformat(),expires_at=(now+timedelta(days=1)).isoformat(),runtime_sha256=runtime_digest(),live_account_id_hash=hashlib.sha256(b'test-account').hexdigest(),limits=dict(max_trade_usd=200,max_gross_exposure=1000,max_daily_loss_usd=100),checks=checks)
+    data=dict(schema_version=1,operator_approved=True,issued_at=(now-timedelta(minutes=1)).isoformat(),expires_at=(now+timedelta(days=1)).isoformat(),runtime_sha256=runtime_digest(),live_account_id_hash=hashlib.sha256(b'test-account').hexdigest(),paper_account_id_hash=hashlib.sha256(b'test-paper-account').hexdigest(),limits=dict(max_trade_usd=200,max_gross_exposure=1000,max_daily_loss_usd=100),checks=checks)
     path=tmp_path/'approval.json';path.write_text(json.dumps(data));return path,data
 
 def test_approval_account_limits_and_expiry(tmp_path):
@@ -163,3 +163,10 @@ def test_actual_daily_cap_halts_before_live_entry(tmp_path,store,monkeypatch):
     assert approved_entry_limits(store,100,950,'test-account')['max_daily_loss_usd']==100
     with pytest.raises(RuntimeError):approved_entry_limits(store,100,900,'test-account')
     assert store.get_kill_switch()[0]
+
+@pytest.mark.parametrize('field,value',[('observed_at','2000-01-01T00:00:00Z'),('observed_at','2099-01-01T00:00:00Z'),('observed_at','2026-10-12T00:00:00'),('runtime_sha256','a'*64),('account_id_hash','b'*64)])
+def test_approval_requires_recent_same_runtime_paper_evidence(tmp_path,field,value):
+    path,data=approval(tmp_path);check='authenticated_paper_lifecycle';record=data['checks'][check];evidence=tmp_path/record['evidence_path']
+    body=json.loads(evidence.read_text());body[field]=value;payload=json.dumps(body).encode();evidence.write_bytes(payload)
+    record['sha256']=hashlib.sha256(payload).hexdigest();path.write_text(json.dumps(data))
+    assert not validate_approval(path)['live_ready']

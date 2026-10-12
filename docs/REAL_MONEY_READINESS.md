@@ -36,3 +36,19 @@ Each check above requires status `passed`, an allowed source from `live_readines
 On the deployment host, halt new entries with `python kill_switch.py --on "reason" --db /absolute/bot.duckdb`. This works while the bot holds the database open. Inspect with `--status`; only resume with `--off` after reconciling the cause. This halts entries and does not flatten positions.
 
 Dashboard servers now bind localhost; expose through a properly configured authenticated reverse proxy only. Optional vision downloads require full 40-character model commit SHA environment variables and safetensors. Existing pickle memory is deliberately ignored; rebuild data-only memory from source records.
+
+## Bounded paper order cycle and stronger evidence requirements
+
+The dedicated paper cycle supports Alpaca only. Configure the private environment using the names in `docs/PAPER_VALIDATION.env.example`; no keys belong in source control. On the intended host, use a dedicated empty paper account, no existing open orders, active long-options approval and an open market. Select a currently tradable standard CALL/PUT contract with an expiry after today.
+
+Run `python -m lavish_core.validation.paper_cycle --execute-paper --contract YOUR_OCC_SYMBOL --db /private/new-cycle.duckdb --output /private/new-cycle-receipt.json --max-premium-usd YOUR_CAP --quantity 1`. The premium cap is operator-selected; the command will reject values smaller than the actual quoted premium. This submits actual **paper** orders. It journals before POST, looks up lost responses by client ID, waits for definitive cancellation, closes only confirmed holdings using the persistent ExitState, and compares broker positions/cash to the journal. Unresolved outcomes halt the isolated journal and require broker review. Do not rerun blindly, overwrite its journal or receipts, or change to live mode.
+
+A successful cycle is recorded as `paper_order_cycle`; it cannot substitute for `authenticated_paper_lifecycle` approval. The latter also needs actual partial-fill/cancellation/restart observations and documented review. Synthetic tests of the cycle are not authenticated observations.
+
+Required approval evidence now additionally contains `observed_at` (aware ISO time, no more than 30 days old and no later than approval issuance) and `runtime_sha256` matching the reviewed runtime. The approval contains `paper_account_id_hash`; authenticated-paper evidence must match that fingerprint. Evidence source must exactly match the approval record. The runtime checksum now includes all Python under lavish_core/ml, runnable root Python and deployment requirements. Source changes invalidate prior approvals.
+
+The legacy `simulate_alerts.py --live` flag is retained as an alias for `--execute-paper`, but it now refuses live money execution entirely, even if a user would otherwise confirm it.
+
+## What earns a 9/10 readiness assessment
+
+Before raising the real-money grade, require reviewed evidence for every row of the table above, no unresolved broker/ledger drift, no unknown submissions or closing orders, tested emergency halt/recovery on the actual host, working alert escalation, key rotation/account permissions review, and an operator-approved risk configuration. Strategy acceptance criteria and the observation period must be defined before evaluating results. Passing synthetic tests or observing one profitable paper cycle does not satisfy those requirements. Execution readiness and profitable strategy evidence are separate requirements; neither can be inferred from test count.

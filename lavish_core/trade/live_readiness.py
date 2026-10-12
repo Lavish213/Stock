@@ -18,8 +18,9 @@ REQUIRED={
 
 def runtime_digest():
     root=Path(__file__).resolve().parents[2]
-    paths=[root/'requirements-deploy.txt',root/'run_ingest.py',root/'kill_switch.py',root/'flatten_all.py']
-    for folder in ('trade','trading','db','utils'):paths.extend((root/'lavish_core'/folder).glob('*.py'))
+    paths=[root/'requirements-deploy.txt']
+    paths.extend(path for path in root.glob('*.py') if not path.name.startswith('test'))
+    for folder in ('lavish_core','ml'):paths.extend((root/folder).rglob('*.py'))
     digest=hashlib.sha256()
     for path in sorted(paths):digest.update(str(path.relative_to(root)).encode());digest.update(path.read_bytes())
     return digest.hexdigest()
@@ -39,6 +40,8 @@ def validate_approval(path=None,*,now=None,notional=None,account_id=None):
         fingerprint=approval.get('live_account_id_hash','')
         if not re.fullmatch(r'[0-9a-f]{64}',fingerprint):raise ValueError('Missing approved account')
         if account_id is not None and hashlib.sha256(str(account_id).encode()).hexdigest()!=fingerprint:raise ValueError('Different account')
+        paper_fingerprint=approval.get('paper_account_id_hash','')
+        if not re.fullmatch(r'[0-9a-f]{64}',paper_fingerprint):raise ValueError('Missing approved paper evidence account')
         limits={key:finite_number(approval['limits'][key],positive=True) for key in ('max_trade_usd','max_gross_exposure','max_daily_loss_usd')}
         if limits['max_trade_usd']>limits['max_gross_exposure']:raise ValueError('Invalid caps')
         if notional is not None and finite_number(notional,positive=True)>limits['max_trade_usd']:raise ValueError('Trade cap exceeded')
@@ -51,7 +54,11 @@ def validate_approval(path=None,*,now=None,notional=None,account_id=None):
             payload=evidence.read_bytes()
             if hashlib.sha256(payload).hexdigest()!=record['sha256']:reasons.append(check+':evidence_changed');continue
             data=json.loads(payload)
-            if data.get('synthetic') is not False or data.get('passed') is not True or data.get('check')!=check or data.get('source') not in sources:reasons.append(check+':invalid_provenance')
+            if data.get('synthetic') is not False or data.get('passed') is not True or data.get('check')!=check or data.get('source')!=record.get('source'):reasons.append(check+':invalid_provenance')
+            observed=datetime.fromisoformat(data['observed_at'].replace('Z','+00:00'))
+            if observed.tzinfo is None or observed>issued or observed>now or (now-observed).total_seconds()>30*86400:reasons.append(check+':stale_or_unreviewed_evidence')
+            if data.get('runtime_sha256')!=approval['runtime_sha256']:reasons.append(check+':different_runtime')
+            if record['source']=='authenticated-paper' and data.get('account_id_hash')!=paper_fingerprint:reasons.append(check+':different_paper_account')
         return dict(live_ready=not reasons,reasons=reasons,limits=limits)
     except (OSError,ValueError,KeyError,TypeError,AttributeError):
         return dict(live_ready=False,reasons=['missing_invalid_or_expired_live_approval'],limits={})

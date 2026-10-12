@@ -25,3 +25,18 @@ def test_systemd_service_has_watchdog_and_preflight():
  files=list((ROOT/'deploy').glob('*.service'));assert files
  content=files[0].read_text()
  for setting in ['Type=notify','WatchdogSec=90','ExecStartPre=','Restart=on-failure','User=lavish']:assert setting in content
+
+def test_ci_executes_full_validation_and_pins_actions():
+ content=(ROOT/'.github/workflows/tests.yml').read_text()
+ assert 'requirements-validation.txt' in content and 'pytest -q --junitxml=' in content
+ assert 'pytest tests/' not in content and 'bandit -r lavish_core ml -ll' in content
+ assert 'persist-credentials: false' in content and 'contents: read' in content
+ import re
+ actions=re.findall(r'uses: ([^\s]+)',content)
+ assert actions and all(re.search(r'@[a-f0-9]{40}$',action) for action in actions)
+
+def test_workflow_inputs_enter_shell_through_environment():
+ content=(ROOT/'.github/workflows/simulate-ticker-watch.yml').read_text()
+ run=content.split('      - name: Run simulation')[1].split('      - name: Write job summary')[0]
+ assert '--days "$SIM_DAYS"' in run and '--seed "$SIM_SEED"' in run
+ assert '${{ github.event.inputs.' not in run.split('        run:')[1]
