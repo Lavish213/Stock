@@ -8,6 +8,7 @@
 # into a plain equity guess. Both sources now get the same fidelity.
 from __future__ import annotations
 import os, re
+from lavish_core.utils.safety import finite_number
 from pathlib import Path
 from typing import Optional
 
@@ -75,6 +76,15 @@ def _is_perp_or_leveraged(text: str) -> bool:
     return bool(_PERP_RE.search(text or ""))
 
 
+def _nonactionable(text):
+    normalized = " ".join((text or "").lower().split())
+    return "?" in normalized or bool(re.search(r"\b(do not|don't|don’t|never|no entry|no trade|not in yet|watch only|if|only if|might|maybe|should i|yesterday|cancel(?:ed|led)?|ignore|disregard|stay out|was wrong|was a mistake|failed entry|close to|into the close|long term|exit strategy)\b", normalized))
+
+
+def _option_intent(text, parsed):
+    return bool(parsed.get("side") or re.search(r"\b(calls?|puts?|options?|bto|stc)\b|\d[cp]\b", text or "", re.I))
+
+
 def _equity_action_from_text(text: str) -> Optional[str]:
     # Word-boundary match, not substring - "w in up" would match "CALL"
     # inside "RECALL"/"CALLBACK" and "PUT" inside "DISPUTE"/"COMPUTE"/
@@ -84,6 +94,8 @@ def _equity_action_from_text(text: str) -> Optional[str]:
     # longs", "exits the position") still matches - a bare \bCALL\b would
     # otherwise miss "CALLS" entirely (the "L"->"S" boundary doesn't
     # exist, both are word characters).
+    if _nonactionable(text):
+        return None
     up = (text or "").upper()
 
     def _any_match(words: tuple) -> bool:
@@ -95,8 +107,8 @@ def _equity_action_from_text(text: str) -> Optional[str]:
                 return True
         return False
 
-    has_buy = _any_match(BUY_WORDS)
-    has_sell = _any_match(SELL_WORDS)
+    has_buy = _any_match(BUY_WORDS) or bool(re.search(r"\b(adding|grabbing shares)\b", up, re.I))
+    has_sell = _any_match(SELL_WORDS) or bool(re.search(r"\btrimming\b", up, re.I))
     if has_buy and not has_sell:
         return "BUY"
     if has_sell and not has_buy:
@@ -139,6 +151,13 @@ def handle_alert_text(
     way - trade_handler.execute_trade_from_post() dedupes the second
     source's copy of the same alert.
     """
+    if _nonactionable(text):
+        return
+    if amount_usd is not None:
+        try:
+            finite_number(amount_usd, positive=True)
+        except ValueError:
+            return
     if _is_perp_or_leveraged(text):
         log.warning("[%s] Alert looks like a perp/leveraged-token trade (not equity/options) - "
                     "skipping, can't be safely copied as a plain stock buy: %r", source, (text or "")[:200])
@@ -152,6 +171,8 @@ def handle_alert_text(
 
     parsed = parse_alert(text=text, img_path=Path(image_path) if image_path else None, source=source)
 
+    if parsed.get("field_conflicts"):
+        return
     ticker = parsed.get("ticker")
     if not ticker:
         log.info("[%s] No ticker found in alert, skipping: %r", source, (text or "")[:200])
@@ -189,6 +210,8 @@ def handle_alert_text(
         execute_trade_from_post(signal)
         return
 
+    if _option_intent(text, parsed):
+        return
     action = _equity_action_from_text(text)
     if not action:
         log.info("[%s] Ticker %s found but no clear BUY/SELL direction, skipping: %r",

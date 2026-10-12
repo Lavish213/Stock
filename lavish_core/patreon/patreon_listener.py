@@ -3,7 +3,7 @@ import requests
 import time
 import logging
 from dotenv import load_dotenv
-from patreon_refresh import refresh_patreon_token
+from lavish_core.patreon.patreon_refresh import refresh_patreon_token
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
@@ -13,19 +13,21 @@ ACCESS_TOKEN = os.getenv("PATREON_ACCESS_TOKEN")
 CAMPAIGN_ID = os.getenv("PATREON_CAMPAIGN_ID")  # optional, fetched if missing
 
 def get_headers(token=None):
-    return {"Authorization": f"Bearer {token or ACCESS_TOKEN}"}
+    return {"Authorization": f"Bearer {token or os.getenv("PATREON_ACCESS_TOKEN", ACCESS_TOKEN)}"}
 
 def get_campaign_id():
     """Fetch the user's campaign ID automatically."""
     logging.info("🔍 Fetching campaign ID...")
     headers = get_headers()
     url = f"{PATREON_API_BASE}/identity?include=memberships.campaign"
-    r = requests.get(url, headers=headers)
+    r = requests.get(url, headers=headers, timeout=20)
     
     if r.status_code == 401:
         logging.warning("⚠️ 401 while fetching campaign ID — refreshing token...")
         new_token = refresh_patreon_token()
-        r = requests.get(url, headers=get_headers(new_token))
+        if not new_token:
+            return None
+        r = requests.get(url, headers=get_headers(new_token), timeout=20)
 
     if r.status_code != 200:
         logging.error(f"❌ Could not fetch campaign ID ({r.status_code}): {r.text}")
@@ -46,13 +48,15 @@ def get_campaign_posts(campaign_id, token=None):
     """Fetch latest posts for your campaign."""
     url = f"{PATREON_API_BASE}/campaigns/{campaign_id}/posts?fields[post]=title,content,created_at&page[count]=5&sort=-created"
     headers = get_headers(token)
-    r = requests.get(url, headers=headers)
+    r = requests.get(url, headers=headers, timeout=20)
 
     # Auto-refresh on 401
     if r.status_code == 401:
         logging.warning("⚠️ 401 Unauthorized — refreshing Patreon token...")
         new_token = refresh_patreon_token()
-        r = requests.get(url, headers=get_headers(new_token))
+        if not new_token:
+            return None
+        r = requests.get(url, headers=get_headers(new_token), timeout=20)
 
     if r.status_code == 200:
         posts = r.json().get("data", [])

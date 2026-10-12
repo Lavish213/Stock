@@ -129,7 +129,7 @@ def test_unconfirmed_fill_is_canceled_and_retried():
              {"id": "stale-1", "status": "pending_new"},
              {"id": "o2", "status": "filled", "filled_avg_price": "160.0", "filled_qty": "10"},
          ]) as mock_place, \
-         patch.object(eem, "get_order", return_value={"status": "pending_new"}), \
+         patch.object(eem, "get_order", side_effect=[{"status":"pending_new"}]*5+[{"status":"canceled", "filled_qty":"0"}]), \
          patch.object(eem, "cancel_order") as mock_cancel, \
          patch.object(eem, "post_discord"):
         mock_time.sleep.side_effect = _no_sleep

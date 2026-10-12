@@ -38,7 +38,7 @@ def _fingerprint(p: Path) -> str:
     """Stable-ish identity for a file (name + size + mtime)."""
     try:
         st = p.stat()
-        h = hashlib.sha1(f"{p.name}|{st.st_size}|{int(st.st_mtime)}".encode()).hexdigest()
+        h = hashlib.sha1(f"{p.name}|{st.st_size}|{int(st.st_mtime)}".encode(), usedforsecurity=False).hexdigest()
         return h
     except Exception:
         return p.name

@@ -56,7 +56,7 @@ class Brain:
         self.con.executescript(SCHEMA)
 
     def _hash(self, text: str, kind: str, meta: Dict) -> str:
-        return hashlib.sha1(f"{kind}|{json.dumps(meta,sort_keys=True)}|{text}".encode("utf-8","ignore")).hexdigest()
+        return hashlib.sha1(f"{kind}|{json.dumps(meta,sort_keys=True)}|{text}".encode("utf-8","ignore"), usedforsecurity=False).hexdigest()
 
     def upsert(self, text: str, kind: str = "note", meta: Optional[Dict] = None) -> Tuple[int, bool]:
         meta = meta or {}

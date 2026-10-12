@@ -46,7 +46,7 @@ def iter_images(root: Path):
             yield p
 
 def sha1(path: Path)->str:
-    h=hashlib.sha1()
+    h=hashlib.sha1(usedforsecurity=False)
     with open(path,"rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
             h.update(chunk)

@@ -59,23 +59,49 @@ def _ensure_campaign_id() -> str:
             return CAMPAIGN
     raise RuntimeError("No Patreon campaign found on identity")
 
+def _safe_image_url(url):
+    import socket, ipaddress
+    from urllib.parse import urlsplit
+    parts = urlsplit(url)
+    host = (parts.hostname or "").lower()
+    if parts.scheme != "https" or parts.username or parts.password or parts.port not in (None,443):
+        return False
+    if not any(host == root or host.endswith("."+root) for root in ("patreon.com","patreonusercontent.com")):
+        return False
+    addresses = socket.getaddrinfo(host,443,type=socket.SOCK_STREAM)
+    return bool(addresses) and all(ipaddress.ip_address(item[4][0]).is_global for item in addresses)
+
+
 def _download_images_from_post(post: Dict[str, Any]) -> List[Path]:
-    saved: List[Path] = []
-    attrs = post.get("attributes", {})
-    html = (attrs.get("content") or "")
-    for m in re.finditer(r'src="([^"]+)"', html):
-        url = m.group(1)
-        if not url.lower().startswith("http"):
-            continue
+    import io
+    from PIL import Image
+    saved = []
+    html = (post.get("attributes") or {}).get("content") or ""
+    for match in re.finditer(r'src="([^"]+)"', html):
         try:
-            resp = requests.get(url, timeout=20)
-            if resp.status_code == 200 and resp.content:
-                fname = f"pat_{post.get('id','unknown')}_{len(saved)+1}.jpg"
-                path = VISION_RAW / fname
-                path.write_bytes(resp.content)
-                saved.append(path)
-        except Exception as e:
-            log.error("img_download_error: %s : %s", url, e)
+            url = match.group(1)
+            if not _safe_image_url(url):
+                continue
+            response = requests.get(url, timeout=20, allow_redirects=False, stream=True)
+            with response:
+                if response.status_code != 200:
+                    continue
+                data = bytearray()
+                for chunk in response.iter_content(65536):
+                    data.extend(chunk)
+                    if len(data) > 10*1024*1024:
+                        raise ValueError("Image too large")
+            with Image.open(io.BytesIO(data)) as img:
+                if img.width*img.height > 20_000_000 or img.format not in ("PNG","JPEG","WEBP"):
+                    raise ValueError("Unsupported image")
+                img.verify()
+            safe_id = re.sub(r"[^A-Za-z0-9_-]", "_", str(post.get("id","unknown")))[:80]
+            path = VISION_RAW / f"pat_{safe_id}_{len(saved)+1}.jpg"
+            path.parent.mkdir(parents=True,exist_ok=True)
+            path.write_bytes(data)
+            saved.append(path)
+        except Exception:
+            log.warning("Image download rejected or failed")
     return saved
 
 def _post_age_seconds(post: Dict[str, Any]) -> Optional[float]:

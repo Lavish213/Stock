@@ -19,6 +19,7 @@
 # actively watches for it and acts). trade_handler.py picks whichever of
 # the two this broker actually supports - see broker.SUPPORTS_NATIVE_BRACKETS.
 from __future__ import annotations
+from lavish_core.utils.safety import finite_number
 import os, time, threading, logging
 from typing import Optional, Dict, Any, Callable, List
 
@@ -26,6 +27,9 @@ from lavish_core.trade.broker import get_order, latest_quote, place_order, cance
 from lavish_core.trade.circuit_breaker import record_trade_outcome
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
 from lavish_core.utils.alerts import post_discord
+from lavish_core.trade.exit_state import ExitState
+from lavish_core.trade.broker import get_order_by_client_id
+from lavish_core.utils.safety import finite_number
 
 log = logging.getLogger("equity_exit_monitor")
 
@@ -87,13 +91,19 @@ def watch_bracket(
             last_status[leg_id] = status
 
             if status == "filled":
-                exit_price = float(leg.get("filled_avg_price") or 0.0)
-                filled_qty = float(leg.get("filled_qty") or qty)
+                try:
+                    exit_price = finite_number(leg.get("filled_avg_price"), positive=True)
+                    filled_qty = finite_number(leg.get("filled_qty"), positive=True)
+                    if filled_qty > qty:
+                        raise ValueError("Exit exceeds watched quantity")
+                except ValueError:
+                    return _finish({"status":"fill_unverified", "leg_id":leg_id})
                 pnl = (exit_price - entry_price) * filled_qty
                 store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
-                store.log_fill(order_id=order_id, symbol=symbol, side="sell",
-                                qty=filled_qty, price=exit_price, fee=0.0, venue=venue)
-                record_trade_outcome(store, pnl)
+                applied = store.log_fill(order_id=order_id, symbol=symbol, side="sell",
+                                qty=filled_qty, price=exit_price, fee=0.0, venue=venue, event_id=f"equity-exit:{leg_id}")
+                if applied is not None:
+                    record_trade_outcome(store, pnl)
                 log.info("Equity bracket exit: %s closed via %s leg, entry=%.2f exit=%.2f pnl=%.2f",
                           symbol, leg.get("type", "?"), entry_price, exit_price, pnl)
                 return _finish({"status": "exited", "leg_id": leg_id, "leg_type": leg.get("type"),
@@ -144,6 +154,7 @@ def watch_and_exit_active(
     """
     deadline = time.time() + MAX_MONITOR_HOURS * 3600
     consecutive_failures = 0
+    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=symbol,venue=venue)
     log.info("Watching active equity exit for %s x%s (entry=%.2f) target=%s stop=%s",
               symbol, qty, entry_price, take_profit, stop_loss)
 
@@ -168,63 +179,26 @@ def watch_and_exit_active(
         retried next loop iteration rather than trusted or abandoned).
         """
         nonlocal consecutive_failures
-        try:
-            order = place_order(symbol=symbol, side="sell", qty=qty, type_="market", time_in_force="day")
-        except Exception as e:
+        outcome = exit_state.attempt(
+            lambda remaining,client_id: place_order(symbol=symbol,side="sell",qty=remaining,type_="market",time_in_force="day",client_order_id=client_id),
+            get_order_by_client_id,get_order,cancel_order,EXIT_FILL_POLL_ATTEMPTS,
+            lambda:time.sleep(EXIT_FILL_POLL_INTERVAL_SEC))
+        if outcome is None:
             consecutive_failures += 1
-            log.error("Exit order submission failed for %s (%s), attempt %d: %s",
-                      symbol, reason, consecutive_failures, e)
-            _alert_failure(reason, str(e))
+            _alert_failure(reason,"Closing order unresolved; retaining its identity")
             return None
-
-        broker_oid = order.get("id")
-        final_status = order.get("status", "submitted")
-        filled_qty = order.get("filled_qty")
-        filled_avg_price = order.get("filled_avg_price")
-        if broker_oid:
-            for _ in range(EXIT_FILL_POLL_ATTEMPTS):
-                if final_status in _TERMINAL_STATUSES:
-                    break
-                time.sleep(EXIT_FILL_POLL_INTERVAL_SEC)
-                try:
-                    polled = get_order(broker_oid)
-                    final_status = polled.get("status", final_status)
-                    filled_qty = polled.get("filled_qty", filled_qty)
-                    filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
-                except Exception as e:
-                    log.warning("Exit order status poll failed for %s: %s", broker_oid, e)
-                    break
-
-        if final_status == "filled":
-            consecutive_failures = 0
-            exit_price = float(filled_avg_price) if filled_avg_price else float(price_at_trigger or entry_price)
-            filled_amt = float(filled_qty) if filled_qty else qty
-            pnl = (exit_price - entry_price) * filled_amt
-            store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
-            store.log_fill(order_id=order.get("id", ""), symbol=symbol, side="sell",
-                            qty=filled_amt, price=exit_price, fee=0.0, venue=venue)
-            record_trade_outcome(store, pnl)
-            log.info("Active equity exit (%s) CONFIRMED FILLED for %s @ %.2f (entry=%.2f pnl=%.2f)",
-                      reason, symbol, exit_price, entry_price, pnl)
-            result = {"status": "exited", "reason": reason, "exit_price": exit_price, "pnl": pnl, "order": order}
-            if reason == "max_hold_timeout":
-                post_discord(f"⏱️ {symbol} force-closed ({reason}) at {exit_price:.2f} - "
-                             f"neither target nor stop fired before this cutoff.")
-            return result
-
-        consecutive_failures += 1
-        log.warning(
-            "Exit order for %s (%s) never confirmed filled after %d polls (status=%s), attempt %d - "
-            "canceling, will retry.",
-            symbol, reason, EXIT_FILL_POLL_ATTEMPTS, final_status, consecutive_failures,
-        )
-        if broker_oid:
-            try:
-                cancel_order(broker_oid)
-            except Exception as e:
-                log.warning("Cancel of unconfirmed exit order %s failed: %s", broker_oid, e)
-        _alert_failure(reason, f"never confirmed filled (status={final_status})")
-        return None
+        if outcome["status"] != "exited":
+            return outcome
+        exit_price, filled_amt = outcome["price"], outcome["filled_qty"]
+        pnl = (exit_price-entry_price)*filled_amt
+        store = HybridStore(duckdb_path=str(DEFAULT_DB),redis_url=os.environ.get("REDIS_URL") or None)
+        applied = (True if store.try_claim_outcome(f"outcome:{outcome['order']['id']}") else None) if outcome.get("ledger_recorded") else store.log_fill(order_id=outcome["order"]["id"],symbol=symbol,side="sell",qty=filled_amt,price=exit_price,venue=venue,event_id=f"active-equity-exit:{outcome['order']['id']}")
+        if applied is not None:
+            record_trade_outcome(store,pnl)
+        store.con.close()
+        if reason == "max_hold_timeout":
+            post_discord(f"{symbol} force-closed after max hold time at {exit_price:.2f}")
+        return {"status":"exited","reason":reason,"exit_price":exit_price,"pnl":pnl,"order":outcome["order"]}
 
     loop_errors = 0
     while time.time() < deadline:

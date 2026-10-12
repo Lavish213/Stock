@@ -95,7 +95,7 @@ class OCRPiece:
 # Utilities
 # ──────────────────────────────────────────────────────────────────────────────
 def _sha1_bytes(b: bytes) -> str:
-    h = hashlib.sha1(); h.update(b); return h.hexdigest()
+    h = hashlib.sha1(usedforsecurity=False); h.update(b); return h.hexdigest()
 
 def _read_image_bytes(path: Path) -> Optional[bytes]:
     try:

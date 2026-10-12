@@ -29,6 +29,8 @@ from __future__ import annotations
 import os
 import time
 import logging
+from datetime import datetime, timezone, timedelta
+from lavish_core.utils.safety import finite_number
 from typing import Any, Dict, List, Optional
 
 from lavish_core.trade.broker import get_bars
@@ -58,6 +60,25 @@ def _rolling_avg_volume(bars: List[Dict[str, Any]], before_index: int) -> float:
     lookback = bars[max(0, before_index - VOLUME_LOOKBACK_BARS):before_index]
     vols = [b["v"] for b in lookback if b.get("v")]
     return (sum(vols) / len(vols)) if vols else 0.0
+
+
+def _validated_bars(bars):
+    result = []
+    previous = None
+    for raw in bars:
+        stamp = datetime.fromisoformat(raw["t"].replace("Z", "+00:00"))
+        if stamp.tzinfo is None or stamp + timedelta(minutes=1) > datetime.now(timezone.utc):
+            raise ValueError("Unclosed or ambiguous candle")
+        if previous is not None and stamp <= previous:
+            raise ValueError("Nonchronological candles")
+        previous = stamp
+        bar = {k: finite_number(raw[k], positive=True) for k in ("o","h","l","c")}
+        bar["v"] = finite_number(raw.get("v",0), nonnegative=True)
+        if bar["h"] < max(bar[k] for k in ("o","l","c")) or bar["l"] > min(bar[k] for k in ("o","h","c")):
+            raise ValueError("Inconsistent candle")
+        bar["t"] = stamp.astimezone(timezone.utc).isoformat()
+        result.append(bar)
+    return result
 
 
 def confirm_entry(
@@ -90,6 +111,7 @@ def confirm_entry(
         return {"confirmed": False, "reason": "gatekeeper_disabled", "price": None, "bar": None}
 
     wait_budget = max_wait_seconds if max_wait_seconds is not None else MAX_WAIT_SECONDS
+    wait_budget = finite_number(wait_budget, nonnegative=True)
     deadline = time.time() + wait_budget
 
     no_data_streak = 0
@@ -101,6 +123,10 @@ def confirm_entry(
 
     while time.time() < deadline:
         bars = get_bars(symbol, limit=VOLUME_LOOKBACK_BARS + 5)
+        try:
+            bars = _validated_bars(bars)
+        except (ValueError, KeyError, TypeError):
+            return {"confirmed": False, "reason": "invalid_bars", "price": None, "bar": None}
         if not bars:
             no_data_streak += 1
             if no_data_streak >= MAX_CONSECUTIVE_NO_DATA:

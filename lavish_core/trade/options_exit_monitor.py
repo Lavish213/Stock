@@ -42,6 +42,10 @@ from typing import Optional, Dict, Any, Callable
 
 from lavish_core.trade.broker import latest_quote, get_clock, get_order, cancel_order, latest_option_quote, place_option_order
 from lavish_core.utils.alerts import post_discord
+from lavish_core.trade.exit_state import ExitState
+from lavish_core.db.hybrid_store import DEFAULT_DB
+from lavish_core.trade.broker import get_order_by_client_id
+from lavish_core.utils.safety import finite_number
 
 log = logging.getLogger("options_exit_monitor")
 
@@ -78,7 +82,13 @@ def _option_limit_price(contract_symbol: str) -> Optional[float]:
     q = latest_option_quote(contract_symbol)
     if not q or q.get("bid") is None or q.get("ask") is None:
         return None
-    bid, ask = float(q["bid"]), float(q["ask"])
+    try:
+        bid = finite_number(q["bid"], nonnegative=True)
+        ask = finite_number(q["ask"], nonnegative=True)
+        if ask < bid:
+            return None
+    except ValueError:
+        return None
     if bid == 0.0:
         return 0.0
     if ask == 0.0:
@@ -125,6 +135,7 @@ def watch_and_exit(
     high_water_pct = 0.0
     trailing_active = False
     consecutive_failures = 0
+    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=contract_symbol,venue=os.getenv("TRADE_MODE","paper"))
 
     log.info(
         "Watching %s (%s x%s, entry=%.2f) via underlying %s: her_target=%s her_stop=%s "
@@ -158,80 +169,30 @@ def watch_and_exit(
         limit_price = _option_limit_price(contract_symbol)
 
         if limit_price == 0.0:
-            # Real corner case, not contrived: a confirmed $0.00 bid (a
-            # deep-OTM or near-expiry option - common right before
-            # expiration) means there is no positive price anyone would
-            # pay for this contract, ever again - not "a quote is
-            # temporarily missing." Treating it as a retryable failure
-            # used to retry forever, past the position's actual
-            # expiration, alerting every 10th attempt indefinitely for a
-            # position that's already functionally worthless either way.
-            log.warning("%s: confirmed $0.00 bid (%s) - nothing left to sell, recording as expired worthless "
-                        "rather than retrying a sale that can never price above zero.", contract_symbol, reason)
-            post_discord(f"⚪ {contract_symbol} confirmed worthless (bid=$0.00) while attempting exit "
-                          f"({reason}) - recorded as a total loss on this contract, no sell order submitted.")
-            return {"status": "exited", "reason": f"{reason}_worthless", "underlying_price": underlying_price,
-                    "option_price": 0.0, "order": None}
+            # A zero bid can recover; only an expired contract can settle.
+            from lavish_core.trade.reconcile import parse_occ_symbol
+            parsed = parse_occ_symbol(contract_symbol)
+            expiry_day = expiry or (parsed["expiry"] if parsed else None)
+            if expiry_day is None or expiry_day >= date.today():
+                return {"status":"no_liquidity", "reason":"manual_review_required"}
+            post_discord(f"Expired {contract_symbol} has zero bid; verify broker settlement.")
+            return {"status":"settlement_unverified", "reason":f"{reason}_worthless_requires_broker_confirmation", "underlying_price":underlying_price,
+                    "option_price":None, "quoted_bid":0.0, "order":None}
 
-        try:
-            if limit_price is None:
-                raise RuntimeError("no option quote available to price the exit")
-            order = place_option_order(
-                contract_symbol=contract_symbol, side="sell", qty=qty,
-                order_type="limit", limit_price=limit_price,
-            )
-        except Exception as e:
-            consecutive_failures += 1
-            log.error("Exit order submission failed for %s (%s), attempt %d: %s",
-                      contract_symbol, reason, consecutive_failures, e)
-            _alert_failure(reason, str(e))
+        if limit_price is None:
             return None
-
-        broker_oid = order.get("id")
-        final_status = order.get("status", "submitted")
-        filled_qty = order.get("filled_qty")
-        filled_avg_price = order.get("filled_avg_price")
-        if broker_oid:
-            for _ in range(EXIT_FILL_POLL_ATTEMPTS):
-                if final_status in _TERMINAL_STATUSES:
-                    break
-                time.sleep(EXIT_FILL_POLL_INTERVAL_SEC)
-                try:
-                    polled = get_order(broker_oid)
-                    final_status = polled.get("status", final_status)
-                    filled_qty = polled.get("filled_qty", filled_qty)
-                    filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
-                except Exception as e:
-                    log.warning("Exit order status poll failed for %s: %s", broker_oid, e)
-                    break
-
-        if final_status == "filled":
-            consecutive_failures = 0
-            real_exit_price = float(filled_avg_price) if filled_avg_price else limit_price
-            log.info("Exit (%s) CONFIRMED FILLED for %s @ %.2f: %s",
-                      reason, contract_symbol, real_exit_price, order)
-            result = {"status": "exited", "reason": reason, "underlying_price": underlying_price,
-                      "option_price": real_exit_price, "order": order}
-            if reason in ("max_hold_timeout", "expiry_force_close"):
-                post_discord(f"⏱️ {contract_symbol} force-closed ({reason}) at {real_exit_price:.2f} - "
-                             f"neither her levels nor our stop/trail fired before this cutoff.")
-            return result
-
-        # Never confirmed filled - cancel the stale resting order rather
-        # than leaving it dangling alongside the next retry's order.
-        consecutive_failures += 1
-        log.warning(
-            "Exit order for %s (%s) never confirmed filled after %d polls (status=%s), attempt %d - "
-            "canceling, will retry.",
-            contract_symbol, reason, EXIT_FILL_POLL_ATTEMPTS, final_status, consecutive_failures,
-        )
-        if broker_oid:
-            try:
-                cancel_order(broker_oid)
-            except Exception as e:
-                log.warning("Cancel of unconfirmed exit order %s failed: %s", broker_oid, e)
-        _alert_failure(reason, f"never confirmed filled (status={final_status})")
-        return None
+        outcome = exit_state.attempt(
+            lambda remaining, client_id: place_option_order(contract_symbol=contract_symbol, side="sell", qty=remaining, order_type="limit", limit_price=limit_price, client_order_id=client_id),
+            get_order_by_client_id, get_order, cancel_order, EXIT_FILL_POLL_ATTEMPTS,
+            lambda: time.sleep(EXIT_FILL_POLL_INTERVAL_SEC))
+        if outcome is None:
+            consecutive_failures += 1
+            _alert_failure(reason,"Closing order unresolved; retaining its identity")
+            return None
+        if outcome["status"] != "exited":
+            return outcome
+        return {"status":"exited", "reason":reason, "underlying_price":underlying_price,
+                "option_price":outcome["price"], "filled_qty":outcome["filled_qty"], "order":outcome["order"], "ledger_recorded":outcome.get("ledger_recorded",False)}
 
     loop_errors = 0
     while time.time() < deadline:

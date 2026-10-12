@@ -16,10 +16,11 @@ import json, os, re, time, threading, logging
 from datetime import date, datetime
 from typing import Optional, Dict, Any, Set, Tuple
 
-from lavish_core.trade.broker import get_positions
+from lavish_core.trade.broker import get_positions, get_order_by_client_id
+from lavish_core.utils.safety import finite_number
 from lavish_core.trade.options_exit_monitor import watch_and_exit_async
 from lavish_core.utils.alerts import post_discord
-from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
+from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB, _positions_lock
 
 log = logging.getLogger("reconcile")
 
@@ -87,6 +88,55 @@ def _find_original_target_stop(contract_symbol: str) -> Tuple[Optional[float], O
     except Exception as e:
         log.warning("reconcile: could not recover original target/stop for %s: %s", contract_symbol, e)
         return None, None
+
+
+def reconcile_pending_orders(store=None):
+    """Resolve durable pending entries without ever issuing another POST.
+
+    Cumulative broker fills are converted into incremental ledger fills so
+    a partial fill followed by a final fill neither disappears nor doubles.
+    Reservations remain held throughout a failed or ambiguous lookup.
+    """
+    owns_store = store is None
+    store = store or HybridStore(duckdb_path=str(DEFAULT_DB))
+    resolved = 0
+    try:
+        for local in store.get_open_orders():
+            client_id = local.get("client_id")
+            if not client_id or local.get("venue") not in ("paper", "live"):
+                continue
+            try:
+                remote = get_order_by_client_id(client_id)
+                if not isinstance(remote, dict) or not remote.get("id"):
+                    continue
+                status = remote.get("status")
+                cumulative = finite_number(remote.get("filled_qty",0), nonnegative=True)
+                if cumulative > local["qty"]:
+                    raise ValueError("Cumulative fill exceeds order")
+                with _positions_lock:
+                    rows = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0) FROM fills WHERE order_id=? AND side=?", (local["id"],local["side"]))
+                    recorded, notional = rows[0]
+                    delta = cumulative-recorded
+                    if delta < 0:
+                        raise ValueError("Broker fill regressed")
+                    if delta > 0:
+                        average = finite_number(remote.get("filled_avg_price"), positive=True)
+                        incremental_price = finite_number((cumulative*average-notional)/delta, positive=True)
+                        store.log_fill(local["id"],local["symbol"],local["side"],delta,incremental_price,venue=local["venue"],event_id=f"reconcile:{remote['id']}:{cumulative}")
+                    if status in ("filled","canceled","expired","rejected"):
+                        if status == "filled" and cumulative <= 0:
+                            raise ValueError("Missing full fill")
+                        store.set_order_status(local["id"],status)
+                        store.release_entry(client_id)
+                        resolved += 1
+                    elif status in ("new","pending_new","accepted","partially_filled","pending_cancel"):
+                        store.set_order_status(local["id"],status)
+            except Exception:
+                log.warning("Pending order requires reconciliation (local_id=%s)",local["id"])
+        return resolved
+    finally:
+        if owns_store:
+            store.con.close()
 
 
 def reconcile_open_positions() -> int:
@@ -178,6 +228,7 @@ def run_periodic_reconciliation() -> None:
     log.info("Reconciliation loop started (every %.0fs).", RECONCILE_INTERVAL_SECONDS)
     while True:
         try:
+            reconcile_pending_orders()
             n = reconcile_open_positions()
             if n:
                 log.info("reconcile: recovered %d unmanaged position(s).", n)

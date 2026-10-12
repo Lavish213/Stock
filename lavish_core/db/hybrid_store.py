@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 # ---- Third-party (core) ------------------------------------------------------
+from lavish_core.utils.safety import finite_number
 import duckdb  # pip install duckdb
 
 # Redis is optional; we won’t type-hint it strictly so Pylance doesn’t complain.
@@ -111,7 +112,8 @@ _FILL_CONFLICT_BACKOFF_BASE_SEC = 0.01
 # handful per day), so serializing all of them has no meaningful
 # performance cost, and it eliminates this entire problem class rather
 # than just reducing its odds.
-_positions_lock = threading.Lock()
+_positions_lock = threading.RLock()
+_schema_lock = threading.Lock()
 
 
 def _utcnow() -> datetime:
@@ -135,6 +137,8 @@ def _json(obj: Any) -> str:
 # =============================================================================
 
 SCHEMA_SQL: List[str] = [
+    "CREATE TABLE IF NOT EXISTS fill_events (event_id TEXT PRIMARY KEY, fill_id TEXT)",
+    "CREATE TABLE IF NOT EXISTS risk_reservations (client_id TEXT PRIMARY KEY, symbol TEXT, qty DOUBLE, price DOUBLE, multiplier DOUBLE, created_at TIMESTAMP)",
     # -- risk limits as K/V so SELECT name,value works everywhere
     """
     CREATE TABLE IF NOT EXISTS risk_limits (
@@ -274,7 +278,9 @@ class HybridStore:
         self.con.execute("PRAGMA threads=4;")
         self.con.execute("PRAGMA temp_directory='data/storage/tmp';")
         # ensure schema
-        self._ensure_schema()
+        self.con.execute("SET TimeZone='UTC'")
+        with _schema_lock:
+            self._ensure_schema()
 
         # Optional Redis (avoid strict type to keep pylance calm)
         self.r = None  # type: Any
@@ -551,29 +557,71 @@ class HybridStore:
     def set_order_status(self, order_id: str, status: str) -> None:
         self.execute("UPDATE orders SET status=? WHERE id=?", (status.lower(), order_id))
 
-    def log_fill(
-        self,
-        order_id: str,
-        symbol: str,
-        side: str,
-        qty: float,
-        price: float,
-        fee: float = 0.0,
-        venue: str = "dry_run",
-    ) -> str:
-        fid = _short_id("fill")
-        self.execute(
-            """
-            INSERT INTO fills(id, ts, order_id, symbol, side, qty, price, fee, venue)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (fid, _utcnow(), order_id, symbol.upper(), side.lower(), float(qty), float(price), float(fee), venue),
-        )
-        # update order status
-        self.set_order_status(order_id, "filled")
-        # update position
-        self._apply_fill_to_position(symbol.upper(), side.lower(), float(qty), float(price))
-        return fid
+    def reserve_entry(self, client_id, symbol, qty, price, limits, account_equity=None, multiplier=1):
+        import re
+        qty = finite_number(qty, positive=True)
+        price = finite_number(price, positive=True)
+        multiplier = finite_number(multiplier, positive=True)
+        cap = finite_number(limits.max_gross_exposure, positive=True)
+        max_qty = finite_number(limits.max_pos_per_symbol, positive=True)
+        if account_equity is not None:
+            cap = min(cap, finite_number(account_equity, positive=True)*finite_number(limits.max_leverage, positive=True))
+        with _positions_lock:
+            if self.fetchall("SELECT 1 FROM risk_reservations WHERE client_id=?", (client_id,)):
+                return "entry_already_reserved"
+            if self.fetchall("SELECT 1 FROM orders WHERE symbol=? AND side='buy' AND status IN ('pending_submit','submission_unknown','fill_unverified') LIMIT 1",(symbol.upper(),)):
+                return "unresolved_order_requires_reconciliation"
+            positions = self.fetchall("SELECT symbol, qty, avg_price FROM positions")
+            pending = self.fetchall("SELECT symbol, qty, price, multiplier FROM risk_reservations")
+            gross = sum(abs(q)*p*(100 if re.search(r"\d{6}[CP]\d{8}$", sym) else 1) for sym,q,p in positions)
+            gross += sum(q*p*m for sym,q,p,m in pending)
+            held = sum(q for sym,q,p in positions if sym == symbol.upper())
+            reserved = sum(q for sym,q,p,m in pending if sym == symbol.upper())
+            if held + reserved + qty > max_qty:
+                return "max_pos_per_symbol exceeded"
+            if gross + qty*price*multiplier > cap:
+                return "max_gross_exposure exceeded"
+            self.execute("INSERT INTO risk_reservations VALUES (?,?,?,?,?,?)", (client_id,symbol.upper(),qty,price,multiplier,_utcnow()))
+        return None
+
+    def try_claim_outcome(self, event_id):
+        with _positions_lock:
+            if self.fetchall("SELECT 1 FROM fill_events WHERE event_id=?",(event_id,)):
+                return False
+            self.execute("INSERT INTO fill_events VALUES (?,?)",(event_id,""))
+            return True
+
+    def release_entry(self, client_id):
+        with _positions_lock:
+            self.execute("DELETE FROM risk_reservations WHERE client_id=?", (client_id,))
+
+    def log_fill(self, order_id, symbol, side, qty, price, fee=0.0, venue="dry_run", event_id=None, reservation_client_id=None):
+        qty = finite_number(qty, positive=True)
+        price = finite_number(price, positive=True)
+        fee = finite_number(fee, nonnegative=True)
+        if side.lower() not in ("buy", "sell"):
+            raise ValueError("Invalid fill side")
+        with _positions_lock:
+            self.execute("BEGIN TRANSACTION")
+            try:
+                if event_id and self.fetchall("SELECT 1 FROM fill_events WHERE event_id=?", (event_id,)):
+                    self.execute("ROLLBACK")
+                    if reservation_client_id:
+                        self.release_entry(reservation_client_id)
+                    return None
+                fid = _short_id("fill")
+                self.execute("INSERT INTO fills VALUES (?,?,?,?,?,?,?,?,?)", (fid,_utcnow(),order_id,symbol.upper(),side.lower(),qty,price,fee,venue))
+                self.set_order_status(order_id,"filled")
+                self._apply_fill_to_position(symbol.upper(),side.lower(),qty,price)
+                if event_id:
+                    self.execute("INSERT INTO fill_events VALUES (?,?)", (event_id,fid))
+                if reservation_client_id:
+                    self.release_entry(reservation_client_id)
+                self.execute("COMMIT")
+                return fid
+            except Exception:
+                self.execute("ROLLBACK")
+                raise
 
     # ---- positions math ------------------------------------------------------
     def _apply_fill_to_position(self, symbol: str, side: str, qty: float, price: float) -> None:
@@ -605,6 +653,10 @@ class HybridStore:
         """
         symbol = symbol.upper()
         side = side.lower()
+        qty = finite_number(qty, positive=True)
+        price = finite_number(price, positive=True)
+        if side not in ("buy", "sell"):
+            raise ValueError("Invalid position delta side")
 
         with _positions_lock:
             now = _utcnow()
@@ -653,7 +705,7 @@ class HybridStore:
         return {"qty": float(q), "avg_price": float(ap)}
 
     def get_open_orders(self, symbol: Optional[str] = None) -> List[Dict[str, Any]]:
-        sql = "SELECT id, ts, symbol, side, qty, order_type, limit_price, tif, venue, status, client_id, meta FROM orders WHERE status IN ('submitted','accepted','partially_filled')"
+        sql = "SELECT id, ts, symbol, side, qty, order_type, limit_price, tif, venue, status, client_id, meta FROM orders WHERE status IN ('submitted','accepted','new','pending_new','pending_cancel','partially_filled','pending_submit','submission_unknown','fill_unverified')"
         params: Tuple[Any, ...] = ()
         if symbol:
             sql += " AND symbol=?"

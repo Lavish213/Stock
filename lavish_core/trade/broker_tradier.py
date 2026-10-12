@@ -20,6 +20,7 @@ from __future__ import annotations
 import os, json, logging, re, time, uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
+from lavish_core.utils.safety import finite_number, valid_positive, check_trading_endpoint
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -62,6 +63,7 @@ _OCC_RE = re.compile(r"^[A-Z]+\d{6}[CP]\d{8}$")
 
 
 def _check_keys():
+    check_trading_endpoint(os.getenv("TRADE_MODE", "dry"), BASE_URL, "tradier")
     if not API_TOKEN:
         raise RuntimeError("Missing TRADIER_API_KEY")
 
@@ -280,13 +282,11 @@ def latest_quote(symbol: str) -> Optional[float]:
                 q = q[0] if q else None
             if q:
                 last = q.get("last")
-                if last:
+                if isinstance(last, (int, float)) and not isinstance(last, bool) and valid_positive(last):
                     return float(last)
                 bid, ask = q.get("bid"), q.get("ask")
-                if bid and ask:
-                    return float((bid + ask) / 2)
-                if bid or ask:
-                    return float(bid or ask)
+                if all(isinstance(p, (int,float)) and not isinstance(p,bool) and valid_positive(p) for p in (bid,ask)) and bid <= ask:
+                    return float((bid+ask)/2)
     except Exception as e:
         log.warning(f"latest_quote failed for {symbol}: {e}")
     return None
@@ -353,6 +353,13 @@ def place_order(symbol: str, side: str, qty: str,
     expecting bracket legs back, when BROKER_PROVIDER=tradier.
     """
     _check_keys()
+    finite_number(qty, positive=True)
+    if side not in ("buy", "sell"):
+        raise ValueError("Invalid order side")
+    for value in (limit_price, take_profit, stop_loss):
+        if value is not None:
+            finite_number(value, positive=True)
+
     if take_profit is not None or stop_loss is not None:
         log.warning("place_order: take_profit/stop_loss requested but Tradier has no native bracket order here - "
                     "submitting a plain entry; the caller must use an active exit monitor instead.")

@@ -49,3 +49,7 @@ sims_loop_results*.jsonl
 # Misc stray dirs seen in this repo
 vision extras/
 memory/
+
+# Local validation evidence and coverage cache
+.coverage
+validation/repair/

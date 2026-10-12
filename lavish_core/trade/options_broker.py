@@ -3,6 +3,7 @@
 # could place an options order before this - only plain equity orders existed.
 from __future__ import annotations
 import os, json, logging, time, uuid
+from lavish_core.utils.safety import finite_number, normalize_base_url, check_trading_endpoint
 from datetime import date, datetime
 from typing import Optional, Dict, Any, List
 
@@ -13,7 +14,7 @@ from lavish_core.trade.broker_alpaca import HEADERS, DATA_URL, SESSION, _check_k
 
 log = logging.getLogger("options_broker")
 
-BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets").rstrip("/")
+BASE_URL = normalize_base_url(os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"))
 ORDERS_URL = f"{BASE_URL}/v2/orders"
 CONTRACTS_URL = f"{BASE_URL}/v2/options/contracts"
 
@@ -23,7 +24,13 @@ def build_occ_symbol(ticker: str, expiry: date, side: str, strike: float) -> str
     Standard OCC symbol: TICKER + YYMMDD + C/P + strike*1000 zero-padded to 8 digits.
     e.g. AAPL, 2024-05-31, "call", 190.0 -> AAPL240531C00190000
     """
+    import re
     ticker = ticker.upper().strip()
+    if not re.fullmatch(r"[A-Z]{1,6}", ticker) or side.lower() not in ("c", "p", "call", "put", "calls", "puts"):
+        raise ValueError("Invalid OCC symbol inputs")
+    strike = finite_number(strike, positive=True)
+    if strike * 1000 >= 100_000_000:
+        raise ValueError("Strike exceeds OCC range")
     cp = "C" if side.lower().startswith("c") else "P"
     strike_int = round(strike * 1000)
     return f"{ticker}{expiry.strftime('%y%m%d')}{cp}{strike_int:08d}"
@@ -122,6 +129,12 @@ def place_option_order(
     (see options_exit_monitor.py).
     """
     _check_keys()
+    check_trading_endpoint(os.getenv("TRADE_MODE", "dry"), ORDERS_URL)
+    quantity = finite_number(qty, positive=True)
+    if not quantity.is_integer():
+        raise ValueError("Option quantities must be whole contracts")
+    if limit_price is not None:
+        finite_number(limit_price, positive=True)
     side = side.lower()
     if side not in ("buy", "sell"):
         raise ValueError("side must be 'buy' or 'sell'")

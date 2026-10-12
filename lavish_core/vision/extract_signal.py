@@ -132,7 +132,8 @@ def _clean_text(s: str) -> str:
 def _to_float(x: str) -> Optional[float]:
     try:
         x = x.replace(",", "")
-        return float(x)
+        from lavish_core.utils.safety import finite_number
+        return finite_number(x, positive=True)
     except Exception:
         return None
 
@@ -310,7 +311,7 @@ def _find_strike_and_side(text: str) -> Tuple[Optional[float], Optional[str], Op
     # "$1,120 Call" (trade-card UI), but also her real chat phrasing:
     # "$235 strike call" and "$570 call strike" - "strike" can land on
     # either side of the call/put word, not just be absent.
-    m = re.search(r"\$?\s?(\d{1,4}(?:\.\d{1,2})?)\s*(?:strike\s+)?(calls?|puts?)(?:\s+strikes?)?\b", text, re.I)
+    m = re.search(r"(?<![\w.\-])\$?\s?(\d{1,4}(?:\.\d{1,2})?)\s*(?:strike\s+)?(calls?|puts?)(?:\s+strikes?)?\b", text, re.I)
     if m:
         return _to_float(m.group(1)), m.group(2).rstrip("sS").upper(), m.start()
 
@@ -333,7 +334,7 @@ def _find_strike_and_side(text: str) -> Tuple[Optional[float], Optional[str], Op
     # confirmed bug. Deliberately GLUED (no space allowed between the
     # number and the letter) so this doesn't fire on "5 p.m."/"10 a.m."
     # style time references, which do match if a space is allowed.
-    m3 = re.search(r"\b(\d{1,4}(?:\.\d{1,2})?)([cp])\b", text)
+    m3 = re.search(r"(?<![\w.\-])(\d{1,4}(?:\.\d{1,2})?)([cp])\b", text, re.I)
     if m3:
         side = "CALL" if m3.group(2).lower() == "c" else "PUT"
         return _to_float(m3.group(1)), side, m3.start()
@@ -479,6 +480,9 @@ def _preprocess_for_ocr(img_bgr) -> "np.ndarray":
     import cv2
     # 1) make a hi-contrast grayscale
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    import numpy as np
+    if np.median(gray) < 127:
+        gray = cv2.bitwise_not(gray)
     # 2) light denoise & sharpen
     gray = cv2.bilateralFilter(gray, 7, 60, 60)
     # 3) adaptive threshold (works well on dark discord UIs)
@@ -526,11 +530,15 @@ def parse_alert(text: str = "", img_path: Optional[Path] = None, source: str = "
 
     if text_result and image_result:
         merged = dict(text_result)
+        conflicts = [key for key in ("ticker", "side", "strike", "expiry")
+                     if text_result.get(key) is not None and image_result.get(key) is not None
+                     and text_result[key] != image_result[key]]
+        merged["field_conflicts"] = conflicts
         for key in ("ticker", "side", "strike", "expiry", "entry_price_est", "target_hint", "stop_hint"):
             if not merged.get(key) and image_result.get(key):
                 merged[key] = image_result[key]
         merged["confidence"] = max(text_result.get("confidence", 0.0), image_result.get("confidence", 0.0))
-        merged["needs_human_review"] = merged["confidence"] < 0.75
+        merged["needs_human_review"] = bool(conflicts) or merged["confidence"] < 0.75
         merged["notes_excerpt"] = (text_result.get("notes_excerpt") or image_result.get("notes_excerpt"))
         return merged
 

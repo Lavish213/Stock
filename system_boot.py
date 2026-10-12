@@ -68,13 +68,15 @@ if trade_mode not in ("dry", "paper", "live"):
 else:
     print(f"[ok] TRADE_MODE={trade_mode}"
           + (" - will submit REAL orders with real money." if trade_mode == "live" else ""))
-if broker_provider == "tradier":
-    if trade_mode == "paper" and "sandbox" not in os.getenv("TRADIER_BASE_URL", "https://sandbox.tradier.com/v1"):
-        print(f"[warn] TRADE_MODE=paper but TRADIER_BASE_URL doesn't look like the sandbox endpoint "
-              f"({os.getenv('TRADIER_BASE_URL')!r}) - double check this isn't pointed at production by mistake.")
-elif trade_mode in ("paper", "live") and "paper-api" not in os.getenv("ALPACA_BASE_URL", "") and trade_mode == "paper":
-    print(f"[warn] TRADE_MODE=paper but ALPACA_BASE_URL doesn't look like the paper endpoint "
-          f"({os.getenv('ALPACA_BASE_URL')!r}) - double check this isn't pointed at live by mistake.")
+try:
+    from lavish_core.utils.safety import check_trading_endpoint
+    default = "https://sandbox.tradier.com/v1" if broker_provider == "tradier" else "https://paper-api.alpaca.markets"
+    key = "TRADIER_BASE_URL" if broker_provider == "tradier" else "ALPACA_BASE_URL"
+    check_trading_endpoint(trade_mode, os.getenv(key, default), broker_provider)
+    print("[ok] Broker endpoint matches trading mode.")
+except ValueError as exc:
+    print(f"[FAIL] {exc}")
+    ok = False
 
 # 3. The real live modules actually import cleanly
 modules = [

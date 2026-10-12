@@ -10,6 +10,7 @@
 # not yet confirmed by a real sandbox call" caveat as broker_tradier.py.
 from __future__ import annotations
 import json, logging, re, time, uuid
+from lavish_core.utils.safety import finite_number
 from datetime import date
 from typing import Optional, Dict, Any, List
 
@@ -109,6 +110,11 @@ def place_option_order(
     actually needs given its long-only design.
     """
     _check_keys()
+    quantity = finite_number(qty, positive=True)
+    if not quantity.is_integer():
+        raise ValueError("Option quantities must be whole contracts")
+    if limit_price is not None:
+        finite_number(limit_price, positive=True)
     side = side.lower()
     if side not in ("buy", "sell"):
         raise ValueError("side must be 'buy' or 'sell'")

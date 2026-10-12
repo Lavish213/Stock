@@ -58,3 +58,6 @@ pytest==9.1.1
 #                          # docstring FIRST (real ToS/account-risk decision).
 #                          # `pip uninstall discord.py` first if present -
 #                          # same import name, the two packages conflict.
+
+# Reject external XML entities in RSS feeds.
+defusedxml==0.7.1

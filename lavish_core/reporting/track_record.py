@@ -20,7 +20,7 @@
 from __future__ import annotations
 import argparse, json, re
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
@@ -63,64 +63,62 @@ def _load_json(raw: Any) -> Dict[str, Any]:
 
 
 def build_report(store: HybridStore, days: int = 30, benchmark: str = "SPY") -> Dict[str, Any]:
-    fills = store.fetchall(
-        """
-        SELECT order_id, symbol, side, qty, price, ts
-        FROM fills
-        WHERE ts > now() - INTERVAL '{}' DAY
-        ORDER BY ts ASC
-        """.format(int(days))
-    )
-    orders = store.fetchall(
-        "SELECT id, meta, status FROM orders WHERE ts > now() - INTERVAL '{}' DAY".format(int(days))
-    )
+    if isinstance(days,bool) or not isinstance(days,int) or days < 1:
+        raise ValueError("days must be a positive integer")
+    cutoff = datetime.now(timezone.utc).replace(tzinfo=None)-timedelta(days=days)
+    # Entry lots may precede the report window. Consume all history to
+    # establish cost basis, then include realized exits in the window.
+    fills = store.fetchall("SELECT order_id,symbol,side,qty,price,ts,fee FROM fills ORDER BY ts ASC,id ASC")
+    orders = store.fetchall("SELECT id,meta,status FROM orders")
     order_meta: Dict[str, Dict[str, Any]] = {oid: _load_json(meta) for oid, meta, _status in orders}
 
-    by_order: Dict[str, List[tuple]] = defaultdict(list)
-    for order_id, symbol, side, qty, price, ts in fills:
-        by_order[order_id].append((symbol, side, float(qty), float(price), ts))
-
-    round_trips: List[Dict[str, Any]] = []
-    open_entries: List[Dict[str, Any]] = []
-
-    for order_id, rows in by_order.items():
-        buys = [r for r in rows if r[1] == "buy"]
-        sells = [r for r in rows if r[1] == "sell"]
-        symbol = rows[0][0]
-        meta = order_meta.get(order_id, {})
-        source = meta.get("source", "unknown")
-        expected_price = meta.get("expected_price")
-
-        if not buys:
-            continue  # sell-only fill with no matching buy in window - not enough info
-
-        buy_qty = sum(r[2] for r in buys)
-        buy_notional = sum(r[2] * r[3] for r in buys)
-        buy_avg = buy_notional / buy_qty if buy_qty else 0.0
-        slippage = round(buy_avg - float(expected_price), 4) if expected_price else None
-
-        if not sells:
-            open_entries.append({
-                "order_id": order_id, "symbol": symbol, "source": source,
-                "entry_price": round(buy_avg, 4), "qty": buy_qty, "slippage": slippage,
-            })
+    # FIFO lots pair separate broker orders and retain partially exited lots.
+    lots = defaultdict(list)
+    matches = defaultdict(list)
+    unmatched_exits = []
+    for oid, symbol, side, qty, price, stamp, fee in fills:
+        qty, price, fee = float(qty), float(price), float(fee or 0)
+        if side == "buy":
+            lots[symbol].append(dict(order_id=oid,qty=qty,price=price,ts=stamp,fee_per_qty=fee/qty))
             continue
-
-        sell_qty = sum(r[2] for r in sells)
-        sell_notional = sum(r[2] * r[3] for r in sells)
-        sell_avg = sell_notional / sell_qty if sell_qty else 0.0
-        multiplier = 100 if _is_option(symbol) else 1
-        matched_qty = min(buy_qty, sell_qty)
-        pnl = (sell_avg - buy_avg) * multiplier * matched_qty
-
-        round_trips.append({
-            "order_id": order_id, "symbol": symbol, "underlying": _underlying(symbol),
-            "source": source, "entry_price": round(buy_avg, 4), "exit_price": round(sell_avg, 4),
-            "qty": matched_qty, "pnl": round(pnl, 2), "slippage": slippage,
-            "entry_date": _to_date(min(r[4] for r in buys)),
-            "exit_date": _to_date(max(r[4] for r in sells)),
-            "trade_return_pct": round((sell_avg - buy_avg) / buy_avg * 100, 2) if buy_avg else None,
-        })
+        remaining = qty
+        # Linked exits take their own entry first; other exits consume FIFO.
+        candidates = sorted(lots[symbol], key=lambda lot: lot["order_id"] != oid)
+        for lot in candidates:
+            if remaining <= 0:
+                break
+            used = min(remaining, lot["qty"])
+            if used <= 0:
+                continue
+            multiplier = 100 if _is_option(symbol) else 1
+            pnl = (price-lot["price"])*used*multiplier - used*(lot["fee_per_qty"]+fee/qty)
+            if stamp >= cutoff:
+                matches[lot["order_id"]].append(dict(symbol=symbol,qty=used,entry=lot["price"],exit=price,pnl=pnl,entry_ts=lot["ts"],exit_ts=stamp))
+            lot["qty"] -= used
+            remaining -= used
+        if remaining > 0 and stamp >= cutoff:
+            unmatched_exits.append(dict(order_id=oid,symbol=symbol,qty=remaining))
+    round_trips = []
+    open_entries = []
+    for oid, rows in matches.items():
+        quantity = sum(row["qty"] for row in rows)
+        entry = sum(row["entry"]*row["qty"] for row in rows)/quantity
+        exit_price = sum(row["exit"]*row["qty"] for row in rows)/quantity
+        symbol = rows[0]["symbol"]
+        meta = order_meta.get(oid,{})
+        expected = meta.get("expected_price")
+        round_trips.append(dict(order_id=oid,symbol=symbol,underlying=_underlying(symbol),source=meta.get("source","unknown"),entry_price=round(entry,4),exit_price=round(exit_price,4),qty=quantity,pnl=round(sum(row["pnl"] for row in rows),2),slippage=round(entry-float(expected),4) if expected else None,entry_date=_to_date(min(row["entry_ts"] for row in rows)),exit_date=_to_date(max(row["exit_ts"] for row in rows)),trade_return_pct=round((exit_price-entry)/entry*100,2)))
+    residual = defaultdict(list)
+    for symbol, entries in lots.items():
+        for lot in entries:
+            if lot["qty"] > 0:
+                residual[(symbol,lot["order_id"])].append(lot)
+    for (symbol,oid), entries in residual.items():
+        quantity = sum(lot["qty"] for lot in entries)
+        entry = sum(lot["qty"]*lot["price"] for lot in entries)/quantity
+        meta = order_meta.get(oid,{})
+        expected = meta.get("expected_price")
+        open_entries.append(dict(order_id=oid,symbol=symbol,source=meta.get("source","unknown"),entry_price=round(entry,4),qty=quantity,slippage=round(entry-float(expected),4) if expected else None))
 
     # Benchmark comparison (the "ExcessReturn vs SPY" idea from Quiver's
     # congressional-trading data, which attaches this to every single
@@ -181,6 +179,7 @@ def build_report(store: HybridStore, days: int = 30, benchmark: str = "SPY") -> 
         "open_entries_no_recorded_exit": len(open_entries),
         "open_entries": open_entries,
         "round_trips": round_trips,
+        "unmatched_exits": unmatched_exits,
     }
 
 

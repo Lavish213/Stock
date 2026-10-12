@@ -1,4 +1,5 @@
 # --- add near the top ---
+from pathlib import Path
 from functools import lru_cache
 import os
 from pydantic import BaseModel, Field
@@ -37,9 +38,9 @@ def get_settings() -> Settings:
         setattr(s, k, v)
     return s
 
-FINNHUB_API = "d3pgd5pr01qq6ml8mnfgd3pgd5pr01qq6ml8mng0"
+FINNHUB_API = os.getenv("FINNHUB_API_KEY", "")
 
-ALPHA_API   = "5BGGGJT1RXG1Z1PU"
+ALPHA_API = os.getenv("ALPHA_VANTAGE_API_KEY", "")
 
-FRED_API    = "4b68941ee7b5e4a5dff168c65b3051b9"
+FRED_API = os.getenv("FRED_API_KEY", "")
 PAPER_MODE = True  # Set to False for live trading

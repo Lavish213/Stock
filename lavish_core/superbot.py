@@ -82,7 +82,7 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 def sha1(s: str) -> str:
-    return hashlib.sha1(s.encode("utf-8", errors="ignore")).hexdigest()
+    return hashlib.sha1(s.encode("utf-8", errors="ignore"), usedforsecurity=False).hexdigest()
 
 def clamp(v, lo, hi):
     return max(lo, min(hi, v))
