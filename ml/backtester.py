@@ -204,7 +204,8 @@ def load_signals_from_db(days: int = 90) -> List[BacktestSignal]:
     store = HybridStore(duckdb_path=str(DEFAULT_DB))
     rows = store.fetchall(
         "SELECT symbol, side, source, ts, payload FROM signals "
-        "WHERE side='buy' AND ts > now() - INTERVAL '{}' DAY".format(int(days))
+        "WHERE side='buy' AND ts > now() - (? * INTERVAL 1 DAY)",
+        (int(days),)
     )
     out: List[BacktestSignal] = []
     for symbol, side, source, ts, payload_raw in rows:

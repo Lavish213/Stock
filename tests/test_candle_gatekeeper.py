@@ -16,7 +16,7 @@ def _no_sleep(*a, **k):
 
 
 def _bar(t, o, h, l, c, v=1000.0):
-    base = datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=20)
+    base = datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=4)
     offset = (-10+int(t[2:])) if t.startswith("t-") else int(t[1:])
     t = (base+timedelta(minutes=offset)).isoformat()
     return {"t": t, "o": o, "h": h, "l": l, "c": c, "v": v}

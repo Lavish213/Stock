@@ -11,6 +11,10 @@ class Clock:
  def time(self):self.value+=1;return self.value
  def sleep(self,*a):pass
 BASE=datetime.now(timezone.utc).replace(second=0,microsecond=0)-timedelta(minutes=4)
+@pytest.fixture(autouse=True)
+def fresh_candle_fixture(monkeypatch):
+ monkeypatch.setattr(__import__(__name__,fromlist=['BASE']),'BASE',datetime.now(timezone.utc).replace(second=0,microsecond=0)-timedelta(minutes=4))
+
 def bar(t,close=100,high=101,low=99):
  # Fixture candles are closed real ISO timestamps; future corruption stays future.
  if t.startswith('2026-10-12T14:'):t=(BASE+timedelta(minutes=int(t[14:16]))).isoformat()

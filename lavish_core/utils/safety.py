@@ -42,3 +42,14 @@ def check_trading_endpoint(mode, url, provider="alpaca"):
     if parts.hostname not in allowed:
         raise ValueError("Trading mode and broker endpoint disagree")
     return normalized
+
+
+def fresh_timestamp(value,*,max_age_seconds=60,now=None):
+    from datetime import datetime,timezone
+    try:
+        if not isinstance(value,str):return False
+        stamp=datetime.fromisoformat(value.replace("Z","+00:00"))
+        if stamp.tzinfo is None:return False
+        age=((now or datetime.now(timezone.utc))-stamp).total_seconds()
+        return 0<=age<=max_age_seconds
+    except (TypeError,ValueError,OverflowError):return False

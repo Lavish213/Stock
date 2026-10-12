@@ -1,3 +1,4 @@
+from lavish_core.utils.model_revision import required_revision
 import base64
 from PIL import Image
 import io
@@ -20,8 +21,8 @@ def encode_image(image_path):
 def llama_vision_analysis(image_path):
     """Analyze image using LLaMA Vision model."""
     try:
-        processor = AutoProcessor.from_pretrained(LLAMA_MODEL)
-        model = AutoModelForCausalLM.from_pretrained(LLAMA_MODEL, torch_dtype=torch.float16, device_map="auto")
+        processor = AutoProcessor.from_pretrained(LLAMA_MODEL, revision=required_revision("LLAMA_MODEL_REVISION"))
+        model = AutoModelForCausalLM.from_pretrained(LLAMA_MODEL, revision=required_revision("LLAMA_MODEL_REVISION"), use_safetensors=True, torch_dtype=torch.float16, device_map="auto")
         image = Image.open(image_path)
         inputs = processor(text="Describe this image in detail.", images=image, return_tensors="pt").to("cuda")
         output = model.generate(**inputs, max_new_tokens=100)
@@ -32,8 +33,8 @@ def llama_vision_analysis(image_path):
 def deepseek_coder_analysis(image_path):
     """Optional DeepSeek agent: checks for patterns, context, or OCR-level data."""
     try:
-        processor = AutoProcessor.from_pretrained(DEEPSEEK_MODEL)
-        model = AutoModelForCausalLM.from_pretrained(DEEPSEEK_MODEL, torch_dtype=torch.float16, device_map="auto")
+        processor = AutoProcessor.from_pretrained(DEEPSEEK_MODEL, revision=required_revision("DEEPSEEK_MODEL_REVISION"))
+        model = AutoModelForCausalLM.from_pretrained(DEEPSEEK_MODEL, revision=required_revision("DEEPSEEK_MODEL_REVISION"), use_safetensors=True, torch_dtype=torch.float16, device_map="auto")
         image = Image.open(image_path)
         inputs = processor(text="Extract objects or readable text from this image.", images=image, return_tensors="pt").to("cuda")
         output = model.generate(**inputs, max_new_tokens=80)

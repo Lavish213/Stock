@@ -95,8 +95,13 @@ def openai_caption(p: Path) -> str | None:
 # optional BLIP init
 blip_processor = blip_model = None
 if BLIP_OK:
-    blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-    blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+    try:
+        from lavish_core.utils.model_revision import required_revision
+        revision = required_revision("BLIP_MODEL_REVISION")
+        blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base",revision=revision)
+        blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base",revision=revision,use_safetensors=True)
+    except ValueError:
+        BLIP_OK = False
 
 def blip_caption(p: Path) -> str | None:
     if not BLIP_OK or Image is None: return None

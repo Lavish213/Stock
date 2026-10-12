@@ -2,7 +2,7 @@
 import os, json, logging, time, uuid
 from typing import Optional, Dict, Any
 import requests
-from lavish_core.utils.safety import finite_number, valid_positive, normalize_base_url, check_trading_endpoint
+from lavish_core.utils.safety import finite_number, valid_positive, normalize_base_url, check_trading_endpoint, fresh_timestamp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -171,7 +171,10 @@ def latest_quote(symbol: str) -> Optional[float]:
             headers=HEADERS, timeout=10,
         )
         if r.status_code == 200:
-            p = r.json().get("trade", {}).get("p")
+            trade=r.json().get("trade",{})
+            p=trade.get("p")
+            if os.getenv("TRADE_MODE","dry") != "dry" and not fresh_timestamp(trade.get("t")):
+                p=None
             if isinstance(p, (int, float)) and not isinstance(p, bool) and valid_positive(p):
                 return float(p)
     except Exception as e:
@@ -184,12 +187,16 @@ def latest_quote(symbol: str) -> Optional[float]:
         )
         if r.status_code == 200:
             q = r.json().get("quote", {})
-            ap, bp = q.get("ap"), q.get("bp")
+            ap,bp=q.get("ap"),q.get("bp")
+            if os.getenv("TRADE_MODE","dry") != "dry" and not fresh_timestamp(q.get("t")):
+                ap=bp=None
             if all(isinstance(p, (int, float)) and not isinstance(p, bool) and valid_positive(p) for p in (ap, bp)) and bp <= ap:
                 return float((ap + bp) / 2)
     except Exception as e:
         log.warning(f"latest_quote quote lookup failed for {symbol}: {e}")
 
+    if os.getenv("TRADE_MODE","dry") != "dry":
+        return None
     fallback = _yfinance_fallback_quote(symbol)
     if fallback:
         log.warning(f"latest_quote: Alpaca data unavailable for {symbol}, used yfinance fallback price {fallback}")
@@ -266,6 +273,17 @@ def place_order(symbol: str, side: str, qty: str,
     type_: market|limit|stop|stop_limit
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if type_ != "limit" or limit_price is None:
+            raise RuntimeError("Live entries require bounded limit prices")
+        account = get_account()
+        account_id = account.get("id") or account.get("account_number")
+        if not account_id:
+            raise RuntimeError("Live account identity unavailable")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True),account_id=account_id)
+
     finite_number(qty, positive=True)
     if side not in ("buy", "sell"):
         raise ValueError("Invalid order side")

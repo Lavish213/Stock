@@ -86,7 +86,7 @@ def test_get_account_maps_tradier_balances_to_alpaca_field_names():
          })):
         acct = bt.get_account()
 
-    assert acct == {"equity": 10000.0, "cash": 5000.0, "buying_power": 20000.0}
+    assert acct == {"id": "ACC123", "equity": 10000.0, "cash": 5000.0, "buying_power": 20000.0}
 
 
 def test_get_account_falls_back_to_option_buying_power_if_stock_missing():

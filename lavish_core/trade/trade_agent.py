@@ -341,6 +341,10 @@ def place_trade(
         provider = import_module("lavish_core.trade.broker_" + BROKER_PROVIDER)
         check_trading_endpoint(mode, provider.BASE_URL, BROKER_PROVIDER)
 
+    if side == "buy" and mode == "live":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+
     # Circuit breaker only blocks new risk-taking (buys), never closes/sells -
     # you should always be able to get out of a position, even mid-halt.
     if side == "buy" and mode in ("paper", "live"):
@@ -381,6 +385,12 @@ def place_trade(
         meta.setdefault("take_profit", take_profit)
         meta.setdefault("stop_loss", stop_loss)
 
+    if side == "buy" and mode == "live":
+        if order_type == "market":
+            order_type="limit"
+            limit_price=round(ref_price*(1+MAX_SLIPPAGE_PCT),2)
+        ref_price=finite_number(limit_price,positive=True)
+        assert_live_ready(notional=qty*ref_price)
     limits = load_risk_limits(store)
     acct_equity = None
     if HAS_ALPACA and mode in ("paper", "live"):
@@ -391,6 +401,11 @@ def place_trade(
             if side == "buy":
                 oid = store.submit_order(symbol, side, qty, venue=mode, status="rejected", client_id=client_id, meta={"reason":"account_unavailable"})
                 return {"status":"rejected", "order_id":oid, "reason":"account_unavailable"}
+
+    if side == "buy" and mode == "live":
+        from lavish_core.trade.live_readiness import approved_entry_limits
+        approved=approved_entry_limits(store,qty*ref_price,acct_equity,acct.get("id") or acct.get("account_number"))
+        limits.max_gross_exposure=min(limits.max_gross_exposure,approved["max_gross_exposure"])
 
     # Build risk ctx
     by_sym = _estimate_exposure_by_symbol(store)

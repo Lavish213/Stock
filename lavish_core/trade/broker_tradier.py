@@ -118,6 +118,7 @@ def get_account() -> Dict[str, Any]:
         raise RuntimeError(f"Tradier balances error {r.status_code}: {r.text}")
     bal = r.json().get("balances", {})
     return {
+        "id": str(acct_id),
         "equity": bal.get("total_equity"),
         "cash": bal.get("total_cash"),
         "buying_power": bal.get("stock_buying_power") or bal.get("option_buying_power"),
@@ -353,6 +354,17 @@ def place_order(symbol: str, side: str, qty: str,
     expecting bracket legs back, when BROKER_PROVIDER=tradier.
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if type_ != "limit" or limit_price is None:
+            raise RuntimeError("Live entries require bounded limit prices")
+        account = get_account()
+        account_id = account.get("id") or account.get("account_number")
+        if not account_id:
+            raise RuntimeError("Live account identity unavailable")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True),account_id=account_id)
+
     finite_number(qty, positive=True)
     if side not in ("buy", "sell"):
         raise ValueError("Invalid order side")

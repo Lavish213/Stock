@@ -64,14 +64,17 @@ class ExitState:
                 requested = store.fetchall("SELECT qty FROM orders WHERE id=?",(self.journal_id,))[0][0]
                 if cumulative > requested:
                     raise ValueError("Exit quantity exceeds request")
-                recorded, notional = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0) FROM fills WHERE order_id=?",(self.journal_id,))[0]
+                recorded,notional,recorded_fee=store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0),coalesce(sum(fee),0) FROM fills WHERE order_id=?",(self.journal_id,))[0]
                 delta = cumulative-recorded
                 if delta < 0:
                     raise ValueError("Regressing exit quantity")
                 if delta > 0:
                     average = finite_number(order.get("filled_avg_price"),positive=True)
                     incremental = finite_number((cumulative*average-notional)/delta,positive=True)
-                    store.log_fill(self.journal_id,self.symbol,"sell",delta,incremental,venue=self.venue,event_id=f"reconcile:{order['id']}:{cumulative}")
+                    fee=finite_number(order.get("filled_fee",0),nonnegative=True)-recorded_fee
+                    if fee<0:
+                        raise ValueError("Regressing execution fees")
+                    store.log_fill(self.journal_id,self.symbol,"sell",delta,incremental,fee=fee,venue=self.venue,event_id=f"reconcile:{order['id']}:{cumulative}")
                 store.set_order_status(self.journal_id,order.get("status","submission_unknown"))
             finally:
                 store.con.close()

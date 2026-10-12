@@ -124,7 +124,7 @@ def reconcile_pending_orders(store=None):
                         incremental_price = finite_number((cumulative*average-notional)/delta, positive=True)
                         store.log_fill(local["id"],local["symbol"],local["side"],delta,incremental_price,venue=local["venue"],event_id=f"reconcile:{remote['id']}:{cumulative}")
                     if status in ("filled","canceled","expired","rejected"):
-                        if status == "filled" and cumulative <= 0:
+                        if status == "filled" and cumulative != local["qty"]:
                             raise ValueError("Missing full fill")
                         store.set_order_status(local["id"],status)
                         store.release_entry(client_id)
@@ -156,7 +156,7 @@ def reconcile_open_positions() -> int:
     for pos in positions:
         if pos.get("asset_class") != "us_option":
             continue
-        if pos.get("side") != "long" or float(pos.get("qty", 0)) <= 0:
+        if pos.get("side") != "long":
             continue  # only long calls/puts are ever opened by this bot
 
         symbol = pos.get("symbol", "")
@@ -171,9 +171,12 @@ def reconcile_open_positions() -> int:
             continue
 
         try:
-            entry_price = float(pos.get("avg_entry_price", 0) or 0)
-            qty = int(float(pos.get("qty", 0)))
-        except (TypeError, ValueError):
+            entry_price=finite_number(pos.get("avg_entry_price"),positive=True)
+            amount=finite_number(pos.get("qty"),positive=True)
+            if not amount.is_integer():
+                raise ValueError("Fractional option position")
+            qty=int(amount)
+        except (TypeError,ValueError,OverflowError):
             log.warning("reconcile: bad qty/avg_entry_price on position %s - skipping.", symbol)
             continue
         if entry_price <= 0 or qty <= 0:
@@ -200,7 +203,10 @@ def reconcile_open_positions() -> int:
              "running our own stop-loss/trailing/expiry guardrails on it now.")
         )
 
-        mark_watched(symbol)
+        with _watched_lock:
+            if symbol in _watched:
+                continue
+            _watched.add(symbol)
 
         def _on_exit(result: Dict[str, Any], _symbol=symbol) -> None:
             unmark_watched(_symbol)
@@ -223,12 +229,27 @@ def reconcile_open_positions() -> int:
     return recovered
 
 
+def synchronize_broker_state():
+    from lavish_core.trade.state_audit import audit_state
+    store=HybridStore(DEFAULT_DB)
+    try:
+        reconcile_pending_orders(store)
+        try:
+            positions=get_positions()
+        except Exception:
+            store.set_kill_switch(True,"state_audit: broker positions unavailable")
+            return {"ok":False,"reasons":["broker_positions_unavailable"]}
+        return audit_state(store,positions)
+    finally:
+        store.con.close()
+
+
 def run_periodic_reconciliation() -> None:
     """Blocking loop - run in its own background thread from run_ingest.py."""
     log.info("Reconciliation loop started (every %.0fs).", RECONCILE_INTERVAL_SECONDS)
     while True:
         try:
-            reconcile_pending_orders()
+            synchronize_broker_state()
             n = reconcile_open_positions()
             if n:
                 log.info("reconcile: recovered %d unmanaged position(s).", n)

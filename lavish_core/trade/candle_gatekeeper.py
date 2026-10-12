@@ -67,8 +67,9 @@ def _validated_bars(bars):
     previous = None
     for raw in bars:
         stamp = datetime.fromisoformat(raw["t"].replace("Z", "+00:00"))
-        if stamp.tzinfo is None or stamp + timedelta(minutes=1) > datetime.now(timezone.utc):
-            raise ValueError("Unclosed or ambiguous candle")
+        now=datetime.now(timezone.utc)
+        if stamp.tzinfo is None or stamp>now:
+            raise ValueError("Future or ambiguous candle")
         if previous is not None and stamp <= previous:
             raise ValueError("Nonchronological candles")
         previous = stamp
@@ -77,7 +78,10 @@ def _validated_bars(bars):
         if bar["h"] < max(bar[k] for k in ("o","l","c")) or bar["l"] > min(bar[k] for k in ("o","h","c")):
             raise ValueError("Inconsistent candle")
         bar["t"] = stamp.astimezone(timezone.utc).isoformat()
-        result.append(bar)
+        if stamp+timedelta(minutes=1)<=now:
+            result.append(bar)
+    if result and (datetime.now(timezone.utc)-datetime.fromisoformat(result[-1]["t"])).total_seconds()>300:
+        raise ValueError("Reference candles are stale")
     return result
 
 

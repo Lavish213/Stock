@@ -501,10 +501,16 @@ def _finish_option_entry(
     from lavish_core.trade.trade_agent import load_risk_limits, sha1_str
     client_id = "option_" + sha1_str(f"{contract['symbol']}|buy|{qty}|{int(time.time()//60)}")[:24]
     try:
-        equity = finite_number(get_account().get("equity"), positive=True)
+        account=get_account()
+        equity=finite_number(account.get("equity"),positive=True)
     except Exception:
         return False
-    reservation = store.reserve_entry(client_id, contract["symbol"], qty, mid_price, load_risk_limits(store), equity, multiplier=100)
+    limits=load_risk_limits(store)
+    if TRADE_MODE == "live":
+        from lavish_core.trade.live_readiness import approved_entry_limits
+        approved=approved_entry_limits(store,qty*mid_price*100,equity,account.get("id") or account.get("account_number"))
+        limits.max_gross_exposure=min(limits.max_gross_exposure,approved["max_gross_exposure"])
+    reservation=store.reserve_entry(client_id,contract["symbol"],qty,mid_price,limits,equity,multiplier=100)
     if reservation:
         return True
     oid = store.submit_order(contract["symbol"], "buy", qty, order_type="limit", limit_price=mid_price, venue=TRADE_MODE, status="pending_submit", client_id=client_id, meta={"source":signal.get("source"), "target_underlying":target_hint, "stop_underlying":stop_hint})
@@ -602,7 +608,8 @@ def _finish_option_entry(
         actual_qty = finite_number(filled_qty, positive=True)
         if not actual_qty.is_integer() or actual_qty > qty:
             raise ValueError("Invalid confirmed quantity")
-        filled_qty_n = int(actual_qty)
+        filled_qty_n=int(actual_qty)
+        entry_fee=finite_number(order.get("filled_fee",0),nonnegative=True)
     except ValueError:
         store.set_order_status(oid, "fill_unverified")
         return True
@@ -611,7 +618,7 @@ def _finish_option_entry(
               contract["symbol"], filled_qty_n, entry_price, mid_price, slippage)
     store.log_fill(
         order_id=oid, symbol=contract["symbol"], side="buy",
-        qty=filled_qty_n, price=entry_price, fee=0.0, venue=TRADE_MODE,
+        qty=filled_qty_n, price=entry_price, fee=entry_fee, venue=TRADE_MODE,
         event_id=f"option-entry:{broker_oid}",
         reservation_client_id=client_id if final_status == "filled" else None,
     )
@@ -848,7 +855,11 @@ def _finish_equity_entry(
     dollars = (float(amt) if amt is not None else float(os.getenv("DEFAULT_TRADE_DOLLARS", "500"))) * POSITION_SIZE_SCALE
     if not valid_positive(dollars):
         return True
-    qty = float(math.floor(dollars / ref_price))
+    sizing_price=ref_price
+    if TRADE_MODE == "live" and side == "buy":
+        from lavish_core.trade.trade_agent import MAX_SLIPPAGE_PCT
+        sizing_price=ref_price*(1+MAX_SLIPPAGE_PCT)
+    qty=float(math.floor(dollars/sizing_price))
     if qty < 1:
         return True
 

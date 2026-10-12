@@ -138,6 +138,9 @@ def main() -> None:
     # opens a connection to an already-fully-created schema from here on.
     HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
 
+    if os.getenv("TRADE_MODE","dry") in ("paper","live"):
+        from lavish_core.trade.reconcile import synchronize_broker_state
+        synchronize_broker_state()
     _reconcile_startup()
     threading.Thread(target=run_periodic_reconciliation, name="reconcile-loop", daemon=True).start()
     threading.Thread(target=run_periodic_snapshot, name="account-snapshot-loop", daemon=True).start()

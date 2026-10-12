@@ -9,6 +9,7 @@
 # /accounts/{id}/orders with class=option) - same "correct by research,
 # not yet confirmed by a real sandbox call" caveat as broker_tradier.py.
 from __future__ import annotations
+import os
 import json, logging, re, time, uuid
 from lavish_core.utils.safety import finite_number
 from datetime import date
@@ -110,6 +111,13 @@ def place_option_order(
     actually needs given its long-only design.
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if order_type != "limit" or limit_price is None:
+            raise RuntimeError("Live option entries require bounded limit prices")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True)*100,account_id=_account_id())
+
     quantity = finite_number(qty, positive=True)
     if not quantity.is_integer():
         raise ValueError("Option quantities must be whole contracts")

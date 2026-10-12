@@ -3,7 +3,7 @@
 # could place an options order before this - only plain equity orders existed.
 from __future__ import annotations
 import os, json, logging, time, uuid
-from lavish_core.utils.safety import finite_number, normalize_base_url, check_trading_endpoint
+from lavish_core.utils.safety import finite_number, normalize_base_url, check_trading_endpoint, fresh_timestamp
 from datetime import date, datetime
 from typing import Optional, Dict, Any, List
 
@@ -53,17 +53,24 @@ def find_contract(
     _check_keys()
     params = {
         "underlying_symbols": ticker.upper(),
-        "expiration_date": expiry.isoformat(),
+        "expiration_date_gte": expiry.isoformat(),
+        "expiration_date_lte": expiry.isoformat(),
         "type": "call" if side.lower().startswith("c") else "put",
         "status": "active",
         "limit": 100,
     }
+    strike=finite_number(strike,positive=True)
+    tolerance=finite_number(strike_tolerance,nonnegative=True)
+    params["strike_price_gte"]=str(max(.001,strike-tolerance))
+    params["strike_price_lte"]=str(strike+tolerance)
     r = SESSION.get(CONTRACTS_URL, headers=HEADERS, params=params, timeout=20)
     if r.status_code != 200:
         log.warning("options contract lookup failed %s: %s", r.status_code, r.text[:300])
         return None
 
     contracts: List[Dict[str, Any]] = r.json().get("option_contracts", [])
+    if os.getenv("TRADE_MODE","dry") in ("paper","live"):
+        contracts=[c for c in contracts if c.get("tradable") is True and str(c.get("size")) == "100" and c.get("expiration_date") == expiry.isoformat() and c.get("type") == params["type"]]
     if not contracts:
         return None
 
@@ -102,7 +109,9 @@ def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
         q = r.json().get("quotes", {}).get(contract_symbol)
         if not q:
             return None
-        bp, ap = q.get("bp"), q.get("ap")
+        if os.getenv("TRADE_MODE","dry") != "dry" and not fresh_timestamp(q.get("t")):
+            return None
+        bp,ap=q.get("bp"),q.get("ap")
         if bp is None or ap is None:
             return None
         return {"bid": float(bp), "ask": float(ap)}
@@ -129,6 +138,18 @@ def place_option_order(
     (see options_exit_monitor.py).
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if order_type != "limit" or limit_price is None:
+            raise RuntimeError("Live option entries require bounded limit prices")
+        from lavish_core.trade.broker_alpaca import get_account
+        account=get_account()
+        account_id=account.get("id") or account.get("account_number")
+        if not account_id:
+            raise RuntimeError("Live account identity unavailable")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True)*100,account_id=account_id)
+
     check_trading_endpoint(os.getenv("TRADE_MODE", "dry"), ORDERS_URL)
     quantity = finite_number(qty, positive=True)
     if not quantity.is_integer():
@@ -157,6 +178,7 @@ def place_option_order(
         "type": order_type,
         "time_in_force": time_in_force,
         "client_order_id": client_order_id,
+        "position_intent": "buy_to_open" if side == "buy" else "sell_to_close",
     }
     if order_type == "limit":
         payload["limit_price"] = str(limit_price)

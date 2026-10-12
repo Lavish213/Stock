@@ -1,0 +1,34 @@
+{
+  "date_utc": "2026-10-12",
+  "pytest": {
+    "collected": 1525,
+    "passed": 1523,
+    "skipped": 2,
+    "failed": 0,
+    "seconds": 36.29
+  },
+  "hypothesis": {
+    "unicode_inputs": 1500,
+    "backtest_gap_inputs": 500
+  },
+  "options_simulation": {
+    "exchange_matrix_cases": 288,
+    "production_adapter_exit_ledger_matrix_cases": 288,
+    "synthetic": true,
+    "profitability_evidence": false
+  },
+  "python_compilation": {
+    "files": 315,
+    "errors": 0
+  },
+  "pip_check": "passed",
+  "bandit": {
+    "high": 0,
+    "medium": 0,
+    "low": 83,
+    "scanner_errors": 0
+  },
+  "authenticated_paper": "blocked_missing_credentials_and_paper_configuration",
+  "orders_submitted_to_actual_brokers": 0,
+  "live_ready": false
+}

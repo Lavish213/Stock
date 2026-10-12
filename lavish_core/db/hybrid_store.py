@@ -420,6 +420,8 @@ class HybridStore:
     # =========================================================================
 
     def set_kill_switch(self, enabled: bool, reason: str = "") -> None:
+        from lavish_core.utils.control_file import write_control
+        write_control(self.db_path,enabled,reason)
         self.execute(
             "INSERT INTO control_flags(name, enabled, reason, updated_at) VALUES ('kill_switch', ?, ?, ?) "
             "ON CONFLICT (name) DO UPDATE SET enabled = excluded.enabled, reason = excluded.reason, "
@@ -429,6 +431,10 @@ class HybridStore:
 
     def get_kill_switch(self) -> Tuple[bool, str]:
         """Returns (enabled, reason). (False, "") if never set."""
+        from lavish_core.utils.control_file import read_control
+        external=read_control(self.db_path)
+        if external is not None:
+            return external
         rows = self.fetchall("SELECT enabled, reason FROM control_flags WHERE name = 'kill_switch'")
         if not rows:
             return False, ""
@@ -761,7 +767,7 @@ class HybridStore:
         """Return simple row counts for quick sanity checks."""
         counts: Dict[str, int] = {}
         for t in ["risk_limits", "signals", "orders", "fills", "positions", "account_snapshots"]:
-            counts[t] = int(self.fetchall(f"SELECT COUNT(*) FROM {t}")[0][0])
+            counts[t] = int(self.fetchall(f"SELECT COUNT(*) FROM {t}")[0][0])  # nosec B608: identifiers come only from the literal table list above
         return counts
 
 
