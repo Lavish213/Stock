@@ -158,6 +158,13 @@ def _find_all_dates(text: str, year: int) -> List[Tuple[date, int]]:
     # wrong one. Collect every candidate with its position instead, and
     # let the caller pick by proximity to the actual trade (anchor_pos).
     found: List[Tuple[date, int]] = []
+    # Explicit ISO dates preserve the stated contract date, including year;
+    # never roll or nudge them onto a different expiry.
+    for match in re.finditer(r"(?<![\w-])(\d{4}-\d{2}-\d{2})(?![\w-])", text):
+        try:
+            found.append((date.fromisoformat(match.group(1)), match.start()))
+        except ValueError:
+            continue
 
     # \s* (not \s+) so a glued "NOV1st" matches the same as "Nov 1st" or
     # "Nov 1" - and an optional ordinal suffix (st/nd/rd/th) so "1st"/"31st"
@@ -470,6 +477,7 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
         "target_hint": target,
         "stop_hint": stop,
         "notes_excerpt": text[:280],
+        "instruction_text": text,
         "confidence": conf,
         "needs_human_review": conf < 0.75,
     }
@@ -540,6 +548,7 @@ def parse_alert(text: str = "", img_path: Optional[Path] = None, source: str = "
         merged["confidence"] = max(text_result.get("confidence", 0.0), image_result.get("confidence", 0.0))
         merged["needs_human_review"] = bool(conflicts) or merged["confidence"] < 0.75
         merged["notes_excerpt"] = (text_result.get("notes_excerpt") or image_result.get("notes_excerpt"))
+        merged["instruction_text"] = "\n".join((text_result.get("instruction_text", ""), image_result.get("instruction_text", "")))
         return merged
 
     return text_result or image_result or _extract("", Path(source))

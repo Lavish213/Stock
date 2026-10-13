@@ -205,6 +205,8 @@ def execute_trade_from_post(signal: Dict[str, Any]) -> None:
         return
     is_option = bool(signal.get("strike") and signal.get("expiry")
                       and str(signal.get("side", "")).upper() in ("CALL", "PUT"))
+    if is_option and str(signal.get("action", "BUY")).upper() not in ("BUY", "BTO", "BUY_TO_OPEN"):
+        return  # options entry route cannot execute a close or short instruction
     symbol = str(signal.get("ticker") or signal.get("symbol") or "").upper().strip()
     dedup_side = str(signal.get("side") or signal.get("action") or "").lower().strip()
     source = signal.get("source", "unknown")

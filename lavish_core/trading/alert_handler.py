@@ -171,6 +171,10 @@ def handle_alert_text(
 
     parsed = parse_alert(text=text, img_path=Path(image_path) if image_path else None, source=source)
 
+    instructions = text + "\n" + (parsed.get("instruction_text") or "")
+    if _nonactionable(instructions) or _is_perp_or_leveraged(instructions):
+        return
+
     if parsed.get("field_conflicts"):
         return
     ticker = parsed.get("ticker")
@@ -194,8 +198,15 @@ def handle_alert_text(
     options_confidence = parsed.get("confidence") or DEFAULT_CONFIDENCE
 
     if parsed.get("side") in ("CALL", "PUT") and parsed.get("strike") and parsed.get("expiry"):
+        # This route only opens long contracts. Exit/short instructions must
+        # never be translated into another buy; bracket exits use their own
+        # verified-position lifecycle.
+        if re.search(r"\b(stc|sto|btc|sell(?:ing)?|clos(?:e|ing)|exit(?:ing)?|trim(?:ming)?|short(?:ing)?)\b", instructions, re.I):
+            log.warning("[%s] Options close/short instruction requires position review", source)
+            return
         signal = {
             "source": source,
+            "action": "BUY",
             "ticker": ticker,
             "side": parsed["side"],
             "strike": parsed["strike"],
