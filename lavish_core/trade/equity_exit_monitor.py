@@ -75,6 +75,12 @@ def watch_bracket(
     last_status: Dict[str, str] = {leg_id: "unknown" for leg_id in leg_ids}
 
     def _finish(result: Dict[str, Any]) -> Dict[str, Any]:
+        if result.get('status') != 'exited':
+            store = HybridStore(duckdb_path=str(DEFAULT_DB))
+            try:
+                store.set_kill_switch(True, 'Equity bracket protection unverified; broker reconciliation required')
+            finally:
+                store.con.close()
         if on_exit:
             on_exit(result)
         return result
@@ -87,6 +93,16 @@ def watch_bracket(
                 log.warning("equity_exit_monitor: poll failed for leg %s (%s): %s", leg_id, symbol, e)
                 continue
 
+            if (not isinstance(leg, dict)
+                    or ('id' in leg and str(leg['id']) != str(leg_id))
+                    or ('symbol' in leg and leg['symbol'] != symbol)
+                    or ('side' in leg and leg['side'] != 'sell')):
+                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
+            try:
+                if 'qty' in leg and finite_number(leg['qty'], positive=True) != qty:
+                    raise ValueError('Bracket quantity mismatch')
+            except ValueError:
+                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
             status = leg.get("status", "unknown")
             last_status[leg_id] = status
 
@@ -94,16 +110,20 @@ def watch_bracket(
                 try:
                     exit_price = finite_number(leg.get("filled_avg_price"), positive=True)
                     filled_qty = finite_number(leg.get("filled_qty"), positive=True)
-                    if filled_qty > qty:
-                        raise ValueError("Exit exceeds watched quantity")
+                    fee = finite_number(leg.get('filled_fee', 0), nonnegative=True)
+                    if filled_qty != qty:
+                        raise ValueError("Filled bracket exit does not match watched quantity")
                 except ValueError:
                     return _finish({"status":"fill_unverified", "leg_id":leg_id})
-                pnl = (exit_price - entry_price) * filled_qty
+                pnl = (exit_price - entry_price) * filled_qty - fee
                 store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
-                applied = store.log_fill(order_id=order_id, symbol=symbol, side="sell",
-                                qty=filled_qty, price=exit_price, fee=0.0, venue=venue, event_id=f"equity-exit:{leg_id}")
-                if applied is not None:
-                    record_trade_outcome(store, pnl)
+                try:
+                    applied = store.log_fill(order_id=order_id, symbol=symbol, side="sell",
+                                    qty=filled_qty, price=exit_price, fee=fee, venue=venue, event_id=f"equity-exit:{leg_id}")
+                    if applied is not None:
+                        record_trade_outcome(store, pnl)
+                finally:
+                    store.con.close()
                 log.info("Equity bracket exit: %s closed via %s leg, entry=%.2f exit=%.2f pnl=%.2f",
                           symbol, leg.get("type", "?"), entry_price, exit_price, pnl)
                 return _finish({"status": "exited", "leg_id": leg_id, "leg_type": leg.get("type"),

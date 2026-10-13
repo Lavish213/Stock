@@ -15,7 +15,7 @@ from lavish_core.utils.safety import finite_number
 from datetime import date
 from typing import Optional, Dict, Any, List
 
-from lavish_core.trade.broker_tradier import HEADERS, BASE_URL, SESSION, _check_keys, _account_id
+from lavish_core.trade.broker_tradier import HEADERS, BASE_URL, SESSION, _check_keys, _account_id, _normalize_order
 from lavish_core.trade.options_broker import build_occ_symbol  # pure OCC-format helper, not Alpaca-specific
 
 log = logging.getLogger("options_broker_tradier")
@@ -183,13 +183,9 @@ def place_option_order(
     if r.status_code not in (200, 201):
         raise RuntimeError(f"Tradier options order error {r.status_code}: {r.text}")
     order = r.json().get("order", {})
-    return {
-        "id": str(order.get("id", "")),
-        "status": order.get("status"),
-        "filled_qty": order.get("exec_quantity"),
-        "filled_avg_price": order.get("avg_fill_price"),
-        "client_order_id": client_order_id,
-    }
+    result = _normalize_order(order)
+    result.setdefault('client_order_id', client_order_id)
+    return result
 
 
 def resolve_and_price_contract(

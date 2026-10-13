@@ -2,6 +2,7 @@
 import os, json, logging, time, uuid
 from typing import Optional, Dict, Any
 import requests
+from lavish_core.utils.broker_transport import BrokerSession
 from lavish_core.utils.safety import finite_number, valid_positive, normalize_base_url, check_trading_endpoint, fresh_timestamp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -43,7 +44,7 @@ _retry = Retry(
     raise_on_status=False,
     respect_retry_after_header=True,
 )
-SESSION = requests.Session()
+SESSION = BrokerSession('alpaca')
 SESSION.mount("https://", HTTPAdapter(max_retries=_retry))
 SESSION.mount("http://", HTTPAdapter(max_retries=_retry))
 

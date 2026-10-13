@@ -553,6 +553,22 @@ def _finish_option_entry(
     if not isinstance(order,dict) or not order.get("id"):
         store.set_order_status(oid,"submission_unknown")
         return True
+    def quarantine():
+        store.set_order_status(oid, 'fill_unverified')
+        store.set_kill_switch(True, 'Option execution snapshot unverified; broker reconciliation required')
+        return True
+    def verify_identity(snapshot, expected_id=None):
+        if (not isinstance(snapshot, dict) or not snapshot.get('id')
+                or (expected_id is not None and str(snapshot['id']) != str(expected_id))
+                or ('symbol' in snapshot and snapshot['symbol'] != contract['symbol'])
+                or ('side' in snapshot and snapshot['side'] != 'buy')
+                or ('client_order_id' in snapshot and snapshot['client_order_id'] != client_id)
+                or ('qty' in snapshot and finite_number(snapshot['qty'],positive=True) != qty)):
+            raise ValueError('Option execution identity mismatch')
+    try:
+        verify_identity(order)
+    except ValueError:
+        return quarantine()
     log.info("Options order result: %s", order)
 
     # Confirm the entry actually filled before starting exit monitoring -
@@ -571,23 +587,44 @@ def _finish_option_entry(
             time.sleep(OPTIONS_FILL_POLL_INTERVAL_SEC)
             try:
                 polled = broker_get_order(broker_oid)
+                if not isinstance(polled, dict):
+                    raise ValueError('Malformed option order poll')
+                verify_identity(dict(order, **polled), broker_oid)
                 final_status = polled.get("status", final_status)
                 filled_qty = polled.get("filled_qty", filled_qty)
                 filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
+                order = dict(order, **polled)
+            except ValueError:
+                return quarantine()
             except Exception as e:
                 log.warning("Options order status poll failed for %s: %s", broker_oid, e)
                 break
 
+    try:
+        if final_status not in ('filled','partially_filled','canceled','expired','rejected',
+                                'new','pending_new','accepted','submitted','pending_cancel','pending'):
+            raise ValueError('Unknown option execution status')
+        actual_qty = finite_number(filled_qty if filled_qty is not None else 0, nonnegative=True)
+        entry_fee = finite_number(order.get('filled_fee',0), nonnegative=True)
+        if not actual_qty.is_integer() or actual_qty > qty or (final_status=='filled' and actual_qty!=qty):
+            raise ValueError('Option cumulative fill does not match request')
+        if actual_qty > 0:
+            entry_price = finite_number(filled_avg_price,positive=True)
+        elif entry_fee > 0:
+            raise ValueError('Option fee without a fill')
+        filled_qty_n = int(actual_qty)
+    except ValueError:
+        return quarantine()
     store.set_order_status(oid, final_status)
     store.execute("UPDATE orders SET meta=? WHERE id=?", (json.dumps({"broker_id":broker_oid,"raw":order,"source":signal.get("source","discord"),"ticker":ticker,"option_side":option_side,"strike":float(strike),"expiry":expiry.isoformat(),"expected_price":mid_price,"target_underlying":target_hint,"stop_underlying":stop_hint}),oid))
     if not broker_oid:
         store.set_order_status(oid,"submission_unknown")
         return True
 
-    if final_status not in ("filled", "partially_filled"):
+    if actual_qty == 0:
         log.warning("Options order for %s never confirmed filled after %d polls (status=%s) - canceling, no exit monitor started.",
                     contract["symbol"], OPTIONS_FILL_POLL_ATTEMPTS, final_status)
-        if broker_oid and TRADE_MODE in ("paper", "live"):
+        if broker_oid and TRADE_MODE in ("paper", "live") and final_status not in ('canceled','expired','rejected'):
             try:
                 broker_cancel_order(broker_oid)
             except Exception as e:
@@ -596,7 +633,7 @@ def _finish_option_entry(
             store.release_entry(client_id)
         return True
 
-    if final_status == "partially_filled" and broker_oid and TRADE_MODE in ("paper", "live"):
+    if final_status not in ('filled','canceled','expired','rejected') and broker_oid and TRADE_MODE in ("paper", "live"):
         # Real gap found and fixed: the poll loop above only waits up to
         # OPTIONS_FILL_POLL_ATTEMPTS x OPTIONS_FILL_POLL_INTERVAL_SEC
         # (~5s default) for the rest to fill too. Leaving the unfilled
@@ -616,16 +653,6 @@ def _finish_option_entry(
     # Use the real fill price (slippage vs. the mid_price we sized/quoted
     # against) for both the exit-monitor's entry baseline and P&L, not the
     # pre-fill estimate.
-    try:
-        entry_price = finite_number(filled_avg_price, positive=True)
-        actual_qty = finite_number(filled_qty, positive=True)
-        if not actual_qty.is_integer() or actual_qty > qty:
-            raise ValueError("Invalid confirmed quantity")
-        filled_qty_n=int(actual_qty)
-        entry_fee=finite_number(order.get("filled_fee",0),nonnegative=True)
-    except ValueError:
-        store.set_order_status(oid, "fill_unverified")
-        return True
     slippage = round(entry_price - mid_price, 4)
     log.info("Options entry filled: %s qty=%s entry=%.2f (quoted mid=%.2f, slippage=%.4f)",
               contract["symbol"], filled_qty_n, entry_price, mid_price, slippage)
@@ -633,8 +660,9 @@ def _finish_option_entry(
         order_id=oid, symbol=contract["symbol"], side="buy",
         qty=filled_qty_n, price=entry_price, fee=entry_fee, venue=TRADE_MODE,
         event_id=f"option-entry:{broker_oid}",
-        reservation_client_id=client_id if final_status == "filled" else None,
+        reservation_client_id=client_id if final_status in ('filled','canceled','expired','rejected') else None,
     )
+    store.set_order_status(oid, final_status)
 
     if target_hint is None and stop_hint is None:
         log.info("No target/stop given for %s - relying on our own guardrails (stop/trail/expiry) for the exit.",
@@ -662,17 +690,22 @@ def _finish_option_entry(
             log.warning("Exit monitor for %s ended without a clean fill: %s", contract["symbol"], result)
 
     mark_watched(contract["symbol"])
-    watch_and_exit_async(
-        underlying_symbol=ticker,
-        contract_symbol=contract["symbol"],
-        qty=filled_qty_n,
-        option_side=option_side,
-        entry_price=entry_price,
-        expiry=expiry,
-        target_underlying=float(target_hint) if target_hint is not None else None,
-        stop_underlying=float(stop_hint) if stop_hint is not None else None,
-        on_exit=_on_exit,
-    )
+    try:
+        watch_and_exit_async(
+            underlying_symbol=ticker,
+            contract_symbol=contract["symbol"],
+            qty=filled_qty_n,
+            option_side=option_side,
+            entry_price=entry_price,
+            expiry=expiry,
+            target_underlying=float(target_hint) if target_hint is not None else None,
+            stop_underlying=float(stop_hint) if stop_hint is not None else None,
+            on_exit=_on_exit,
+        )
+    except Exception:
+        unmark_watched(contract['symbol'])
+        store.set_kill_switch(True, 'Option exit monitor failed to start')
+        raise
     return True
 
 def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
@@ -926,6 +959,8 @@ def _finish_equity_entry(
     # Same concentration check as the options path - only gates new long
     # entries, same reasoning as the bracket above (a sell is reducing/
     # closing exposure, not adding to it).
+    if side == 'buy':
+        meta.update(take_profit=take_profit, stop_loss=stop_loss)
     if side == "buy" and TRADE_MODE in ("paper", "live"):
         corr_ok, corr_reason = check_correlation_ok(sym)
         if not corr_ok:
@@ -985,20 +1020,40 @@ def _finish_equity_entry(
     if side == "buy" and out.get("status") == "filled" and (take_profit is not None or stop_loss is not None):
         entry_price = float(out.get("filled_avg_price") or ref_price)
         legs = out.get("legs") or []
+        def equity_finished(result):
+            unmark_watched(sym)
+            if result.get('status') != 'exited':
+                s = HybridStore(DEFAULT_DB)
+                try:
+                    s.set_kill_switch(True, 'Equity exit protection ended without a verified close')
+                finally:
+                    s.con.close()
+        mark_watched(sym)
+        def start_equity_monitor(launch, **kwargs):
+            try:
+                return launch(**kwargs)
+            except Exception:
+                unmark_watched(sym)
+                store.set_kill_switch(True, 'Equity exit monitor failed to start')
+                raise
         if SUPPORTS_NATIVE_BRACKETS:
             leg_ids = [leg.get("id") for leg in legs if leg.get("id")]
             if leg_ids:
-                watch_bracket_async(
+                start_equity_monitor(watch_bracket_async,
                     order_id=out["order_id"], symbol=sym, qty=qty,
                     entry_price=entry_price, leg_ids=leg_ids, venue=TRADE_MODE,
+                    on_exit=equity_finished,
                 )
             else:
+                unmark_watched(sym)
+                store.set_kill_switch(True, 'Equity bracket legs unavailable; protection review required')
                 log.warning("No bracket legs came back for %s despite take_profit/stop_loss being set - "
                             "position has no automated exit watch.", sym)
         else:
-            watch_and_exit_active_async(
+            start_equity_monitor(watch_and_exit_active_async,
                 symbol=sym, qty=qty, entry_price=entry_price,
                 take_profit=take_profit, stop_loss=stop_loss, venue=TRADE_MODE,
+                on_exit=equity_finished,
             )
 
     # A broker-side failure inside place_trade (unreachable, request error)

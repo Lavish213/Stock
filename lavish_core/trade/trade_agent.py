@@ -556,6 +556,17 @@ def place_trade(
         broker_resp = None
         try:
             broker_resp = _submit_with_retries(_submit, client_id)
+            def verify_identity(snapshot, expected_id=None):
+                if (not isinstance(snapshot, dict) or not snapshot.get('id')
+                        or (expected_id is not None and str(snapshot['id']) != str(expected_id))
+                        or ('symbol' in snapshot and snapshot['symbol'] != symbol)
+                        or ('side' in snapshot and snapshot['side'] != side)
+                        or ('client_order_id' in snapshot and snapshot['client_order_id'] != client_id)
+                        or ('qty' in snapshot and finite_number(snapshot['qty'], positive=True) != qty)):
+                    raise ValueError('Equity execution identity mismatch')
+            if not isinstance(broker_resp, dict) or not broker_resp.get('id'):
+                raise SubmissionUnknown('Broker response lacks order ID')
+            verify_identity(broker_resp)
             broker_oid = broker_resp.get("id")
             if not broker_oid:
                 raise SubmissionUnknown("Broker response lacks order ID")
@@ -566,6 +577,7 @@ def place_trade(
             final_status = broker_resp.get("status", "submitted")
             filled_qty = broker_resp.get("filled_qty")
             filled_avg_price = broker_resp.get("filled_avg_price")
+            filled_fee = broker_resp.get('filled_fee', 0)
             if broker_oid:
                 for _ in range(FILL_POLL_ATTEMPTS):
                     if final_status in ("filled", "canceled", "expired", "rejected"):
@@ -573,25 +585,34 @@ def place_trade(
                     time.sleep(FILL_POLL_INTERVAL_SEC)
                     try:
                         polled = broker_get_order(broker_oid)
+                        if not isinstance(polled, dict):
+                            raise ValueError('Malformed equity order poll')
+                        verify_identity(dict(broker_resp, **polled), broker_oid)
                         final_status = polled.get("status", final_status)
                         filled_qty = polled.get("filled_qty", filled_qty)
                         filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
+                        filled_fee = polled.get('filled_fee', filled_fee)
+                        broker_resp = dict(broker_resp, **polled)
+                    except ValueError:
+                        raise
                     except Exception as e:
                         LOG.warning("Order status poll failed for %s: %s", broker_oid, e)
                         break
 
+            if final_status not in ('filled','partially_filled','canceled','expired','rejected',
+                                    'new','pending_new','accepted','submitted','pending_cancel','pending'):
+                raise ValueError('Unknown equity execution status')
+            actual_qty = finite_number(filled_qty if filled_qty is not None else 0, nonnegative=True)
+            execution_fee = finite_number(filled_fee, nonnegative=True)
+            if actual_qty > qty or (final_status == 'filled' and actual_qty != qty):
+                raise ValueError('Equity cumulative fill does not match request')
+            if actual_qty > 0:
+                actual_price = finite_number(filled_avg_price, positive=True)
+            elif execution_fee > 0:
+                raise ValueError('Equity fee without a fill')
             store.set_order_status(oid, final_status)
             store.execute("UPDATE orders SET meta=? WHERE id=?", (json.dumps({"broker_id":broker_oid,"raw":broker_resp,"expected_price":ref_price,**meta}), oid))
-            if final_status in ("filled", "partially_filled"):
-                try:
-                    actual_price = finite_number(filled_avg_price, positive=True)
-                    actual_qty = finite_number(filled_qty, positive=True)
-                    if actual_qty > qty:
-                        raise ValueError("Fill exceeds order quantity")
-                except ValueError:
-                    store.set_order_status(oid, "fill_unverified")
-                    return {"status":"fill_unverified", "order_id":oid, "reason":"reconciliation_required"}
-            if final_status in ("filled", "partially_filled") and filled_qty:
+            if actual_qty > 0:
                 # Real gap found and fixed: this used to only log a fill
                 # when status was EXACTLY "filled" - a partial fill (rare
                 # for a liquid, small-size market order, but not
@@ -599,7 +620,6 @@ def place_trade(
                 # fills ledger at all, even though real shares were
                 # actually held at the broker.
                 actual_price = finite_number(filled_avg_price, positive=True)
-                actual_qty = float(filled_qty)
                 slippage = round(actual_price - ref_price, 4)
                 store.log_fill(
                     order_id=oid,
@@ -607,7 +627,7 @@ def place_trade(
                     side=side,
                     qty=actual_qty,
                     price=actual_price,
-                    fee=0.00,
+                    fee=execution_fee,
                     venue=mode,
                     event_id=f"entry:{broker_oid or client_id}:{side}",
                     reservation_client_id=client_id if final_status == "filled" else None,
@@ -625,8 +645,8 @@ def place_trade(
                     # it; the confirmed partial fill above is final.
                     try:
                         if broker_cancel_order(broker_oid):
-                            store.release_entry(client_id)
-                        LOG.info("Canceled unfilled remainder of partially-filled order for %s.", symbol)
+                            store.set_order_status(oid, 'pending_cancel')
+                        LOG.info("Requested cancellation of unfilled remainder for %s; awaiting terminal confirmation.", symbol)
                     except Exception as e:
                         LOG.warning("Cancel of partially-filled order remainder for %s failed: %s", symbol, e)
             if final_status in ("canceled", "expired", "rejected"):
@@ -651,6 +671,8 @@ def place_trade(
             unknown = isinstance(e, SubmissionUnknown) or broker_resp is not None
             status = "submission_unknown" if isinstance(e, SubmissionUnknown) else ("fill_unverified" if unknown else "rejected")
             store.set_order_status(oid, status)
+            if status == 'fill_unverified':
+                store.set_kill_switch(True, 'Equity execution snapshot unverified; broker reconciliation required')
             if not unknown:
                 store.release_entry(client_id)
             return {"status":status, "order_id":oid, "reason":"reconciliation_required" if unknown else f"broker_error: {e}"}

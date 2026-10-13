@@ -46,12 +46,13 @@ def test_account_id_resolves_from_single_account_object():
         assert bt._account_id() == "ACC123"
 
 
-def test_account_id_resolves_from_list_and_picks_first():
+def test_account_id_rejects_ambiguous_account_list():
     with patch.object(bt, "API_TOKEN", "test"), \
          patch.object(bt.SESSION, "get", return_value=_resp(body={
              "profile": {"account": [{"account_number": "FIRST"}, {"account_number": "SECOND"}]}
          })):
-        assert bt._account_id() == "FIRST"
+        with pytest.raises(RuntimeError, match='TRADIER_ACCOUNT_ID'):
+            bt._account_id()
 
 
 def test_account_id_is_cached_after_first_resolution():
