@@ -47,3 +47,15 @@ def test_singleton_and_mixed_chain_preserve_valid_contract(boundary, monkeypatch
     payload = row if single else [None, {'option_type': 'call', 'strike': 'nan'}, row]
     monkeypatch.setattr(ob.SESSION, 'get', lambda *a, **k: Response({'options': {'option': payload}}))
     assert ob.find_contract('AAPL', expiry, 'CALL', 100)['symbol'] == row['symbol']
+
+@pytest.mark.parametrize('quote', [
+    {'bid': -1, 'ask': 1}, {'bid': 2, 'ask': 1}, {'bid': 'nan', 'ask': 1},
+    {'bid': 1, 'ask': 'inf'}, {'bid': True, 'ask': 1}, {'bid': 1, 'ask': None},
+])
+def test_invalid_option_quote_fails_closed(boundary, monkeypatch, quote):
+    monkeypatch.setattr(ob.SESSION, 'get', lambda *a, **k: Response({'quotes': {'quote': quote}}))
+    assert ob.latest_option_quote('AAPL260101C00100000') is None
+
+def test_valid_zero_bid_option_quote_is_preserved(boundary, monkeypatch):
+    monkeypatch.setattr(ob.SESSION, 'get', lambda *a, **k: Response({'quotes': {'quote': {'bid': 0, 'ask': 0.05}}}))
+    assert ob.latest_option_quote('AAPL260101C00100000') == {'bid': 0.0, 'ask': 0.05}

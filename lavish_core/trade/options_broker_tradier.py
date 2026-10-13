@@ -106,7 +106,11 @@ def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
         bid, ask = q.get("bid"), q.get("ask")
         if bid is None or ask is None:
             return None
-        return {"bid": float(bid), "ask": float(ask)}
+        bid = finite_number(bid, nonnegative=True)
+        ask = finite_number(ask, positive=True)
+        if ask < bid:
+            return None
+        return {"bid": bid, "ask": ask}
     except Exception as e:
         log.warning("latest_option_quote failed for %s: %s", contract_symbol, e)
         return None
