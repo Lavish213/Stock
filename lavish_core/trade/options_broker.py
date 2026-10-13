@@ -69,14 +69,33 @@ def find_contract(
         return None
 
     contracts: List[Dict[str, Any]] = r.json().get("option_contracts", [])
-    if os.getenv("TRADE_MODE","dry") in ("paper","live"):
-        contracts=[c for c in contracts if c.get("tradable") is True and str(c.get("size")) == "100" and c.get("expiration_date") == expiry.isoformat() and c.get("type") == params["type"]]
+    if not isinstance(contracts,list):
+        return None
+    def matches(c):
+        if not isinstance(c,dict):
+            return False
+        try:
+            listed=finite_number(c.get('strike_price'),positive=True)
+            if abs(listed-strike)>tolerance:
+                return False  # Zero tolerance means exact strike, not unlimited.
+            if os.getenv('TRADE_MODE','dry') in ('paper','live'):
+                if not (c.get('tradable') is True and str(c.get('size'))=='100'
+                        and c.get('expiration_date')==expiry.isoformat() and c.get('type')==params['type']):
+                    return False
+                if c.get('underlying_symbol',ticker.upper()) != ticker.upper():
+                    return False
+                if c.get('symbol') != build_occ_symbol(ticker,expiry,side,listed):
+                    return False  # OCC ticker, expiry, call/put and strike must agree.
+            return True
+        except (ValueError,TypeError,OverflowError):
+            return False
+    contracts=[c for c in contracts if matches(c)]
     if not contracts:
         return None
 
     best = min(contracts, key=lambda c: abs(float(c.get("strike_price", 0)) - strike))
     deviation = abs(float(best.get("strike_price", 0)) - strike)
-    if strike_tolerance and deviation > strike_tolerance:
+    if deviation > tolerance:
         log.warning(
             "closest listed strike %.2f is %.2f away from requested %.2f (tolerance %.2f) for %s",
             float(best["strike_price"]), deviation, strike, strike_tolerance, ticker,
