@@ -53,6 +53,26 @@ class ExitState:
             finally:
                 store.con.close()
 
+    def _verify_identity(self, order, expected_id=None):
+        if (not isinstance(order, dict) or not order.get('id')
+                or (expected_id is not None and order['id'] != expected_id)
+                or ('symbol' in order and self.symbol is not None and order['symbol'] != self.symbol)
+                or ('side' in order and str(order['side']).lower() != 'sell')
+                or ('client_order_id' in order and order['client_order_id'] != self.client_id)):
+            raise ValueError('Closing order identity mismatch')
+        if 'qty' in order and finite_number(order['qty'],positive=True) != self.remaining+self.baseline_qty:
+            raise ValueError('Closing order quantity mismatch')
+
+    def _quarantine_identity(self):
+        self._journal_status('fill_unverified')
+        if self.db_path is not None:
+            store = self._store()
+            try:
+                store.set_kill_switch(True,'Closing order identity unverified; broker reconciliation required')
+            finally:
+                store.con.close()
+        return {'status':'fill_unverified','reason':'reconciliation_required'}
+
     def _record_snapshot(self, order):
         if self.db_path is None or not self.journal_id:
             return
@@ -122,6 +142,11 @@ class ExitState:
                 self._journal_status("submission_unknown")
                 return None
         order = self.pending
+        try:
+            self._verify_identity(order)
+        except ValueError:
+            return self._quarantine_identity()
+        expected_id = order['id']
         for _ in range(poll_attempts):
             if order.get('status') in ('filled','canceled','expired','rejected'):
                 break
@@ -129,7 +154,12 @@ class ExitState:
             try:
                 result = get_order(order['id'])
                 if isinstance(result,dict):
-                    order = dict(order,**result)
+                    candidate = dict(order,**result)
+                    try:
+                        self._verify_identity(candidate,expected_id)
+                    except ValueError:
+                        return self._quarantine_identity()
+                    order = candidate
                     self.pending = order
             except Exception:
                 return None

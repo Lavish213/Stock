@@ -13,6 +13,21 @@ from lavish_core.db.hybrid_store import HybridStore
 
 TERMINAL={'filled','canceled','expired','rejected'}
 
+def _validate_entry(order,symbol,quantity,client_id,broker_id=None):
+    """Verify each snapshot before following a remote ID or booking exposure."""
+    if (not isinstance(order,dict) or not isinstance(order.get('id'),str)
+            or not order['id'] or order.get('symbol')!=symbol
+            or str(order.get('side','')).lower()!='buy'
+            or order.get('client_order_id')!=client_id
+            or (broker_id is not None and order['id']!=broker_id)):
+        raise ValueError('Unverified entry order identity')
+    if finite_number(order.get('qty'),positive=True)!=quantity:
+        raise ValueError('Mismatched entry order quantity')
+    filled=finite_number(order.get('filled_qty'),nonnegative=True)
+    if not filled.is_integer() or filled>quantity:
+        raise ValueError('Invalid entry filled quantity')
+    return order['id']
+
 def _require_paper():
     if os.getenv('TRADE_MODE')!='paper':raise ValueError('Explicit paper mode required')
     if os.getenv('BROKER_PROVIDER','alpaca').lower()!='alpaca':raise ValueError('This paper cycle supports Alpaca only')
@@ -68,14 +83,16 @@ def run_cycle(contract_symbol,db_path,*,execute_paper=False,max_premium_usd,quan
             except Exception:order=None
             if not order:
                 store.set_order_status(oid,'submission_unknown');raise RuntimeError('Unknown entry outcome; broker review required')
-        if not isinstance(order,dict) or not order.get('id'):raise ValueError('Invalid submission response')
+        entry_id=_validate_entry(order,contract_symbol,quantity,client)
         for _ in range(poll_attempts):
             if order.get('status') in TERMINAL:break
-            sleep(1);order=broker.get_order(order['id'])
+            sleep(1);order=broker.get_order(entry_id)
+            _validate_entry(order,contract_symbol,quantity,client,entry_id)
         if order.get('status') not in TERMINAL:
-            broker.cancel_order(order['id'])
+            broker.cancel_order(entry_id)
             for _ in range(poll_attempts):
-                sleep(1);order=broker.get_order(order['id'])
+                sleep(1);order=broker.get_order(entry_id)
+                _validate_entry(order,contract_symbol,quantity,client,entry_id)
                 if order.get('status') in TERMINAL:break
         # Do not close while an entry can still execute after accepted cancellation.
         if order.get('status') not in TERMINAL:

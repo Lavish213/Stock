@@ -75,6 +75,35 @@ def test_paper_cycle_imports_broker_posted_fee_once(tmp_path,boundary,monkeypatc
     assert store.fetchall('SELECT count(*) FROM broker_cash_activities')[0][0]==1
     store.con.close()
 
+@pytest.mark.parametrize('change',[
+    {'side':'sell'}, {'symbol':'foreign-contract'}, {'qty':'2'},
+    {'client_order_id':'foreign-client'}, {'id':None},
+])
+def test_paper_cycle_rejects_foreign_entry_before_recording_or_closing(tmp_path,boundary,monkeypatch,change):
+    _,symbol,state=boundary
+    original=options.place_option_order
+    def mismatched(*args,**kwargs):
+        order=dict(original(*args,**kwargs));order.update(change);return order
+    monkeypatch.setattr(options,'place_option_order',mismatched)
+    path=tmp_path/'mismatch.duckdb'
+    with pytest.raises(ValueError,match='entry'):
+        pc.run_cycle(symbol,path,execute_paper=True,max_premium_usd=100,sleep=lambda _:None)
+    assert state['posts']==1  # Never close or cancel an unverified remote identity.
+    store=HybridStore(path)
+    assert store.get_kill_switch()[0]
+    assert store.fetchall('SELECT count(*) FROM fills')[0][0]==0
+    store.con.close()
+
+def test_paper_cycle_rejects_identity_change_while_polling(tmp_path,boundary,monkeypatch):
+    exchange,symbol,state=boundary
+    exchange.quote(symbol,1,1,liquidity=0)
+    monkeypatch.setattr(broker,'get_order',lambda oid:dict(exchange.orders[oid],id='foreign-id',status='new'))
+    cancel_calls=[]
+    monkeypatch.setattr(broker,'cancel_order',lambda oid:cancel_calls.append(oid))
+    with pytest.raises(ValueError,match='entry'):
+        pc.run_cycle(symbol,tmp_path/'poll-mismatch.duckdb',execute_paper=True,max_premium_usd=100,poll_attempts=1,sleep=lambda _:None)
+    assert state['posts']==1 and cancel_calls==[]
+
 @pytest.mark.parametrize('failure',['zero_bid','cancel_unknown','unknown_submission'])
 def test_unknown_paper_outcomes_never_blindly_resubmit(tmp_path,boundary,failure):
     x,symbol,state=boundary;qty=1

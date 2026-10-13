@@ -45,6 +45,21 @@ def test_inconclusive_reconciliation_never_releases_funds(remote,store,monkeypat
  assert store.fetchall('SELECT count(*) FROM risk_reservations')[0][0]==1;assert not store.fetchall('SELECT * FROM fills')
 
 def attempt(state,submit,lookup,get,cancel):return state.attempt(submit,lookup,get,cancel,1,lambda:None)
+
+@pytest.mark.parametrize('change',[{'id':'foreign'}, {'symbol':'MSFT'}, {'side':'buy'}, {'client_order_id':'foreign'}, {'qty':2}])
+def test_exit_conflicting_poll_identity_is_quarantined_without_fill_or_cancel(store,change):
+ oid=store.submit_order('AAPL','buy',1);store.log_fill(oid,'AAPL','buy',1,100)
+ state=ExitState(1,db_path=store.db_path,symbol='AAPL')
+ def submit(qty,cid):return {'id':'closing','status':'new','symbol':'AAPL','side':'sell','client_order_id':cid,'qty':qty,'filled_qty':0}
+ remote={'status':'filled','filled_qty':1,'filled_avg_price':110};remote.update(change)
+ cancel=Mock()
+ result=attempt(state,submit,Mock(),lambda *a:remote,cancel)
+ assert result['status']=='fill_unverified'
+ assert store.get_position('AAPL')['qty']==1
+ assert store.fetchall("SELECT count(*) FROM fills WHERE side='sell'")[0][0]==0
+ assert store.get_kill_switch()[0]
+ cancel.assert_not_called()
+
 @pytest.mark.parametrize('cancel',[Mock(return_value=False),Mock(side_effect=requests.Timeout()),Mock(return_value=True)])
 def test_exit_never_resubmits_after_unconfirmed_cancellation(cancel):
  state=ExitState(2);submit=Mock(return_value={'id':'pending','status':'pending_new'});get=Mock(return_value={'status':'pending_new'})
