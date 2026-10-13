@@ -255,4 +255,6 @@ def run_periodic_reconciliation() -> None:
                 log.info("reconcile: recovered %d unmanaged position(s).", n)
         except Exception as e:
             log.error("reconcile: unexpected error: %s", e)
+        from lavish_core.utils.worker_health import WORKER_HEALTH
+        WORKER_HEALTH.beat("reconcile-loop")
         time.sleep(RECONCILE_INTERVAL_SECONDS)

@@ -60,10 +60,26 @@ log = get_logger("run_ingest", log_dir="logs")
 # Type=notify (see sd_notify.py) - the thread still runs, it just never
 # sends anything.
 WATCHDOG_PING_INTERVAL_SECONDS = int(os.getenv("WATCHDOG_PING_INTERVAL_SECONDS", "30"))
+if not 1 <= WATCHDOG_PING_INTERVAL_SECONDS <= 30:
+    raise ValueError("Watchdog ping interval must be 1 to 30 seconds")
 
 
-def _run_watchdog_pings() -> None:
+def _run_watchdog_pings(workers=None) -> None:
+    from lavish_core.utils.worker_health import WORKER_HEALTH
+    from lavish_core.utils.control_file import write_control
     while True:
+        health=WORKER_HEALTH.status({name:thread.is_alive() for name,thread in workers.items()} if workers is not None else None)
+        if not health["healthy"]:
+            reason="worker health failure: "+", ".join(health["reasons"])
+            log.error(reason)
+            try:
+                write_control(DEFAULT_DB,True,reason)
+            except Exception as exc:
+                log.error("Unable to persist worker halt: %s",type(exc).__name__)
+            # Terminate so systemd can restart and restore durable exit supervision.
+            # A foreground launch exits visibly and requires an operator restart.
+            os._exit(1)
+            return
         sd_notify.notify_watchdog()
         time.sleep(WATCHDOG_PING_INTERVAL_SECONDS)
 
@@ -142,13 +158,23 @@ def main() -> None:
         from lavish_core.trade.reconcile import synchronize_broker_state
         synchronize_broker_state()
     _reconcile_startup()
-    threading.Thread(target=run_periodic_reconciliation, name="reconcile-loop", daemon=True).start()
-    threading.Thread(target=run_periodic_snapshot, name="account-snapshot-loop", daemon=True).start()
-    threading.Thread(target=_run_watchdog_pings, name="watchdog-ping-loop", daemon=True).start()
-
-    patreon_thread = threading.Thread(target=patreon_trigger.poll_loop, name="patreon-poller", daemon=True)
-    patreon_thread.start()
-    log.info("Patreon poller started in background thread.")
+    from lavish_core.utils.worker_health import WORKER_HEALTH
+    from lavish_core.trade.reconcile import RECONCILE_INTERVAL_SECONDS
+    from lavish_core.trade.account_monitor import ACCOUNT_SNAPSHOT_INTERVAL_SECONDS
+    from lavish_core.utils.safety import finite_number
+    grace=finite_number(os.getenv("WORKER_OPERATION_GRACE_SECONDS","300"),positive=True)
+    workers={}
+    for name,target,interval in [
+        ("reconcile-loop",run_periodic_reconciliation,RECONCILE_INTERVAL_SECONDS),
+        ("account-snapshot-loop",run_periodic_snapshot,ACCOUNT_SNAPSHOT_INTERVAL_SECONDS),
+        ("patreon-poller",patreon_trigger.poll_loop,patreon_trigger.POLL_SECONDS),
+    ]:
+        WORKER_HEALTH.register(name,finite_number(interval,positive=True)+grace)
+        thread=threading.Thread(target=target,name=name,daemon=True)
+        workers[name]=thread;thread.start()
+    patreon_thread=workers["patreon-poller"]
+    threading.Thread(target=_run_watchdog_pings,args=(workers,),name="watchdog-ping-loop",daemon=True).start()
+    log.info("Alert poller and supervised account/reconciliation workers started.")
 
     # Startup is done (reconciliation ran, every background loop is
     # alive) - tell systemd this process is actually up. A no-op unless

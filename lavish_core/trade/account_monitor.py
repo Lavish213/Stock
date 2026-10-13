@@ -58,4 +58,6 @@ def run_periodic_snapshot() -> None:
             snapshot_once(store)
         except Exception as e:
             log.error("account_monitor: unexpected error: %s", e)
+        from lavish_core.utils.worker_health import WORKER_HEALTH
+        WORKER_HEALTH.beat("account-snapshot-loop")
         time.sleep(ACCOUNT_SNAPSHOT_INTERVAL_SECONDS)

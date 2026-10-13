@@ -852,48 +852,37 @@ def _finish_equity_entry(
             log.warning("Skip trade: %s", drift_reason)
             return True
 
-    dollars = (float(amt) if amt is not None else float(os.getenv("DEFAULT_TRADE_DOLLARS", "500"))) * POSITION_SIZE_SCALE
-    if not valid_positive(dollars):
-        return True
-    sizing_price=ref_price
-    if TRADE_MODE == "live" and side == "buy":
-        from lavish_core.trade.trade_agent import MAX_SLIPPAGE_PCT
-        sizing_price=ref_price*(1+MAX_SLIPPAGE_PCT)
-    qty=float(math.floor(dollars/sizing_price))
-    if qty < 1:
-        return True
+    # Entry budgets and scaling never prevent closing a verified holding.
+    # An explicit sale amount still limits a partial exit; an unsized SELL
+    # closes the remaining long position.
+    qty = None
+    if side == "buy" or amt is not None:
+        dollars = (float(amt) if amt is not None else float(os.getenv("DEFAULT_TRADE_DOLLARS", "500")))
+        if side == "buy":
+            dollars *= POSITION_SIZE_SCALE
+        if not valid_positive(dollars):
+            return True
+        sizing_price=ref_price
+        if TRADE_MODE == "live" and side == "buy":
+            from lavish_core.trade.trade_agent import MAX_SLIPPAGE_PCT
+            sizing_price=ref_price*(1+MAX_SLIPPAGE_PCT)
+        qty=float(math.floor(dollars/sizing_price))
+        if qty < 1:
+            return True
 
     meta = {"source": signal.get("source", "patreon"), "confidence": conf, "note": note}
-
-    # Reduce-only: a sell must never exceed (or exist without) an actual
-    # held position. qty up to here is sized purely from the configured
-    # dollar amount - with nothing checked against what's actually held, a
-    # sell signal for more shares than owned (or for a symbol with no
-    # position at all) opened a real short by accident. Checked against the
-    # broker's own position, not this bot's local bookkeeping, so this is
-    # right even if the DB's view of what's held has ever drifted.
-    if side == "sell" and TRADE_MODE in ("paper", "live"):
+    if side == "sell":
         try:
-            broker_pos = broker_get_position(sym)
+            broker_pos = broker_get_position(sym) if TRADE_MODE in ("paper", "live") else store.get_position(sym)
+            held_qty = finite_number(broker_pos.get("qty",0),nonnegative=True) if broker_pos else 0.0
         except Exception as e:
-            store.submit_order(
-                symbol=sym, side=side, qty=0, order_type="market", tif="day", venue=TRADE_MODE,
-                status="rejected", meta={"reason": f"position_check_failed: {e}", **meta},
-            )
-            log.error("Skip trade: SELL %s but couldn't verify held position (%s) - refusing to risk a short "
-                      "(not recording as seen - may be retried).", sym, e)
+            store.submit_order(symbol=sym,side=side,qty=0,venue=TRADE_MODE,status="rejected",meta={"reason":"position_check_failed",**meta})
+            log.error("Skip SELL %s: held position could not be verified (%s)",sym,type(e).__name__)
             return False
-        held_qty = float(broker_pos.get("qty", 0)) if broker_pos else 0.0
         if held_qty <= 0:
-            store.submit_order(
-                symbol=sym, side=side, qty=0, order_type="market", tif="day", venue=TRADE_MODE,
-                status="rejected", meta={"reason": "reduce_only_no_position_held", **meta},
-            )
-            log.warning("Skip trade: SELL %s but nothing held (qty=%.2f) - refusing to open a short.", sym, held_qty)
+            store.submit_order(symbol=sym,side=side,qty=0,venue=TRADE_MODE,status="rejected",meta={"reason":"reduce_only_no_position_held",**meta})
             return True
-        if qty > held_qty:
-            log.info("Capping SELL %s qty %.0f -> %.0f (reduce-only - only %.0f held)", sym, qty, held_qty, held_qty)
-            qty = held_qty
+        qty = held_qty if qty is None else min(qty,held_qty)
 
     # Only bracket new long entries. A "sell" here is closing/shorting, not
     # opening a position, so there's nothing to attach a bracket exit to.

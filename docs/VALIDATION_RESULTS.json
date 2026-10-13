@@ -1,11 +1,11 @@
 {
   "date_utc": "2026-10-12",
   "pytest": {
-    "collected": 1565,
-    "passed": 1563,
+    "collected": 1582,
+    "passed": 1580,
     "skipped": 2,
     "failed": 0,
-    "seconds": 85.42
+    "seconds": 61.32
   },
   "hypothesis": {
     "unicode_inputs": 1500,
@@ -18,7 +18,7 @@
     "profitability_evidence": false
   },
   "python_compilation": {
-    "files": 317,
+    "files": 320,
     "errors": 0
   },
   "pip_check": "passed",
@@ -28,11 +28,11 @@
     "low": 83,
     "scanner_errors": 0
   },
-  "authenticated_paper": "blocked_missing_credentials_and_paper_configuration",
+  "authenticated_paper": "account/state preflight passed; actual order lifecycle incomplete",
   "orders_submitted_to_actual_brokers": 0,
   "live_ready": false,
   "coverage": {
-    "scope": "all lavish_core and ml Python",
+    "scope": "historical measurement from preceding commit; not remeasured for market preparation",
     "line_pct": 25.8,
     "branch_pct": 27.9
   },
@@ -43,6 +43,23 @@
     "paper-only legacy simulation",
     "full-suite CI pinned actions",
     "empty kill-switch reason still halts",
-    "receipt/journal separation"
-  ]
+    "receipt/journal separation",
+    "worker liveness and monotonic loop progress",
+    "equity exits independent of disabled entry budgets/scaling",
+    "read-only authenticated paper market preflight"
+  ],
+  "market_preparation": {
+    "broker_account_active": true,
+    "options_level": 3,
+    "broker_ledger_match": true,
+    "positions": 0,
+    "open_orders": 0,
+    "entries_halted": true,
+    "automatic_trading": false,
+    "missing": [
+      "authenticated alert source",
+      "operator-selected positive paper budgets",
+      "durable deployment host"
+    ]
+  }
 }

@@ -53,3 +53,7 @@ memory/
 # Local validation evidence and coverage cache
 .coverage
 validation/repair/
+
+# Runtime halt controls and database write-ahead journals
+*.control.json
+*.wal

@@ -173,6 +173,8 @@ def poll_loop():
             post_discord(f"🚨 Patreon poller crashed ({e}) - restarting automatically "
                           f"(restart #{restart_count}). New alerts may be missed until it recovers; "
                           f"check if this keeps happening.")
+            from lavish_core.utils.worker_health import WORKER_HEALTH
+            WORKER_HEALTH.beat("patreon-poller")
             time.sleep(POLL_LOOP_RESTART_DELAY_SECONDS)
 
 
@@ -238,6 +240,8 @@ def _poll_loop_inner():
                 first_run_seed = False  # only the very first successful poll is the seed batch
         except Exception as e:
             log.error("patreon_poll_error: %s", e)
+        from lavish_core.utils.worker_health import WORKER_HEALTH
+        WORKER_HEALTH.beat("patreon-poller")
         time.sleep(POLL_SECONDS)
 
 def main():
