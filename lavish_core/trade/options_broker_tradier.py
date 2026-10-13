@@ -35,6 +35,8 @@ def find_contract(
     (a parsed/OCR'd strike won't always match a real listed increment).
     """
     _check_keys()
+    strike = finite_number(strike, positive=True)
+    tolerance = finite_number(strike_tolerance, nonnegative=True)
     option_type = "call" if side.lower().startswith("c") else "put"
     r = SESSION.get(
         f"{BASE_URL}/markets/options/chains", headers=HEADERS,
@@ -46,26 +48,42 @@ def find_contract(
         return None
 
     chain = r.json().get("options")
-    if not chain or chain == "null":
+    if not isinstance(chain, dict):
         return None
     contracts = chain.get("option")
     if contracts is None:
         return None
     if not isinstance(contracts, list):
         contracts = [contracts]
-    contracts = [c for c in contracts if c.get("option_type") == option_type]
+    def matches(c):
+        if not isinstance(c, dict) or c.get('option_type') != option_type:
+            return False
+        try:
+            listed = finite_number(c.get('strike'), positive=True)
+            if abs(listed - strike) > tolerance:
+                return False
+            if c.get('symbol') != build_occ_symbol(ticker, expiry, side, listed):
+                return False
+            if 'expiration_date' in c and c['expiration_date'] != expiry.isoformat():
+                return False
+            if 'underlying' in c and c['underlying'] != ticker.upper():
+                return False
+            return True
+        except (ValueError, TypeError, OverflowError):
+            return False
+    contracts = [c for c in contracts if matches(c)]
     if not contracts:
         return None
 
     best = min(contracts, key=lambda c: abs(float(c.get("strike", 0)) - strike))
     deviation = abs(float(best.get("strike", 0)) - strike)
-    if strike_tolerance and deviation > strike_tolerance:
+    if deviation > tolerance:
         log.warning("Closest Tradier contract for %s %s $%.2f is $%.2f away (tolerance %.2f) - rejecting.",
                     ticker, side, strike, deviation, strike_tolerance)
         return None
 
     return {
-        "symbol": best.get("symbol") or build_occ_symbol(ticker, expiry, side, float(best.get("strike", strike))),
+        "symbol": best['symbol'],
         "strike_price": float(best.get("strike", strike)),
     }
 
