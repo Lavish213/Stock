@@ -254,6 +254,8 @@ def get_bars(symbol: str, limit: int = 20) -> list:
     except Exception as e:
         log.warning(f"get_bars failed for {symbol}: {e}")
 
+    if os.getenv("TRADE_MODE", "dry") != "dry":
+        return []  # unverified fallback candles must not confirm a money entry
     fallback = _yfinance_fallback_bars(symbol, limit)
     if fallback:
         log.warning(f"get_bars: Alpaca data unavailable for {symbol}, used yfinance fallback bars")

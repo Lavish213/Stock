@@ -114,7 +114,12 @@ def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
         bp,ap=q.get("bp"),q.get("ap")
         if bp is None or ap is None:
             return None
-        return {"bid": float(bp), "ask": float(ap)}
+        from lavish_core.utils.safety import finite_number
+        bid = finite_number(bp, nonnegative=True)
+        ask = finite_number(ap, positive=True)
+        if ask < bid:
+            return None
+        return {"bid": bid, "ask": ask}
     except Exception as e:
         log.warning("latest_option_quote failed for %s: %s", contract_symbol, e)
         return None

@@ -146,6 +146,7 @@ def test_options_entry_is_routed_through_the_gate_with_correct_direction(tmp_pat
         "strike": 200.0, "expiry": (__import__("datetime").date.today()+__import__("datetime").timedelta(days=7)).isoformat(), "confidence": 0.9, "amount_usd": 1000.0,
     }
     contract = {"symbol": "AAPL260116P00200000", "mid_price": 4.0, "bid": 3.9, "ask": 4.1}
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 195.)
 
     with patch.object(th.threading, "Thread", _SyncThread), \
          patch.object(th, "confirm_entry", return_value={"confirmed": True, "reason": "x", "price": 195.0}) as mock_confirm, \

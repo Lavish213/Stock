@@ -10,12 +10,18 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from unittest.mock import patch
+import pytest
 
 import lavish_core.trading.trade_handler as th
 
 
 def _contract(symbol="AAPL260101C00200000", mid_price=1.50):
-    return {"symbol": symbol, "mid_price": mid_price}
+    return {"symbol": symbol, "mid_price": mid_price, "bid": mid_price - .02, "ask": mid_price + .02}
+
+
+@pytest.fixture(autouse=True)
+def fresh_underlying_quote(monkeypatch):
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 200.)
 
 
 def _options_signal(ticker="AAPL", side="CALL", strike=200.0, confidence=0.9, amount_usd=500.0):

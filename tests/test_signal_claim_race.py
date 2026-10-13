@@ -10,11 +10,17 @@ from __future__ import annotations
 
 import threading
 import time
+import pytest
 from datetime import date, timedelta
 from unittest.mock import patch
 
 import lavish_core.trading.trade_handler as th
 from lavish_core.db.hybrid_store import HybridStore
+
+
+@pytest.fixture(autouse=True)
+def deterministic_quote(monkeypatch):
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 200.)
 
 
 # ---------------------------------------------------------------------------

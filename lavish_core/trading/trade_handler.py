@@ -147,6 +147,8 @@ def _price_drift_reason(alert_time_price: Optional[float], current_price: Option
         return None
     if not alert_time_price or not current_price or alert_time_price <= 0:
         return None
+    if not valid_positive(alert_time_price) or not valid_positive(current_price):
+        return "price_drift_unverifiable: invalid quote"
     drift = abs(current_price - alert_time_price) / alert_time_price
     if drift > MAX_PRICE_DRIFT_SINCE_ALERT_PCT:
         return (f"price_drift: underlying moved {drift:.1%} since the alert arrived "
@@ -221,6 +223,10 @@ def execute_trade_from_post(signal: Dict[str, Any]) -> None:
             signal["_alert_time_price"] = latest_quote(symbol)
         except Exception:
             signal["_alert_time_price"] = None
+    if TRADE_MODE in ("paper", "live") and (is_option or _coerce_side(str(signal.get("action", ""))) == "buy"):
+        if not valid_positive(signal.get("_alert_time_price")):
+            log.warning("Skip entry: alert-time underlying quote unavailable")
+            return
 
     store = None
     strike = expiry = None
@@ -415,12 +421,15 @@ def _finish_option_entry(
     # reasoning as _finish_equity_entry's identical skip: that gate's
     # entire purpose is to WAIT FOR and REQUIRE a favorable move, which a
     # flat max-drift check would often reject right after confirming.
-    if not skip_drift_check and TRADE_MODE in ("paper", "live"):
+    if TRADE_MODE in ("paper", "live"):
         try:
             underlying_now = latest_quote(ticker)
         except Exception:
             underlying_now = None
-        drift_reason = _price_drift_reason(signal.get("_alert_time_price"), underlying_now)
+        if not valid_positive(underlying_now):
+            log.warning("Skip options entry: current underlying quote unavailable")
+            return False
+        drift_reason = None if skip_drift_check else _price_drift_reason(signal.get("_alert_time_price"), underlying_now)
         if drift_reason:
             store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
             store.submit_order(
@@ -438,6 +447,8 @@ def _finish_option_entry(
     # or, worse, does fill and burns most of the position's value on the
     # spread alone. Reject outright rather than submit into that.
     bid, ask = contract.get("bid"), contract.get("ask")
+    if TRADE_MODE in ("paper", "live") and (bid is None or ask is None):
+        return False  # a midpoint alone cannot establish a tradable two-sided market
     if bid is not None or ask is not None:
         if not valid_positive(bid) or not valid_positive(ask) or ask < bid:
             return True
