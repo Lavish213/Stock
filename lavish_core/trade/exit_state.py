@@ -68,7 +68,7 @@ class ExitState:
         if self.db_path is not None:
             store = self._store()
             try:
-                store.set_kill_switch(True,'Closing order identity unverified; broker reconciliation required')
+                store.set_kill_switch(True,'Closing order snapshot unverified; broker reconciliation required')
             finally:
                 store.con.close()
         return {'status':'fill_unverified','reason':'reconciliation_required'}
@@ -84,6 +84,10 @@ class ExitState:
                 requested = store.fetchall("SELECT qty FROM orders WHERE id=?",(self.journal_id,))[0][0]
                 if cumulative > requested:
                     raise ValueError("Exit quantity exceeds request")
+                if order.get('status') == 'filled' and cumulative != requested:
+                    # Validate terminal completeness before booking any delta.
+                    # An inconsistent snapshot must not reduce durable exposure.
+                    raise ValueError('Filled exit quantity does not match request')
                 recorded,notional,recorded_fee=store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0),coalesce(sum(fee),0) FROM fills WHERE order_id=?",(self.journal_id,))[0]
                 delta = cumulative-recorded
                 if delta < 0:
@@ -167,8 +171,7 @@ class ExitState:
         try:
             self._record_snapshot(order)
         except ValueError:
-            self._journal_status("fill_unverified")
-            return {'status':'fill_unverified','reason':'reconciliation_required'}
+            return self._quarantine_identity()
         if status not in ('filled','canceled','expired','rejected'):
             try:
                 cancel(order['id'])
@@ -184,8 +187,7 @@ class ExitState:
             average = finite_number(order.get('filled_avg_price'), positive=True) if filled else 0
             price = finite_number((cumulative*average-self.baseline_notional)/filled,positive=True) if filled else 0
         except ValueError:
-            self._journal_status("fill_unverified")
-            return {'status':'fill_unverified','reason':'reconciliation_required'}
+            return self._quarantine_identity()
         self.completed += filled
         self.notional += filled*price
         self.remaining -= filled

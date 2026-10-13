@@ -46,6 +46,31 @@ def test_inconclusive_reconciliation_never_releases_funds(remote,store,monkeypat
 
 def attempt(state,submit,lookup,get,cancel):return state.attempt(submit,lookup,get,cancel,1,lambda:None)
 
+@pytest.mark.parametrize('filled',[0,1,3])
+def test_inconsistent_terminal_exit_preserves_exposure_and_halts(store,filled):
+ oid=store.submit_order('AAPL','buy',2);store.log_fill(oid,'AAPL','buy',2,100)
+ state=ExitState(2,db_path=store.db_path,symbol='AAPL')
+ submit=Mock(return_value={'id':'close','status':'filled','filled_qty':filled,'filled_avg_price':110})
+ result=attempt(state,submit,Mock(),Mock(),Mock())
+ assert result['status']=='fill_unverified'
+ assert store.get_position('AAPL')['qty']==2
+ assert store.fetchall("SELECT count(*) FROM fills WHERE side='sell'")[0][0]==0
+ assert store.get_kill_switch()[0]
+ assert submit.call_count==1
+
+def test_inconsistent_terminal_after_partial_fill_does_not_book_more(store):
+ oid=store.submit_order('AAPL','buy',3);store.log_fill(oid,'AAPL','buy',3,100)
+ state=ExitState(3,db_path=store.db_path,symbol='AAPL')
+ submit=Mock(return_value={'id':'close','status':'partially_filled','filled_qty':1,'filled_avg_price':110})
+ first=attempt(state,submit,Mock(),lambda _: {'status':'partially_filled','filled_qty':1,'filled_avg_price':110},Mock())
+ assert first is None and store.get_position('AAPL')['qty']==2
+ result=attempt(state,submit,Mock(),lambda _: {'status':'filled','filled_qty':2,'filled_avg_price':110},Mock())
+ assert result['status']=='fill_unverified'
+ assert store.get_position('AAPL')['qty']==2
+ assert store.fetchall("SELECT sum(qty) FROM fills WHERE side='sell'")[0][0]==1
+ assert store.get_kill_switch()[0]
+ assert submit.call_count==1
+
 @pytest.mark.parametrize('change',[{'id':'foreign'}, {'symbol':'MSFT'}, {'side':'buy'}, {'client_order_id':'foreign'}, {'qty':2}])
 def test_exit_conflicting_poll_identity_is_quarantined_without_fill_or_cancel(store,change):
  oid=store.submit_order('AAPL','buy',1);store.log_fill(oid,'AAPL','buy',1,100)
