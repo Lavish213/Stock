@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="${LAVISH_VENV_PATH:-$SCRIPT_DIR/venv}"
 PYTHON="$VENV_DIR/bin/python"

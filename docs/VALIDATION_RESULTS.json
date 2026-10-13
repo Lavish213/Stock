@@ -1,11 +1,11 @@
 {
   "date_utc": "2026-10-12",
   "pytest": {
-    "collected": 1582,
-    "passed": 1580,
+    "collected": 1629,
+    "passed": 1627,
     "skipped": 2,
     "failed": 0,
-    "seconds": 61.32
+    "seconds": 57.28
   },
   "hypothesis": {
     "unicode_inputs": 1500,
@@ -18,7 +18,7 @@
     "profitability_evidence": false
   },
   "python_compilation": {
-    "files": 320,
+    "files": 324,
     "errors": 0
   },
   "pip_check": "passed",
@@ -46,7 +46,12 @@
     "receipt/journal separation",
     "worker liveness and monotonic loop progress",
     "equity exits independent of disabled entry budgets/scaling",
-    "read-only authenticated paper market preflight"
+    "read-only authenticated paper market preflight",
+    "HMAC and replay-age guard",
+    "durable inbox identity conflict and semantic deduplication",
+    "dispatch expiry and interrupted-outcome quarantine",
+    "actual signed loopback HTTP transport",
+    "alert feed invokes actual parser/trade guards"
   ],
   "market_preparation": {
     "broker_account_active": true,
@@ -61,5 +66,15 @@
       "operator-selected positive paper budgets",
       "durable deployment host"
     ]
+  },
+  "signed_alert_feed": {
+    "built": true,
+    "mode": "review",
+    "external_publisher_connected": false,
+    "local_signed_http_delivery": 202,
+    "duplicate_suppression": 200,
+    "invalid_signature_rejection": 401,
+    "broker_orders_submitted": 0,
+    "permanent_service_running": false
   }
 }

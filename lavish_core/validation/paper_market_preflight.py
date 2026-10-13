@@ -19,6 +19,10 @@ def check_market(db_path=None,*,halt_entries=False):
     broker_ok=account.get('status')=='ACTIVE' and account.get('trading_blocked') is False and account.get('account_blocked') is False and level>=2
     patreon=bool(os.getenv('PATREON_ACCESS_TOKEN') or all(os.getenv(k) for k in ['PATREON_CLIENT_ID','PATREON_CLIENT_SECRET','PATREON_REFRESH_TOKEN']))
     discord=bool(os.getenv('DISCORD_USER_TOKEN') and os.getenv('DISCORD_INGEST_ACCEPT_TOS_RISK')=='1')
+    from lavish_core.feeds import alert_feed
+    private_feed=alert_feed.enabled()
+    if private_feed:alert_feed.settings()
+    source_present=patreon or discord or private_feed
     budgets={}
     for key in ['DEFAULT_TRADE_DOLLARS','DEFAULT_OPTION_TRADE_DOLLARS']:
         value=os.getenv(key)
@@ -26,7 +30,7 @@ def check_market(db_path=None,*,halt_entries=False):
     budget_configured=any(value is not None and value>0 for value in budgets.values())
     blockers=[]
     if not broker_ok:blockers.append('broker_account_not_eligible')
-    if not (patreon or discord):blockers.append('alert_source_credentials_missing')
+    if not source_present:blockers.append('alert_source_credentials_missing')
     else:blockers.append('alert_source_authentication_not_verified')
     if not budget_configured:blockers.append('explicit_entry_budget_missing')
     audit=None;halt=None
@@ -42,7 +46,7 @@ def check_market(db_path=None,*,halt_entries=False):
             if halt:blockers.append('entry_kill_switch_enabled')
         finally:store.con.close()
     from lavish_core.trade.live_readiness import runtime_digest
-    return dict(check='paper_market_preflight',source='authenticated-paper',synthetic=False,passed=broker_ok and (audit is None or audit['ok']),automatic_entries_ready=not blockers and clock['is_open'],live_ready=False,orders_submitted=0,account_id_hash=hashlib.sha256(str(account['id']).encode()).hexdigest(),observed_at=datetime.now(timezone.utc).isoformat(),runtime_sha256=runtime_digest(),market_open=clock['is_open'],next_open=clock.get('next_open'),next_close=clock.get('next_close'),positions_count=len(positions),open_orders_count=len(orders),options_trading_level=level,alert_source_credentials_present=patreon or discord,alert_source_authentication_verified=False,explicit_entry_budget_configured=budget_configured,entry_halted=halt,state_audit=audit,blockers=blockers,scope='connectivity and state only; actual fills, feed authentication, emergency notification delivery and deployed watchdog recovery not certified')
+    return dict(check='paper_market_preflight',source='authenticated-paper',synthetic=False,passed=broker_ok and (audit is None or audit['ok']),automatic_entries_ready=not blockers and clock['is_open'],live_ready=False,orders_submitted=0,account_id_hash=hashlib.sha256(str(account['id']).encode()).hexdigest(),observed_at=datetime.now(timezone.utc).isoformat(),runtime_sha256=runtime_digest(),market_open=clock['is_open'],next_open=clock.get('next_open'),next_close=clock.get('next_close'),positions_count=len(positions),open_orders_count=len(orders),options_trading_level=level,alert_source_credentials_present=source_present,alert_source_authentication_verified=False,explicit_entry_budget_configured=budget_configured,entry_halted=halt,state_audit=audit,blockers=blockers,scope='connectivity and state only; actual fills, feed authentication, emergency notification delivery and deployed watchdog recovery not certified')
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--env-file',type=Path,required=True);parser.add_argument('--db',type=Path);parser.add_argument('--halt-entries',action='store_true');parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()

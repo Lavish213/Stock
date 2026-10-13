@@ -54,12 +54,21 @@ for name, val in required.items():
         print(f"[FAIL] {name} is missing - copy env.example to .env and fill it in.")
         ok = False
 
-if has_patreon_static or has_patreon_refresh:
-    print("[ok] Patreon credentials present.")
+has_discord=bool(os.getenv("DISCORD_USER_TOKEN") and os.getenv("DISCORD_INGEST_ACCEPT_TOS_RISK")=="1")
+has_private_feed=False
+try:
+    from lavish_core.feeds import alert_feed
+    if alert_feed.enabled():
+        alert_feed.settings()
+        has_private_feed=True
+except (ValueError,TypeError):
+    print("[FAIL] Private feed configuration invalid; check paper mode, loopback host, port and strong secret.")
+    ok=False
+if has_patreon_static or has_patreon_refresh or has_discord or has_private_feed:
+    print("[ok] At least one authenticated-source configuration is present (connectivity is checked separately).")
 else:
-    print("[FAIL] No Patreon credentials - need either PATREON_ACCESS_TOKEN, or all three of "
-          "PATREON_CLIENT_ID/PATREON_CLIENT_SECRET/PATREON_REFRESH_TOKEN.")
-    ok = False
+    print("[FAIL] No alert source configured: configure Patreon, a permitted Discord listener, or the private signed feed.")
+    ok=False
 
 trade_mode = os.getenv("TRADE_MODE", "dry").lower()
 if trade_mode not in ("dry", "paper", "live"):
@@ -89,6 +98,7 @@ modules = [
     "lavish_core.trade.candle_gatekeeper",
     "lavish_core.trade.circuit_breaker",
     "lavish_core.trade.reconcile",
+    "lavish_core.feeds.alert_feed",
     "lavish_core.vision.extract_signal",
     "lavish_core.db.hybrid_store",
 ]
