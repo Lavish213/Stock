@@ -55,6 +55,32 @@ for name, val in required.items():
         ok = False
 
 has_discord=bool(os.getenv("DISCORD_USER_TOKEN") and os.getenv("DISCORD_INGEST_ACCEPT_TOS_RISK")=="1")
+if has_discord:
+    def configured_ids(name):
+        values=[value.strip() for value in os.getenv(name,'').split(',') if value.strip()]
+        return bool(values) and all(value.isdigit() and int(value)>0 for value in values)
+    if not configured_ids('DISCORD_WATCH_CHANNEL_IDS') or not (
+            configured_ids('DISCORD_WATCH_AUTHOR_IDS') or configured_ids('DISCORD_WATCH_WEBHOOK_IDS')):
+        print('[FAIL] Discord requires watched channel IDs and trusted creator or webhook IDs.')
+        ok=False
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        version('discord.py-self')
+        try:
+            version('discord.py')
+        except PackageNotFoundError:
+            pass
+        else:
+            raise RuntimeError('Conflicting Discord packages')
+        import discord
+        if hasattr(discord,'Intents'):
+            raise RuntimeError('Incorrect Discord library API')
+        age=int(os.getenv('DISCORD_MAX_ALERT_AGE_SECONDS','120'))
+        if not 1<=age<=900:
+            raise ValueError('Discord freshness window invalid')
+    except (ImportError,PackageNotFoundError,ValueError,RuntimeError):
+        print('[FAIL] Discord listener package/configuration invalid; use discord.py-self only and an age of 1 to 900 seconds.')
+        ok=False
 has_private_feed=False
 try:
     from lavish_core.feeds import alert_feed
