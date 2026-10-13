@@ -100,13 +100,29 @@ def run_cycle(contract_symbol,db_path,*,execute_paper=False,max_premium_usd,quan
         fees=store.fetchall('SELECT coalesce(sum(fee),0) FROM fills')[0][0]
         cash_error=cash_after-cash_before-(expected-fees)
         result.update(entry_price=float(order['filled_avg_price']),exit_price=outcome['price'],cash_before=cash_before,cash_after=cash_after,recorded_fees=fees,cash_reconciliation_error=cash_error,state_audit=audit,filled_requested_quantity=filled==quantity)
+        result['execution_passed']=audit['ok'] and filled==quantity
+        result['cash_reconciliation_status']='reconciled' if abs(cash_error)<=.02 else 'pending_cash_activity_review'
+        result['broker_order_ids']=[order['id'],outcome['order']['id']]
+        if abs(cash_error)>.02:
+            from lavish_core.validation.cash_audit import fetch_activities,reconcile
+            try:
+                cash_audit=reconcile(store,result,broker.get_account(),fetch_activities(broker,result['observed_at']),result['broker_order_ids'])
+                result['cash_activity_audit']=cash_audit
+                result['cash_reconciliation_status']=cash_audit['status']
+                cash_error=cash_audit['cash_reconciliation_error']
+                result['cash_reconciliation_error']=cash_error
+            except Exception as exc:
+                result['cash_activity_audit']={'passed':False,'error_type':type(exc).__name__}
         result['passed']=audit['ok'] and filled==quantity and abs(cash_error)<=.02
+        if result.get('cash_activity_audit') and not result['cash_activity_audit']['passed']:result['passed']=False
         if not result['passed']:store.set_kill_switch(True,'paper cycle reconciliation or requested fill incomplete')
         return result
     except Exception:
         if submitted:store.set_kill_switch(True,'paper cycle interrupted; inspect broker and isolated journal before rerun')
         raise
-    finally:store.con.close()
+    finally:
+        try:store.execute('CHECKPOINT')
+        finally:store.con.close()
 
 
 def main():

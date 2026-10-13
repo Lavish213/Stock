@@ -28,12 +28,16 @@ def test_notify_sends_the_correct_message_over_a_real_socket(tmp_path, monkeypat
         raise
     try:
         received = []
+        server.settimeout(2)
 
         def _listen():
-            data, _ = server.recvfrom(1024)
-            received.append(data.decode())
+            try:
+                data, _ = server.recvfrom(1024)
+                received.append(data.decode())
+            except socket.timeout:
+                pass
 
-        t = threading.Thread(target=_listen)
+        t = threading.Thread(target=_listen, daemon=True)
         t.start()
 
         monkeypatch.setenv("NOTIFY_SOCKET", sock_path)
@@ -57,12 +61,16 @@ def test_notify_watchdog_sends_the_watchdog_message(tmp_path, monkeypatch):
         raise
     try:
         received = []
+        server.settimeout(2)
 
         def _listen():
-            data, _ = server.recvfrom(1024)
-            received.append(data.decode())
+            try:
+                data, _ = server.recvfrom(1024)
+                received.append(data.decode())
+            except socket.timeout:
+                pass
 
-        t = threading.Thread(target=_listen)
+        t = threading.Thread(target=_listen, daemon=True)
         t.start()
 
         monkeypatch.setenv("NOTIFY_SOCKET", sock_path)

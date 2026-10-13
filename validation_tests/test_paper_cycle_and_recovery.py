@@ -48,6 +48,33 @@ def test_paper_cycle_through_production_adapter_and_exit(tmp_path,boundary,qty,l
     assert result['check']=='paper_order_cycle'  # A smoke cycle never certifies full readiness.
     assert state['posts']==2 and x.positions=={} and abs(result['cash_reconciliation_error'])<1e-8
 
+
+def test_completed_paper_cycle_reopens_in_a_new_process(tmp_path,boundary):
+    _,symbol,_=boundary
+    path=tmp_path/'checkpointed.duckdb'
+    assert pc.run_cycle(symbol,path,execute_paper=True,max_premium_usd=100,sleep=lambda _:None)['passed']
+    code="from lavish_core.db.hybrid_store import HybridStore;import sys;s=HybridStore(sys.argv[1]);assert s.fetchall('SELECT count(*) FROM fills')[0][0]==2;assert s.fetchall('SELECT count(*) FROM positions')[0][0]==0;s.con.close()"
+    # Broker I/O is absent in the child; this checks disk recovery independently.
+    result=subprocess.run([sys.executable,'-c',code,str(path)],capture_output=True,text=True,timeout=20)
+    assert result.returncode==0,result.stderr
+
+
+def test_paper_cycle_imports_broker_posted_fee_once(tmp_path,boundary,monkeypatch):
+    _,symbol,state=boundary
+    state['cash_drift']=-.05
+    original=broker.SESSION.get
+    from datetime import datetime,timezone
+    fee={'id':'posted-fee','activity_type':'FEE','date':datetime.now(timezone.utc).date().isoformat(),'status':'executed','net_amount':'-.05'}
+    monkeypatch.setattr(broker.SESSION,'get',lambda url,**kwargs:Response([fee]) if '/account/activities' in url else original(url,**kwargs))
+    path=tmp_path/'verified-fee.duckdb'
+    result=pc.run_cycle(symbol,path,execute_paper=True,max_premium_usd=100,sleep=lambda _:None)
+    assert result['passed'] and result['cash_reconciliation_error']==0
+    assert result['cash_activity_audit']['posted_cash_fees']==.05
+    store=HybridStore(path)
+    assert store.fetchall('SELECT count(*) FROM fills')[0][0]==2
+    assert store.fetchall('SELECT count(*) FROM broker_cash_activities')[0][0]==1
+    store.con.close()
+
 @pytest.mark.parametrize('failure',['zero_bid','cancel_unknown','unknown_submission'])
 def test_unknown_paper_outcomes_never_blindly_resubmit(tmp_path,boundary,failure):
     x,symbol,state=boundary;qty=1

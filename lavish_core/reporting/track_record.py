@@ -145,6 +145,13 @@ def build_report(store: HybridStore, days: int = 30, benchmark: str = "SPY") -> 
                 t["excess_return_vs_spy_pct"] = None
 
     total_pnl = sum(t["pnl"] for t in round_trips)
+    fill_pnl = total_pnl
+    account_fees = 0.0
+    if store.fetchall("SELECT 1 FROM information_schema.tables WHERE table_name='broker_cash_activities'"):
+        rows = store.fetchall("SELECT amount FROM broker_cash_activities WHERE trade_date>=?", (cutoff.date().isoformat(),))
+        from lavish_core.validation.cash_audit import money
+        account_fees = -sum(float(money(row[0])) for row in rows)
+        total_pnl -= account_fees
     wins = [t for t in round_trips if t["pnl"] > 0]
     losses = [t for t in round_trips if t["pnl"] <= 0]
     win_rate = (len(wins) / len(round_trips)) if round_trips else None
@@ -170,6 +177,9 @@ def build_report(store: HybridStore, days: int = 30, benchmark: str = "SPY") -> 
         "losses": len(losses),
         "win_rate": round(win_rate, 3) if win_rate is not None else None,
         "total_pnl": round(total_pnl, 2),
+        "fill_based_pnl": round(fill_pnl, 2),
+        "posted_broker_cash_fees": round(account_fees, 2),
+        "cash_fee_allocation": "account-level; not guessed into individual trades or sources",
         "avg_pnl_per_trade": round(total_pnl / len(round_trips), 2) if round_trips else None,
         "avg_entry_slippage": avg_slippage,
         "avg_excess_return_vs_benchmark_pct": avg_excess_return,
