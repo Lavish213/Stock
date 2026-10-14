@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "trials": 200,
+  "first_seed": 20261014,
+  "profitable_trials": 55,
+  "halted_trials": 199,
+  "reached_1000_trials": 0,
+  "median_final_balance": 99.745,
+  "worst_final_balance": 99.25,
+  "best_final_balance": 102.82,
+  "real_broker_orders": 0,
+  "unique_real_parser_inputs": 5204,
+  "automatic_resume": false
+}
