@@ -293,6 +293,6 @@ def watch_and_exit(
 
 def watch_and_exit_async(*args, **kwargs) -> threading.Thread:
     """Fire-and-forget version of watch_and_exit() for callers that can't block."""
-    t = threading.Thread(target=watch_and_exit, args=args, kwargs=kwargs, daemon=True)
-    t.start()
-    return t
+    from lavish_core.utils.exit_supervisor import start_exit_worker
+    symbol = kwargs.get('contract_symbol', args[1] if len(args)>1 else None)
+    return start_exit_worker(watch_and_exit, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=8)
