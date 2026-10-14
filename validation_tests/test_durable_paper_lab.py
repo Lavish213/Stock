@@ -255,6 +255,16 @@ def test_same_candle_different_receipt_cannot_confirm_twice(lab):
     assert c.p()['confirmations']==1
 
 
+def test_missing_candle_resets_hold_and_short_interval_is_rejected(lab):
+    c=Creator(lab);c.setup();c.quote();c.candle()
+    c.t+=.5
+    event=c.event('candle',plan=c.plan,closed_at=stamp(c.t),close='101',market_open=True)
+    with pytest.raises(ValueError):lab.apply(event,now=c.t)
+    c.t+=1.5
+    c.send('candle',plan=c.plan,closed_at=stamp(c.t),close='101',market_open=True)
+    assert c.p()['state']=='armed' and c.p()['confirmations']==1
+
+
 def test_journal_failure_rolls_back_fill_and_receipt(lab):
     import sqlite3
     c=Creator(lab);c.setup();c.quote();c.candle();c.candle()

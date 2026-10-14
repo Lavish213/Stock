@@ -1,0 +1,256 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "broker_orders": 0,
+  "actual_creator_samples": 0,
+  "cases": [
+    {
+      "plan": "equity-targets",
+      "passed": true,
+      "symbol": "AAPL",
+      "fills": [
+        {
+          "at": 1791997235.3499203,
+          "fee_cents": 65,
+          "intent_at": 1791997235.2877426,
+          "plan": "equity-targets",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "AAPL",
+          "unit_cents": 10002
+        },
+        {
+          "at": 1791997235.3518267,
+          "fee_cents": 65,
+          "intent_at": 1791997235.2877426,
+          "plan": "equity-targets",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "AAPL",
+          "unit_cents": 10002
+        },
+        {
+          "at": 1791997235.4147985,
+          "fee_cents": 65,
+          "intent_at": 1791997235.3530977,
+          "plan": "equity-targets",
+          "quantity": 1,
+          "reason": "target",
+          "side": "sell",
+          "symbol": "AAPL",
+          "unit_cents": 10490
+        },
+        {
+          "at": 1791997235.4786158,
+          "fee_cents": 65,
+          "intent_at": 1791997235.41669,
+          "plan": "equity-targets",
+          "quantity": 1,
+          "reason": "target",
+          "side": "sell",
+          "symbol": "AAPL",
+          "unit_cents": 10990
+        }
+      ]
+    },
+    {
+      "plan": "equity-creator_stop",
+      "passed": true,
+      "symbol": "AAPL",
+      "fills": [
+        {
+          "at": 1791997237.5688725,
+          "fee_cents": 65,
+          "intent_at": 1791997237.5064673,
+          "plan": "equity-creator_stop",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "AAPL",
+          "unit_cents": 10002
+        },
+        {
+          "at": 1791997237.5709188,
+          "fee_cents": 65,
+          "intent_at": 1791997237.5064673,
+          "plan": "equity-creator_stop",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "AAPL",
+          "unit_cents": 10002
+        },
+        {
+          "at": 1791997237.6368454,
+          "fee_cents": 65,
+          "intent_at": 1791997237.5738792,
+          "plan": "equity-creator_stop",
+          "quantity": 1,
+          "reason": "creator_close",
+          "side": "sell",
+          "symbol": "AAPL",
+          "unit_cents": 10000
+        },
+        {
+          "at": 1791997237.7003195,
+          "fee_cents": 65,
+          "intent_at": 1791997237.6384816,
+          "plan": "equity-creator_stop",
+          "quantity": 1,
+          "reason": "stop",
+          "side": "sell",
+          "symbol": "AAPL",
+          "unit_cents": 9390
+        }
+      ]
+    },
+    {
+      "plan": "call-targets",
+      "passed": true,
+      "symbol": "NVDA261021C00105000",
+      "fills": [
+        {
+          "at": 1791997239.7919276,
+          "fee_cents": 65,
+          "intent_at": 1791997239.7292523,
+          "plan": "call-targets",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 10200
+        },
+        {
+          "at": 1791997239.7944453,
+          "fee_cents": 65,
+          "intent_at": 1791997239.7292523,
+          "plan": "call-targets",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 10200
+        },
+        {
+          "at": 1791997239.8578203,
+          "fee_cents": 65,
+          "intent_at": 1791997239.7958612,
+          "plan": "call-targets",
+          "quantity": 1,
+          "reason": "target",
+          "side": "sell",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 12000
+        },
+        {
+          "at": 1791997239.9225194,
+          "fee_cents": 65,
+          "intent_at": 1791997239.860189,
+          "plan": "call-targets",
+          "quantity": 1,
+          "reason": "target",
+          "side": "sell",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 14000
+        }
+      ]
+    },
+    {
+      "plan": "call-creator_stop",
+      "passed": true,
+      "symbol": "NVDA261021C00105000",
+      "fills": [
+        {
+          "at": 1791997242.0135067,
+          "fee_cents": 65,
+          "intent_at": 1791997241.9503849,
+          "plan": "call-creator_stop",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 10200
+        },
+        {
+          "at": 1791997242.0155444,
+          "fee_cents": 65,
+          "intent_at": 1791997241.9503849,
+          "plan": "call-creator_stop",
+          "quantity": 1,
+          "reason": "confirmed_trigger",
+          "side": "buy",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 10200
+        },
+        {
+          "at": 1791997242.0808473,
+          "fee_cents": 65,
+          "intent_at": 1791997242.018025,
+          "plan": "call-creator_stop",
+          "quantity": 1,
+          "reason": "creator_close",
+          "side": "sell",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 10000
+        },
+        {
+          "at": 1791997242.146128,
+          "fee_cents": 65,
+          "intent_at": 1791997242.0829332,
+          "plan": "call-creator_stop",
+          "quantity": 1,
+          "reason": "stop",
+          "side": "sell",
+          "symbol": "NVDA261021C00105000",
+          "unit_cents": 8000
+        }
+      ]
+    }
+  ],
+  "rejection_cases": [
+    {
+      "fault": "missing_contract",
+      "passed": true,
+      "http_status": 400
+    },
+    {
+      "fault": "future",
+      "passed": true,
+      "http_status": 400
+    },
+    {
+      "fault": "stale",
+      "passed": true,
+      "http_status": 400
+    },
+    {
+      "fault": "missing_stop",
+      "passed": true,
+      "http_status": 400
+    },
+    {
+      "fault": "oversell",
+      "passed": true,
+      "http_status": 400
+    },
+    {
+      "fault": "out_of_order_version",
+      "passed": true,
+      "http_status": 400
+    }
+  ],
+  "passed": true,
+  "events": 50,
+  "duplicate_deliveries": 44,
+  "dispatch_max_ms": 2.420314999881157,
+  "dispatch_median_ms": 1.1765740000555525,
+  "initial_cash_cents": 1000000,
+  "final_cash_cents": 1003022,
+  "realized_pnl_cents": 3022,
+  "fees_cents": 1040,
+  "cash_reconciliation_error_cents": 0,
+  "final_positions": 0,
+  "scope": "Signed HTTP -> typed synthetic controller -> simulated fills; production text parser remains a separate benchmark"
+}

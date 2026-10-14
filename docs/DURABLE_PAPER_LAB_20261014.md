@@ -47,6 +47,13 @@ authenticated delivery. The former production text benchmark remains separate
 and previously had slow entries and late exits. Neither benchmark earns an
 overall autonomous-readiness grade from synthetic success.
 
+Verification: full repository suite passed 2,909 tests with two existing host
+skips. A subsequent additional candle-cadence regression passed with all 41
+lab tests; the ten readiness tests had also passed. Changed-source Bandit
+scan found zero medium/high findings. The campaign summary is retained at
+`docs/evidence/durable-paper-campaign-20261014.json`. GitHub CI runs the full
+suite independently on the review branch.
+
 ## Run the isolated receiver
 
 Set `PAPER_LAB_SECRET` to a randomly generated hex secret of at least 32 bytes
