@@ -1,0 +1,80 @@
+{
+  "date_utc": "2026-10-12",
+  "pytest": {
+    "collected": 1629,
+    "passed": 1627,
+    "skipped": 2,
+    "failed": 0,
+    "seconds": 57.28
+  },
+  "hypothesis": {
+    "unicode_inputs": 1500,
+    "backtest_gap_inputs": 500
+  },
+  "options_simulation": {
+    "exchange_matrix_cases": 288,
+    "production_adapter_exit_ledger_matrix_cases": 288,
+    "synthetic": true,
+    "profitability_evidence": false
+  },
+  "python_compilation": {
+    "files": 324,
+    "errors": 0
+  },
+  "pip_check": "passed",
+  "bandit": {
+    "high": 0,
+    "medium": 0,
+    "low": 83,
+    "scanner_errors": 0
+  },
+  "authenticated_paper": "account/state preflight passed; actual order lifecycle incomplete",
+  "orders_submitted_to_actual_brokers": 0,
+  "live_ready": false,
+  "coverage": {
+    "scope": "historical measurement from preceding commit; not remeasured for market preparation",
+    "line_pct": 25.8,
+    "branch_pct": 27.9
+  },
+  "new_checks": [
+    "bounded paper cycle simulated failure paths",
+    "actual subprocess termination and ledger recovery",
+    "dated runtime/account-bound evidence",
+    "paper-only legacy simulation",
+    "full-suite CI pinned actions",
+    "empty kill-switch reason still halts",
+    "receipt/journal separation",
+    "worker liveness and monotonic loop progress",
+    "equity exits independent of disabled entry budgets/scaling",
+    "read-only authenticated paper market preflight",
+    "HMAC and replay-age guard",
+    "durable inbox identity conflict and semantic deduplication",
+    "dispatch expiry and interrupted-outcome quarantine",
+    "actual signed loopback HTTP transport",
+    "alert feed invokes actual parser/trade guards"
+  ],
+  "market_preparation": {
+    "broker_account_active": true,
+    "options_level": 3,
+    "broker_ledger_match": true,
+    "positions": 0,
+    "open_orders": 0,
+    "entries_halted": true,
+    "automatic_trading": false,
+    "missing": [
+      "authenticated alert source",
+      "operator-selected positive paper budgets",
+      "durable deployment host"
+    ]
+  },
+  "signed_alert_feed": {
+    "built": true,
+    "mode": "review",
+    "external_publisher_connected": false,
+    "local_signed_http_delivery": 202,
+    "duplicate_suppression": 200,
+    "invalid_signature_rejection": 401,
+    "broker_orders_submitted": 0,
+    "permanent_service_running": false
+  }
+}

@@ -9,11 +9,13 @@
 # /accounts/{id}/orders with class=option) - same "correct by research,
 # not yet confirmed by a real sandbox call" caveat as broker_tradier.py.
 from __future__ import annotations
+import os
 import json, logging, re, time, uuid
+from lavish_core.utils.safety import finite_number
 from datetime import date
 from typing import Optional, Dict, Any, List
 
-from lavish_core.trade.broker_tradier import HEADERS, BASE_URL, SESSION, _check_keys, _account_id
+from lavish_core.trade.broker_tradier import HEADERS, BASE_URL, SESSION, _check_keys, _account_id, _normalize_order
 from lavish_core.trade.options_broker import build_occ_symbol  # pure OCC-format helper, not Alpaca-specific
 
 log = logging.getLogger("options_broker_tradier")
@@ -33,6 +35,8 @@ def find_contract(
     (a parsed/OCR'd strike won't always match a real listed increment).
     """
     _check_keys()
+    strike = finite_number(strike, positive=True)
+    tolerance = finite_number(strike_tolerance, nonnegative=True)
     option_type = "call" if side.lower().startswith("c") else "put"
     r = SESSION.get(
         f"{BASE_URL}/markets/options/chains", headers=HEADERS,
@@ -44,26 +48,42 @@ def find_contract(
         return None
 
     chain = r.json().get("options")
-    if not chain or chain == "null":
+    if not isinstance(chain, dict):
         return None
     contracts = chain.get("option")
     if contracts is None:
         return None
     if not isinstance(contracts, list):
         contracts = [contracts]
-    contracts = [c for c in contracts if c.get("option_type") == option_type]
+    def matches(c):
+        if not isinstance(c, dict) or c.get('option_type') != option_type:
+            return False
+        try:
+            listed = finite_number(c.get('strike'), positive=True)
+            if abs(listed - strike) > tolerance:
+                return False
+            if c.get('symbol') != build_occ_symbol(ticker, expiry, side, listed):
+                return False
+            if 'expiration_date' in c and c['expiration_date'] != expiry.isoformat():
+                return False
+            if 'underlying' in c and c['underlying'] != ticker.upper():
+                return False
+            return True
+        except (ValueError, TypeError, OverflowError):
+            return False
+    contracts = [c for c in contracts if matches(c)]
     if not contracts:
         return None
 
     best = min(contracts, key=lambda c: abs(float(c.get("strike", 0)) - strike))
     deviation = abs(float(best.get("strike", 0)) - strike)
-    if strike_tolerance and deviation > strike_tolerance:
+    if deviation > tolerance:
         log.warning("Closest Tradier contract for %s %s $%.2f is $%.2f away (tolerance %.2f) - rejecting.",
                     ticker, side, strike, deviation, strike_tolerance)
         return None
 
     return {
-        "symbol": best.get("symbol") or build_occ_symbol(ticker, expiry, side, float(best.get("strike", strike))),
+        "symbol": best['symbol'],
         "strike_price": float(best.get("strike", strike)),
     }
 
@@ -86,7 +106,11 @@ def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
         bid, ask = q.get("bid"), q.get("ask")
         if bid is None or ask is None:
             return None
-        return {"bid": float(bid), "ask": float(ask)}
+        bid = finite_number(bid, nonnegative=True)
+        ask = finite_number(ask, positive=True)
+        if ask < bid:
+            return None
+        return {"bid": bid, "ask": ask}
     except Exception as e:
         log.warning("latest_option_quote failed for %s: %s", contract_symbol, e)
         return None
@@ -109,6 +133,18 @@ def place_option_order(
     actually needs given its long-only design.
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if order_type != "limit" or limit_price is None:
+            raise RuntimeError("Live option entries require bounded limit prices")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True)*100,account_id=_account_id())
+
+    quantity = finite_number(qty, positive=True)
+    if not quantity.is_integer():
+        raise ValueError("Option quantities must be whole contracts")
+    if limit_price is not None:
+        finite_number(limit_price, positive=True)
     side = side.lower()
     if side not in ("buy", "sell"):
         raise ValueError("side must be 'buy' or 'sell'")
@@ -147,13 +183,9 @@ def place_option_order(
     if r.status_code not in (200, 201):
         raise RuntimeError(f"Tradier options order error {r.status_code}: {r.text}")
     order = r.json().get("order", {})
-    return {
-        "id": str(order.get("id", "")),
-        "status": order.get("status"),
-        "filled_qty": order.get("exec_quantity"),
-        "filled_avg_price": order.get("avg_fill_price"),
-        "client_order_id": client_order_id,
-    }
+    result = _normalize_order(order)
+    result.setdefault('client_order_id', client_order_id)
+    return result
 
 
 def resolve_and_price_contract(

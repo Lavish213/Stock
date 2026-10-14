@@ -54,12 +54,47 @@ for name, val in required.items():
         print(f"[FAIL] {name} is missing - copy env.example to .env and fill it in.")
         ok = False
 
-if has_patreon_static or has_patreon_refresh:
-    print("[ok] Patreon credentials present.")
+has_discord=bool(os.getenv("DISCORD_USER_TOKEN") and os.getenv("DISCORD_INGEST_ACCEPT_TOS_RISK")=="1")
+if has_discord:
+    def configured_ids(name):
+        values=[value.strip() for value in os.getenv(name,'').split(',') if value.strip()]
+        return bool(values) and all(value.isdigit() and int(value)>0 for value in values)
+    if not configured_ids('DISCORD_WATCH_CHANNEL_IDS') or not (
+            configured_ids('DISCORD_WATCH_AUTHOR_IDS') or configured_ids('DISCORD_WATCH_WEBHOOK_IDS')):
+        print('[FAIL] Discord requires watched channel IDs and trusted creator or webhook IDs.')
+        ok=False
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        version('discord.py-self')
+        try:
+            version('discord.py')
+        except PackageNotFoundError:
+            pass
+        else:
+            raise RuntimeError('Conflicting Discord packages')
+        import discord
+        if hasattr(discord,'Intents'):
+            raise RuntimeError('Incorrect Discord library API')
+        age=int(os.getenv('DISCORD_MAX_ALERT_AGE_SECONDS','120'))
+        if not 1<=age<=900:
+            raise ValueError('Discord freshness window invalid')
+    except (ImportError,PackageNotFoundError,ValueError,RuntimeError):
+        print('[FAIL] Discord listener package/configuration invalid; use discord.py-self only and an age of 1 to 900 seconds.')
+        ok=False
+has_private_feed=False
+try:
+    from lavish_core.feeds import alert_feed
+    if alert_feed.enabled():
+        alert_feed.settings()
+        has_private_feed=True
+except (ValueError,TypeError):
+    print("[FAIL] Private feed configuration invalid; check paper mode, loopback host, port and strong secret.")
+    ok=False
+if has_patreon_static or has_patreon_refresh or has_discord or has_private_feed:
+    print("[ok] At least one authenticated-source configuration is present (connectivity is checked separately).")
 else:
-    print("[FAIL] No Patreon credentials - need either PATREON_ACCESS_TOKEN, or all three of "
-          "PATREON_CLIENT_ID/PATREON_CLIENT_SECRET/PATREON_REFRESH_TOKEN.")
-    ok = False
+    print("[FAIL] No alert source configured: configure Patreon, a permitted Discord listener, or the private signed feed.")
+    ok=False
 
 trade_mode = os.getenv("TRADE_MODE", "dry").lower()
 if trade_mode not in ("dry", "paper", "live"):
@@ -68,13 +103,15 @@ if trade_mode not in ("dry", "paper", "live"):
 else:
     print(f"[ok] TRADE_MODE={trade_mode}"
           + (" - will submit REAL orders with real money." if trade_mode == "live" else ""))
-if broker_provider == "tradier":
-    if trade_mode == "paper" and "sandbox" not in os.getenv("TRADIER_BASE_URL", "https://sandbox.tradier.com/v1"):
-        print(f"[warn] TRADE_MODE=paper but TRADIER_BASE_URL doesn't look like the sandbox endpoint "
-              f"({os.getenv('TRADIER_BASE_URL')!r}) - double check this isn't pointed at production by mistake.")
-elif trade_mode in ("paper", "live") and "paper-api" not in os.getenv("ALPACA_BASE_URL", "") and trade_mode == "paper":
-    print(f"[warn] TRADE_MODE=paper but ALPACA_BASE_URL doesn't look like the paper endpoint "
-          f"({os.getenv('ALPACA_BASE_URL')!r}) - double check this isn't pointed at live by mistake.")
+try:
+    from lavish_core.utils.safety import check_trading_endpoint
+    default = "https://sandbox.tradier.com/v1" if broker_provider == "tradier" else "https://paper-api.alpaca.markets"
+    key = "TRADIER_BASE_URL" if broker_provider == "tradier" else "ALPACA_BASE_URL"
+    check_trading_endpoint(trade_mode, os.getenv(key, default), broker_provider)
+    print("[ok] Broker endpoint matches trading mode.")
+except ValueError as exc:
+    print(f"[FAIL] {exc}")
+    ok = False
 
 # 3. The real live modules actually import cleanly
 modules = [
@@ -87,6 +124,7 @@ modules = [
     "lavish_core.trade.candle_gatekeeper",
     "lavish_core.trade.circuit_breaker",
     "lavish_core.trade.reconcile",
+    "lavish_core.feeds.alert_feed",
     "lavish_core.vision.extract_signal",
     "lavish_core.db.hybrid_store",
 ]

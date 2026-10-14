@@ -89,7 +89,7 @@ def canon(s: str) -> str:
     return re.sub(r"\s+", " ", html.unescape(s or "")).strip()
 
 def sha1(s: str) -> str:
-    return hashlib.sha1(s.encode("utf-8", "ignore")).hexdigest()
+    return hashlib.sha1(s.encode("utf-8", "ignore"), usedforsecurity=False).hexdigest()
 
 TICKER_RE = re.compile(r"\b[A-Z]{2,6}\b")
 JUNK = {"THE","AND","FOR","WITH","FROM","ABOUT","HTTPS","HTTP","WWW","NEWS","MARKET"}

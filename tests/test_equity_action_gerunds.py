@@ -19,8 +19,8 @@ def test_selling_is_recognized_as_sell():
     assert _equity_action_from_text("selling AAPL now") == "SELL"
 
 
-def test_shorting_is_recognized_as_sell():
-    assert _equity_action_from_text("shorting AAPL here") == "SELL"
+def test_shorting_requires_review_in_a_long_only_pipeline():
+    assert _equity_action_from_text("shorting AAPL here") is None
 
 
 def test_exiting_is_recognized_as_sell():

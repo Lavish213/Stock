@@ -1,40 +1,44 @@
-"""
-📍 lavish_core/config/config.py
-Lavish Config — Master Edition (Error-Proof)
---------------------------------------------
-Centralized configuration loader for Lavish Core.
-Handles environment variables safely with defaults and validation.
-"""
-
+"""Environment-backed settings with mapping and attribute compatibility."""
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env if present
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+_runtime_overrides = {}
 
-def get_settings() -> dict:
-    """
-    Returns configuration values used by Lavish Core.
-    Automatically pulls from environment with safe fallbacks.
-    """
-    db_url = os.getenv("DB_URL", "sqlite:///lavish_store.db")
-    debug_raw = os.getenv("DEBUG", "false").strip().lower()
-    debug_mode = debug_raw in ("1", "true", "yes", "on")
+class Settings(dict):
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
 
-    settings = {
-        "DB_URL": db_url,
-        "DEBUG": debug_mode
-    }
+    def __setattr__(self, name, value):
+        self[name] = value
 
-    # Sanity check
-    if not db_url:
-        raise ValueError("❌ Missing DB_URL — cannot initialize database.")
+def set_runtime_overrides(**values):
+    _runtime_overrides.update(values)
 
+def get_settings():
+    settings = Settings(
+        ENV=os.getenv('ENV','dev'),
+        TRADE_MODE=os.getenv('TRADE_MODE','dry'),
+        DB_URL=os.getenv('DB_URL','sqlite:///lavish_store.db'),
+        DEBUG=os.getenv('DEBUG','false').lower() in ('1','true','yes','on'),
+        ALPACA_BASE_URL=os.getenv('ALPACA_BASE_URL','https://paper-api.alpaca.markets'),
+        ALPACA_API_KEY=os.getenv('ALPACA_API_KEY',''),
+        ALPACA_SECRET_KEY=os.getenv('ALPACA_SECRET_KEY',''),
+        NEWS_MIN_ROWS=int(os.getenv('NEWS_MIN_ROWS','120')),
+        NEWS_TIMEOUT=int(os.getenv('NEWS_TIMEOUT','10')),
+        NEWS_FAIL_CUTOFF=int(os.getenv('NEWS_FAIL_CUTOFF','3')),
+        CSV_ORDERS=Path(os.getenv('CSV_ORDERS','data/trades.csv')),
+        CSV_SIGNALS=Path(os.getenv('CSV_SIGNALS','data/signal_scores.csv')),
+    )
+    settings.update(_runtime_overrides)
+    if not settings.DB_URL:
+        raise ValueError('Missing DB_URL')
+    for name in ('NEWS_MIN_ROWS','NEWS_TIMEOUT','NEWS_FAIL_CUTOFF'):
+        value = settings[name]
+        if isinstance(value,bool) or not isinstance(value,int) or value <= 0:
+            raise ValueError(f'{name} must be a positive integer')
     return settings
-
-
-if __name__ == "__main__":
-    s = get_settings()
-    print("✅ Lavish Settings Loaded:")
-    for k, v in s.items():
-        print(f"   {k} = {v}")

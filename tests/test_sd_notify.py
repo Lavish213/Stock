@@ -3,6 +3,8 @@
 # this is the actual sd_notify wire protocol, not an assumption about it.
 from __future__ import annotations
 
+import errno
+import pytest
 import os
 import socket
 import threading
@@ -17,16 +19,25 @@ def test_notify_is_a_safe_noop_without_notify_socket(monkeypatch):
 
 def test_notify_sends_the_correct_message_over_a_real_socket(tmp_path, monkeypatch):
     sock_path = str(tmp_path / "notify.sock")
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    server.bind(sock_path)
+    try:
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        server.bind(sock_path)
+    except OSError as exc:
+        if exc.errno in (errno.EPERM, errno.EACCES, errno.EAFNOSUPPORT):
+            pytest.skip("Unix datagram sockets unavailable in this environment")
+        raise
     try:
         received = []
+        server.settimeout(2)
 
         def _listen():
-            data, _ = server.recvfrom(1024)
-            received.append(data.decode())
+            try:
+                data, _ = server.recvfrom(1024)
+                received.append(data.decode())
+            except socket.timeout:
+                pass
 
-        t = threading.Thread(target=_listen)
+        t = threading.Thread(target=_listen, daemon=True)
         t.start()
 
         monkeypatch.setenv("NOTIFY_SOCKET", sock_path)
@@ -41,16 +52,25 @@ def test_notify_sends_the_correct_message_over_a_real_socket(tmp_path, monkeypat
 
 def test_notify_watchdog_sends_the_watchdog_message(tmp_path, monkeypatch):
     sock_path = str(tmp_path / "notify.sock")
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    server.bind(sock_path)
+    try:
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        server.bind(sock_path)
+    except OSError as exc:
+        if exc.errno in (errno.EPERM, errno.EACCES, errno.EAFNOSUPPORT):
+            pytest.skip("Unix datagram sockets unavailable in this environment")
+        raise
     try:
         received = []
+        server.settimeout(2)
 
         def _listen():
-            data, _ = server.recvfrom(1024)
-            received.append(data.decode())
+            try:
+                data, _ = server.recvfrom(1024)
+                received.append(data.decode())
+            except socket.timeout:
+                pass
 
-        t = threading.Thread(target=_listen)
+        t = threading.Thread(target=_listen, daemon=True)
         t.start()
 
         monkeypatch.setenv("NOTIFY_SOCKET", sock_path)
@@ -66,4 +86,12 @@ def test_notify_failure_does_not_raise(monkeypatch):
     # A bad/stale socket path must degrade to "didn't send", never crash
     # the caller - this runs inside the bot's main thread.
     monkeypatch.setenv("NOTIFY_SOCKET", "/nonexistent/path/not/a/real/socket")
+    assert sd_notify.notify("READY=1") is False
+
+
+def test_socket_constructor_failure_is_safe(monkeypatch):
+    monkeypatch.setenv("NOTIFY_SOCKET", "/tmp/unavailable.sock")
+    def denied(*args, **kwargs):
+        raise PermissionError("socket unavailable")
+    monkeypatch.setattr(sd_notify.socket, "socket", denied)
     assert sd_notify.notify("READY=1") is False

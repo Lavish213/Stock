@@ -143,9 +143,10 @@ def test_options_entry_is_routed_through_the_gate_with_correct_direction(tmp_pat
     monkeypatch.setattr(th, "GATEKEEPER_ENABLED", True)
     signal = {
         "source": "discord", "ticker": "AAPL", "symbol": "AAPL", "side": "PUT",
-        "strike": 200.0, "expiry": "2026-01-16", "confidence": 0.9, "amount_usd": 1000.0,
+        "strike": 200.0, "expiry": (__import__("datetime").date.today()+__import__("datetime").timedelta(days=7)).isoformat(), "confidence": 0.9, "amount_usd": 1000.0,
     }
     contract = {"symbol": "AAPL260116P00200000", "mid_price": 4.0, "bid": 3.9, "ask": 4.1}
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 195.)
 
     with patch.object(th.threading, "Thread", _SyncThread), \
          patch.object(th, "confirm_entry", return_value={"confirmed": True, "reason": "x", "price": 195.0}) as mock_confirm, \
@@ -170,7 +171,7 @@ def test_options_entry_places_no_order_when_gate_does_not_confirm(tmp_path, monk
     monkeypatch.setattr(th, "GATEKEEPER_ENABLED", True)
     signal = {
         "source": "discord", "ticker": "AAPL", "symbol": "AAPL", "side": "CALL",
-        "strike": 200.0, "expiry": "2026-01-16", "confidence": 0.9,
+        "strike": 200.0, "expiry": (__import__("datetime").date.today()+__import__("datetime").timedelta(days=7)).isoformat(), "confidence": 0.9,
     }
 
     with patch.object(th.threading, "Thread", _SyncThread), \
@@ -188,7 +189,7 @@ def test_gated_option_buy_survives_an_unexpected_error():
     signal = {"source": "discord", "ticker": "AAPL", "symbol": "AAPL", "side": "CALL", "confidence": 0.9}
     with patch.object(th, "confirm_entry", side_effect=RuntimeError("broker down")), \
          patch.object(th, "post_discord") as mock_discord:
-        th._gated_option_buy(signal, "AAPL", "CALL", "bullish", 200.0, __import__("datetime").date(2026, 1, 16),
+        th._gated_option_buy(signal, "AAPL", "CALL", "bullish", 200.0, (__import__("datetime").date.today()+__import__("datetime").timedelta(days=7)),
                               0.9, None, None, None, "")  # must not raise
 
     assert mock_discord.called

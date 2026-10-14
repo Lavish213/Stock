@@ -6,12 +6,19 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from unittest.mock import patch
+import pytest
 
 import lavish_core.trading.trade_handler as th
 
 
+@pytest.fixture(autouse=True)
+def fresh_underlying_quote(monkeypatch):
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 200.)
+
+
 def _contract(symbol="AAPL260101C00200000", mid_price=50.0, bid=None, ask=None):
-    c = {"symbol": symbol, "mid_price": mid_price}
+    c = {"symbol": symbol, "mid_price": mid_price,
+         "bid": mid_price - .02, "ask": mid_price + .02}
     if bid is not None:
         c["bid"] = bid
     if ask is not None:
@@ -45,7 +52,7 @@ def test_affordable_contract_still_trades(tmp_path, monkeypatch):
     monkeypatch.setattr(th, "DEFAULT_DB", tmp_path / "test.duckdb")
     with patch.object(th, "resolve_and_price_contract", return_value=_contract(mid_price=1.50)), \
          patch.object(th, "place_option_order",
-                       return_value={"id": "o1", "status": "filled", "filled_qty": "3", "filled_avg_price": "1.50"}), \
+                       return_value={"id": "o1", "status": "filled", "filled_qty": "3", "filled_avg_price": "1.50"}) as mock_place, \
          patch.object(th, "circuit_breaker_check_ok", return_value=(True, "ok")), \
          patch.object(th, "check_correlation_ok", return_value=(True, "ok")), \
          patch.object(th, "check_pdt_ok", return_value=(True, "ok")), \
@@ -53,6 +60,8 @@ def test_affordable_contract_still_trades(tmp_path, monkeypatch):
         handled = th._execute_option_trade(_options_signal(amount_usd=500.0))
 
     assert handled is True
+    mock_place.assert_called_once()
+    assert mock_place.call_args.kwargs["qty"] == 3
 
 
 def test_no_contract_found_is_retryable(tmp_path, monkeypatch):

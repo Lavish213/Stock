@@ -60,10 +60,26 @@ log = get_logger("run_ingest", log_dir="logs")
 # Type=notify (see sd_notify.py) - the thread still runs, it just never
 # sends anything.
 WATCHDOG_PING_INTERVAL_SECONDS = int(os.getenv("WATCHDOG_PING_INTERVAL_SECONDS", "30"))
+if not 1 <= WATCHDOG_PING_INTERVAL_SECONDS <= 30:
+    raise ValueError("Watchdog ping interval must be 1 to 30 seconds")
 
 
-def _run_watchdog_pings() -> None:
+def _run_watchdog_pings(workers=None) -> None:
+    from lavish_core.utils.worker_health import WORKER_HEALTH
+    from lavish_core.utils.control_file import write_control
     while True:
+        health=WORKER_HEALTH.status({name:thread.is_alive() for name,thread in workers.items()} if workers is not None else None)
+        if not health["healthy"]:
+            reason="worker health failure: "+", ".join(health["reasons"])
+            log.error(reason)
+            try:
+                write_control(DEFAULT_DB,True,reason)
+            except Exception as exc:
+                log.error("Unable to persist worker halt: %s",type(exc).__name__)
+            # Terminate so systemd can restart and restore durable exit supervision.
+            # A foreground launch exits visibly and requires an operator restart.
+            os._exit(1)
+            return
         sd_notify.notify_watchdog()
         time.sleep(WATCHDOG_PING_INTERVAL_SECONDS)
 
@@ -138,31 +154,49 @@ def main() -> None:
     # opens a connection to an already-fully-created schema from here on.
     HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
 
+    if os.getenv("TRADE_MODE","dry") in ("paper","live"):
+        from lavish_core.trade.reconcile import synchronize_broker_state
+        synchronize_broker_state()
     _reconcile_startup()
-    threading.Thread(target=run_periodic_reconciliation, name="reconcile-loop", daemon=True).start()
-    threading.Thread(target=run_periodic_snapshot, name="account-snapshot-loop", daemon=True).start()
-    threading.Thread(target=_run_watchdog_pings, name="watchdog-ping-loop", daemon=True).start()
-
-    patreon_thread = threading.Thread(target=patreon_trigger.poll_loop, name="patreon-poller", daemon=True)
-    patreon_thread.start()
-    log.info("Patreon poller started in background thread.")
-
-    # Startup is done (reconciliation ran, every background loop is
-    # alive) - tell systemd this process is actually up. A no-op unless
-    # running under Type=notify; see deploy/lavish-bot.service.
+    from lavish_core.utils.worker_health import WORKER_HEALTH
+    from lavish_core.trade.reconcile import RECONCILE_INTERVAL_SECONDS
+    from lavish_core.trade.account_monitor import ACCOUNT_SNAPSHOT_INTERVAL_SECONDS
+    from lavish_core.utils.safety import finite_number
+    grace=finite_number(os.getenv("WORKER_OPERATION_GRACE_SECONDS","300"),positive=True)
+    workers={}
+    specs=[
+        ("reconcile-loop",run_periodic_reconciliation,RECONCILE_INTERVAL_SECONDS),
+        ("account-snapshot-loop",run_periodic_snapshot,ACCOUNT_SNAPSHOT_INTERVAL_SECONDS),
+    ]
+    has_patreon=bool(os.getenv("PATREON_ACCESS_TOKEN") or all(os.getenv(k) for k in ("PATREON_CLIENT_ID","PATREON_CLIENT_SECRET","PATREON_REFRESH_TOKEN")))
+    if has_patreon:
+        specs.append(("patreon-poller",patreon_trigger.poll_loop,patreon_trigger.POLL_SECONDS))
+    from lavish_core.feeds import alert_feed
+    if alert_feed.enabled():
+        server,inbox=alert_feed.make_server(DEFAULT_DB)
+        specs.extend([
+            ("alert-feed-server",lambda:alert_feed.run_server(server),1),
+            ("alert-feed-dispatcher",lambda:alert_feed.run_dispatcher(inbox),1),
+        ])
+    discord_on=bool(discord_listener.DISCORD_USER_TOKEN and discord_listener.ACCEPT_TOS_RISK)
+    if not has_patreon and not alert_feed.enabled() and not discord_on:
+        raise RuntimeError("Configure an authenticated alert source before launching")
+    for name,target,interval in specs:
+        WORKER_HEALTH.register(name,finite_number(interval,positive=True)+grace)
+        thread=threading.Thread(target=target,name=name,daemon=True)
+        workers[name]=thread;thread.start()
+    threading.Thread(target=_run_watchdog_pings,args=(workers,),name="watchdog-ping-loop",daemon=True).start()
+    log.info("Supervised broker workers and configured alert sources started.")
     sd_notify.notify_ready()
-
-    if discord_listener.DISCORD_USER_TOKEN and discord_listener.ACCEPT_TOS_RISK:
-        log.info("Starting Discord listener on the main thread (blocking)...")
+    if discord_on:
+        log.info("Starting configured Discord listener.")
         discord_listener.run()
-        # client.run() only returns on disconnect/error - if Patreon is
-        # still the only thing running at that point, keep the process
-        # alive on it rather than exiting.
-        log.warning("Discord listener stopped. Falling back to Patreon-only for the rest of this run.")
-        patreon_thread.join()
-    else:
-        log.info("Discord not configured (DISCORD_USER_TOKEN/DISCORD_INGEST_ACCEPT_TOS_RISK unset) - Patreon-only.")
-        patreon_thread.join()
+        if not has_patreon and not alert_feed.enabled():
+            raise RuntimeError("Only configured alert source stopped")
+        log.warning("Discord stopped; remaining configured source continues.")
+    # Keep the one-process broker journal and source supervisors alive.
+    while True:
+        time.sleep(30)
 
 
 if __name__ == "__main__":

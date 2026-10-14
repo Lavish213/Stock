@@ -46,12 +46,13 @@ def test_account_id_resolves_from_single_account_object():
         assert bt._account_id() == "ACC123"
 
 
-def test_account_id_resolves_from_list_and_picks_first():
+def test_account_id_rejects_ambiguous_account_list():
     with patch.object(bt, "API_TOKEN", "test"), \
          patch.object(bt.SESSION, "get", return_value=_resp(body={
              "profile": {"account": [{"account_number": "FIRST"}, {"account_number": "SECOND"}]}
          })):
-        assert bt._account_id() == "FIRST"
+        with pytest.raises(RuntimeError, match='TRADIER_ACCOUNT_ID'):
+            bt._account_id()
 
 
 def test_account_id_is_cached_after_first_resolution():
@@ -86,7 +87,7 @@ def test_get_account_maps_tradier_balances_to_alpaca_field_names():
          })):
         acct = bt.get_account()
 
-    assert acct == {"equity": 10000.0, "cash": 5000.0, "buying_power": 20000.0}
+    assert acct == {"id": "ACC123", "equity": 10000.0, "cash": 5000.0, "buying_power": 20000.0}
 
 
 def test_get_account_falls_back_to_option_buying_power_if_stock_missing():

@@ -806,7 +806,7 @@ if __name__ == "__main__":
     log.info(f"🚀 Launching Lavish Core API standalone on :{port}")
     uvicorn.run(
         "lavish_core.api.api_handler:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=port,
         reload=settings.debug,
     )

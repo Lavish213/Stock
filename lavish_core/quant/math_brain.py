@@ -187,9 +187,15 @@ import json, urllib.request
 
 def _http_get_json(url: str, headers: Optional[Dict[str,str]]=None, timeout: int=8) -> Optional[Dict]:
     try:
-        req = urllib.request.Request(url, headers=headers or {})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return json.loads(r.read().decode("utf-8"))
+        from urllib.parse import urlsplit
+        parts = urlsplit(url)
+        if parts.scheme != "https" or parts.hostname not in {"www.alphavantage.co", "finnhub.io"} or parts.username or parts.password or parts.port not in (None,443):
+            return None
+        import requests
+        response = requests.get(url,headers=headers or {},timeout=timeout,allow_redirects=False)
+        if response.status_code != 200:
+            return None
+        return response.json()
     except Exception:
         return None
 

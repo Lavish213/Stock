@@ -26,7 +26,7 @@ def test_find_contract_picks_closest_strike_for_calls():
     ]}}
     with patch.object(obt, "_check_keys"), \
          patch.object(obt.SESSION, "get", return_value=_resp(body=chain)):
-        contract = obt.find_contract("AAPL", date(2026, 1, 16), "call", 199.0)
+        contract = obt.find_contract("AAPL", date(2026, 1, 16), "call", 199.0, strike_tolerance=1.0)
 
     assert contract["symbol"] == "AAPL260116C00200000"
     assert contract["strike_price"] == 200.0

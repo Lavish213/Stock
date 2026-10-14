@@ -11,7 +11,10 @@ import yfinance as yf
 
 from datetime import timedelta
 from typing import List, Dict
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+try:
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+except ImportError:
+    SentimentIntensityAnalyzer = None
 
 # ---------------- constants ---------------- #
 
@@ -234,12 +237,15 @@ def fetch_reddit_for(ticker: str) -> List[Dict]:
 
 # ---------------- sentiment ---------------- #
 
-_VADER = SentimentIntensityAnalyzer()
+try:
+    _VADER = SentimentIntensityAnalyzer() if SentimentIntensityAnalyzer else None
+except LookupError:
+    _VADER = None
 POS_WORDS = {"beat","upgrade","strong","record","surge","bullish","profit","guidance raised","buyback"}
 NEG_WORDS = {"miss","downgrade","weak","lawsuit","probe","fraud","dilution","guidance cut","bankruptcy"}
 
 def score_sentiment(text: str) -> float:
-    s = _VADER.polarity_scores(text or "")
+    s = _VADER.polarity_scores(text or "") if _VADER else {}
     comp = s.get("compound", 0.0)
     lt = text.lower()
     for w in POS_WORDS:
@@ -332,3 +338,15 @@ def loop_forever():
     if not tickers:
         print("No tickers to process, exiting.")
         return
+
+def fetch_recent_1m_bars(tickers, minutes=120):
+    return fetch_prices_yf(tickers, minutes)
+
+
+def upsert_bars(frame, db_path="lavish_bot.db"):
+    connection = connect_db(db_path)
+    try:
+        ensure_schema(connection)
+        return upsert_prices(connection, frame)
+    finally:
+        connection.close()

@@ -102,30 +102,44 @@ def simulate_trade(
     neither ever triggers within max_hold_days trading rows, exits at the
     last available day's Close.
     """
-    if entry_date not in price_history.index:
-        return {"exit_date": None, "exit_price": None, "exit_reason": "no_data", "entry_price": None}
-
-    rows = price_history.loc[entry_date:]
-    if rows.empty:
-        return {"exit_date": None, "exit_price": None, "exit_reason": "no_data", "entry_price": None}
-
-    entry_row = rows.iloc[0]
-    fill_price = entry_price if entry_price is not None else float(entry_row["Open"])
-    target_px = target if target is not None else round(fill_price * (1 + DEFAULT_TAKE_PROFIT_PCT), 2)
-    stop_px = stop if stop is not None else round(fill_price * (1 - DEFAULT_STOP_LOSS_PCT), 2)
-
-    window = rows.iloc[: max_hold_days + 1]
-    for d, row in window.iloc[1:].iterrows():  # first row is entry day itself - skip re-checking it
-        hit_stop = float(row["Low"]) <= stop_px
-        hit_target = float(row["High"]) >= target_px
-        if hit_stop:  # conservative: stop wins on an ambiguous same-day double-hit
-            return {"exit_date": str(d), "exit_price": stop_px, "exit_reason": "stop", "entry_price": fill_price}
-        if hit_target:
-            return {"exit_date": str(d), "exit_price": target_px, "exit_reason": "target", "entry_price": fill_price}
-
-    last = window.iloc[-1]
-    return {"exit_date": str(window.index[-1]), "exit_price": float(last["Close"]),
-            "exit_reason": "max_hold", "entry_price": fill_price}
+    from lavish_core.utils.safety import finite_number
+    if isinstance(max_hold_days, bool) or not isinstance(max_hold_days, int) or max_hold_days < 0:
+        raise ValueError("max_hold_days must be a nonnegative integer")
+    def empty(reason):
+        return dict(exit_date=None, exit_price=None, exit_reason=reason, entry_price=None)
+    if price_history is None or price_history.empty:
+        return empty("no_data")
+    try:
+        if not price_history.index.is_unique or not price_history.index.is_monotonic_increasing:
+            return empty("invalid_data")
+        for _, row in price_history.iterrows():
+            o,h,l,c = [finite_number(row[key], positive=True) for key in ("Open","High","Low","Close")]
+            if h < max(o,l,c) or l > min(o,h,c):
+                return empty("invalid_data")
+        if entry_date not in price_history.index:
+            return empty("no_data")
+        rows = price_history.loc[entry_date:]
+        fill_price = finite_number(entry_price if entry_price is not None else rows.iloc[0]["Open"], positive=True)
+        target_px = finite_number(target if target is not None else round(fill_price*(1+DEFAULT_TAKE_PROFIT_PCT),2), positive=True)
+        stop_px = finite_number(stop if stop is not None else round(fill_price*(1-DEFAULT_STOP_LOSS_PCT),2), positive=True)
+        if not stop_px < fill_price < target_px:
+            return empty("invalid_data")
+    except (KeyError, ValueError, TypeError):
+        return empty("invalid_data")
+    window = rows.iloc[:max_hold_days+1]
+    for i,(day,row) in enumerate(window.iterrows()):
+        reason = None
+        if i and row["Open"] <= stop_px:
+            reason, price = "stop", float(row["Open"])
+        elif i and row["Open"] >= target_px:
+            reason, price = "target", float(row["Open"])
+        elif row["Low"] <= stop_px:
+            reason, price = "stop", stop_px
+        elif row["High"] >= target_px:
+            reason, price = "target", target_px
+        if reason:
+            return dict(exit_date=str(day), exit_price=price, exit_reason=reason, entry_price=fill_price)
+    return dict(exit_date=str(window.index[-1]), exit_price=float(window.iloc[-1]["Close"]), exit_reason="max_hold", entry_price=fill_price)
 
 
 def run_backtest(signals: List[BacktestSignal], max_hold_days: int = DEFAULT_MAX_HOLD_DAYS,
@@ -141,7 +155,7 @@ def run_backtest(signals: List[BacktestSignal], max_hold_days: int = DEFAULT_MAX
             continue
 
         sim = simulate_trade(history, sig.entry_date, target=sig.target, stop=sig.stop, max_hold_days=max_hold_days)
-        if sim["exit_reason"] == "no_data":
+        if sim["exit_reason"] in ("no_data", "invalid_data"):
             skipped += 1
             log.info("Skip %s @ %s: entry date not in price history (holiday/weekend/delisted?).",
                       sig.symbol, sig.entry_date)
@@ -190,7 +204,8 @@ def load_signals_from_db(days: int = 90) -> List[BacktestSignal]:
     store = HybridStore(duckdb_path=str(DEFAULT_DB))
     rows = store.fetchall(
         "SELECT symbol, side, source, ts, payload FROM signals "
-        "WHERE side='buy' AND ts > now() - INTERVAL '{}' DAY".format(int(days))
+        "WHERE side='buy' AND ts > now() - (? * INTERVAL 1 DAY)",
+        (int(days),)
     )
     out: List[BacktestSignal] = []
     for symbol, side, source, ts, payload_raw in rows:

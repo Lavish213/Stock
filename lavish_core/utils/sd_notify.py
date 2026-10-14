@@ -25,8 +25,9 @@ def notify(state: str) -> bool:
         return False
     if addr.startswith("@"):
         addr = "\0" + addr[1:]  # abstract namespace socket
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    sock = None
     try:
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         sock.connect(addr)
         sock.sendall(state.encode("utf-8"))
         return True
@@ -34,7 +35,8 @@ def notify(state: str) -> bool:
         log.warning("sd_notify(%r) failed: %s", state, e)
         return False
     finally:
-        sock.close()
+        if sock is not None:
+            sock.close()
 
 
 def notify_ready() -> None:

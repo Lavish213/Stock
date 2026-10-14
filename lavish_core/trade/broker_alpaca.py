@@ -2,6 +2,8 @@
 import os, json, logging, time, uuid
 from typing import Optional, Dict, Any
 import requests
+from lavish_core.utils.broker_transport import BrokerSession
+from lavish_core.utils.safety import finite_number, valid_positive, normalize_base_url, check_trading_endpoint, fresh_timestamp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -13,8 +15,8 @@ BASE_URL_RAW = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
 DATA_URL_RAW = os.getenv("ALPACA_DATA_URL", "https://data.alpaca.markets")
 
 # Normalize BASE_URL (allow user to put with or without /v2)
-BASE_URL = BASE_URL_RAW.rstrip("/")
-DATA_URL = DATA_URL_RAW.rstrip("/")
+BASE_URL = normalize_base_url(BASE_URL_RAW)
+DATA_URL = normalize_base_url(DATA_URL_RAW)
 ORDERS_URL = f"{BASE_URL}/v2/orders"
 ACCOUNT_URL = f"{BASE_URL}/v2/account"
 POS_URL = f"{BASE_URL}/v2/positions"
@@ -42,11 +44,12 @@ _retry = Retry(
     raise_on_status=False,
     respect_retry_after_header=True,
 )
-SESSION = requests.Session()
+SESSION = BrokerSession('alpaca')
 SESSION.mount("https://", HTTPAdapter(max_retries=_retry))
 SESSION.mount("http://", HTTPAdapter(max_retries=_retry))
 
 def _check_keys():
+    check_trading_endpoint(os.getenv("TRADE_MODE", "dry"), ORDERS_URL)
     if not API_KEY or not API_SECRET:
         raise RuntimeError("Missing ALPACA_API_KEY / ALPACA_SECRET_KEY")
 
@@ -145,11 +148,11 @@ def _yfinance_fallback_quote(symbol: str) -> Optional[float]:
         fast = getattr(t, "fast_info", None)
         if fast:
             p = fast.get("lastPrice") if hasattr(fast, "get") else getattr(fast, "last_price", None)
-            if p:
+            if isinstance(p, (int, float)) and not isinstance(p, bool) and valid_positive(p):
                 return float(p)
         hist = t.history(period="1d", interval="1m")
         if hist is not None and not hist.empty:
-            return float(hist["Close"].iloc[-1])
+            return finite_number(hist["Close"].iloc[-1], positive=True)
     except Exception as e:
         log.warning(f"yfinance fallback quote failed for {symbol}: {e}")
     return None
@@ -169,8 +172,11 @@ def latest_quote(symbol: str) -> Optional[float]:
             headers=HEADERS, timeout=10,
         )
         if r.status_code == 200:
-            p = r.json().get("trade", {}).get("p")
-            if p:
+            trade=r.json().get("trade",{})
+            p=trade.get("p")
+            if os.getenv("TRADE_MODE","dry") != "dry" and not fresh_timestamp(trade.get("t")):
+                p=None
+            if isinstance(p, (int, float)) and not isinstance(p, bool) and valid_positive(p):
                 return float(p)
     except Exception as e:
         log.warning(f"latest_quote trade lookup failed for {symbol}: {e}")
@@ -182,14 +188,16 @@ def latest_quote(symbol: str) -> Optional[float]:
         )
         if r.status_code == 200:
             q = r.json().get("quote", {})
-            ap, bp = q.get("ap"), q.get("bp")
-            if ap and bp:
+            ap,bp=q.get("ap"),q.get("bp")
+            if os.getenv("TRADE_MODE","dry") != "dry" and not fresh_timestamp(q.get("t")):
+                ap=bp=None
+            if all(isinstance(p, (int, float)) and not isinstance(p, bool) and valid_positive(p) for p in (ap, bp)) and bp <= ap:
                 return float((ap + bp) / 2)
-            if ap or bp:
-                return float(ap or bp)
     except Exception as e:
         log.warning(f"latest_quote quote lookup failed for {symbol}: {e}")
 
+    if os.getenv("TRADE_MODE","dry") != "dry":
+        return None
     fallback = _yfinance_fallback_quote(symbol)
     if fallback:
         log.warning(f"latest_quote: Alpaca data unavailable for {symbol}, used yfinance fallback price {fallback}")
@@ -247,6 +255,8 @@ def get_bars(symbol: str, limit: int = 20) -> list:
     except Exception as e:
         log.warning(f"get_bars failed for {symbol}: {e}")
 
+    if os.getenv("TRADE_MODE", "dry") != "dry":
+        return []  # unverified fallback candles must not confirm a money entry
     fallback = _yfinance_fallback_bars(symbol, limit)
     if fallback:
         log.warning(f"get_bars: Alpaca data unavailable for {symbol}, used yfinance fallback bars")
@@ -266,6 +276,23 @@ def place_order(symbol: str, side: str, qty: str,
     type_: market|limit|stop|stop_limit
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if type_ != "limit" or limit_price is None:
+            raise RuntimeError("Live entries require bounded limit prices")
+        account = get_account()
+        account_id = account.get("id") or account.get("account_number")
+        if not account_id:
+            raise RuntimeError("Live account identity unavailable")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True),account_id=account_id)
+
+    finite_number(qty, positive=True)
+    if side not in ("buy", "sell"):
+        raise ValueError("Invalid order side")
+    for value in (limit_price, take_profit, stop_loss):
+        if value is not None:
+            finite_number(value, positive=True)
     # A client_order_id is always set, even if the caller didn't pass one.
     # Order submission is a POST and isn't blindly retried (see SESSION's
     # retry policy above, GET-only) precisely because a retry after a

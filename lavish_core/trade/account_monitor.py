@@ -8,6 +8,7 @@
 # future dashboard has actual equity-over-time data to plot, independent
 # of individual trade fills.
 from __future__ import annotations
+from lavish_core.utils.safety import finite_number
 import os, time, logging
 from typing import Optional
 
@@ -32,10 +33,10 @@ def snapshot_once(store: Optional[HybridStore] = None) -> Optional[dict]:
         log.warning("account_monitor: could not read account for snapshot: %s", e)
         return None
 
-    equity = float(acct.get("equity") or 0.0)
-    cash = float(acct.get("cash") or 0.0)
-    buying_power = float(acct.get("buying_power") or 0.0)
-    last_equity = float(acct.get("last_equity") or equity)
+    equity = finite_number(acct.get("equity"), positive=True)
+    cash = finite_number(acct.get("cash"), nonnegative=True)
+    buying_power = finite_number(acct.get("buying_power"), nonnegative=True)
+    last_equity = finite_number(acct.get("last_equity", equity), positive=True)
     day_pl = equity - last_equity
 
     baseline = _first_recorded_equity(store)
@@ -57,4 +58,6 @@ def run_periodic_snapshot() -> None:
             snapshot_once(store)
         except Exception as e:
             log.error("account_monitor: unexpected error: %s", e)
+        from lavish_core.utils.worker_health import WORKER_HEALTH
+        WORKER_HEALTH.beat("account-snapshot-loop")
         time.sleep(ACCOUNT_SNAPSHOT_INTERVAL_SECONDS)

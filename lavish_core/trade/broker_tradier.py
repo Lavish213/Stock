@@ -20,7 +20,9 @@ from __future__ import annotations
 import os, json, logging, re, time, uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
+from lavish_core.utils.safety import finite_number, valid_positive, check_trading_endpoint
 import requests
+from lavish_core.utils.broker_transport import BrokerSession
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -49,7 +51,7 @@ _retry = Retry(
     raise_on_status=False,
     respect_retry_after_header=True,
 )
-SESSION = requests.Session()
+SESSION = BrokerSession('tradier')
 SESSION.mount("https://", HTTPAdapter(max_retries=_retry))
 SESSION.mount("http://", HTTPAdapter(max_retries=_retry))
 
@@ -62,6 +64,7 @@ _OCC_RE = re.compile(r"^[A-Z]+\d{6}[CP]\d{8}$")
 
 
 def _check_keys():
+    check_trading_endpoint(os.getenv("TRADE_MODE", "dry"), BASE_URL, "tradier")
     if not API_TOKEN:
         raise RuntimeError("Missing TRADIER_API_KEY")
 
@@ -75,7 +78,7 @@ def _account_id() -> str:
     GET /user/profile. profile.account can be a single object or a list
     depending on how many accounts the token has access to (confirmed
     via Tradier's own community examples, not just assumed) - this
-    always normalizes to a list and uses the first account unless
+    always normalizes to a list and requires an unambiguous account unless
     TRADIER_ACCOUNT_ID explicitly picks one.
     """
     global _account_id_cache
@@ -94,6 +97,10 @@ def _account_id() -> str:
         accounts = [accounts]
     if not accounts:
         raise RuntimeError("Tradier user/profile returned an empty account list")
+    if len(accounts) != 1:
+        raise RuntimeError('Multiple Tradier accounts; configure TRADIER_ACCOUNT_ID explicitly')
+    if not isinstance(accounts[0], dict) or not accounts[0].get('account_number'):
+        raise RuntimeError('Tradier account identity unavailable')
     _account_id_cache = accounts[0]["account_number"]
     return _account_id_cache
 
@@ -116,6 +123,7 @@ def get_account() -> Dict[str, Any]:
         raise RuntimeError(f"Tradier balances error {r.status_code}: {r.text}")
     bal = r.json().get("balances", {})
     return {
+        "id": str(acct_id),
         "equity": bal.get("total_equity"),
         "cash": bal.get("total_cash"),
         "buying_power": bal.get("stock_buying_power") or bal.get("option_buying_power"),
@@ -199,14 +207,24 @@ def _normalize_order(o: Dict[str, Any]) -> Dict[str, Any]:
     """Alpaca-shaped order dict from Tradier's order fields (status,
     avg_fill_price, exec_quantity, remaining_quantity) - field names
     confirmed from Tradier's official order response reference."""
-    return {
-        "id": str(o.get("id", "")),
-        "status": o.get("status"),
+    result = {
+        "id": str(o.get("id") or ""),
+        "status": {'pending':'pending_new','open':'new','ok':'pending_new'}.get(o.get('status'), o.get('status')),
         "filled_qty": o.get("exec_quantity"),
         "filled_avg_price": o.get("avg_fill_price"),
-        "client_order_id": o.get("tag"),
         "legs": [],  # Tradier has no native bracket/OCO equivalent surfaced here - see equity_exit_monitor.py's active monitor
     }
+    if 'tag' in o:
+        result['client_order_id'] = o['tag']
+    if 'option_symbol' in o:
+        result['symbol'] = o['option_symbol']
+    elif 'symbol' in o:
+        result['symbol'] = o['symbol']
+    if 'quantity' in o:
+        result['qty'] = o['quantity']
+    if 'side' in o:
+        result['side'] = {'buy_to_open': 'buy', 'sell_to_close': 'sell'}.get(o['side'], o['side'])
+    return result
 
 
 def get_order(order_id: str) -> Dict[str, Any]:
@@ -229,21 +247,30 @@ def get_order_by_client_id(client_order_id: str) -> Optional[Dict[str, Any]]:
     """
     _check_keys()
     acct_id = _account_id()
-    r = SESSION.get(f"{BASE_URL}/accounts/{acct_id}/orders", headers=HEADERS, timeout=15)
-    if r.status_code != 200:
-        raise RuntimeError(f"Tradier list orders error {r.status_code}: {r.text}")
-    orders = r.json().get("orders")
-    if not orders or orders == "null":
-        return None
-    raw = orders.get("order")
-    if raw is None:
-        return None
-    if not isinstance(raw, list):
-        raw = [raw]
-    for o in raw:
-        if o.get("tag") == client_order_id:
-            return _normalize_order(o)
-    return None
+    matches = []
+    # Tags are omitted by default and the endpoint otherwise returns only
+    # 25 current-session orders. Both defaults defeat timeout recovery.
+    for page in range(1, 6):
+        r = SESSION.get(f"{BASE_URL}/accounts/{acct_id}/orders", headers=HEADERS,
+                        params={'includeTags': 'true', 'limit': 1000, 'page': page}, timeout=15)
+        if r.status_code != 200:
+            raise RuntimeError(f"Tradier list orders error {r.status_code}")
+        orders = r.json().get('orders')
+        if orders in (None, 'null'):
+            raw = []
+        elif isinstance(orders, dict):
+            raw = orders.get('order')
+            raw = [] if raw is None else (raw if isinstance(raw, list) else [raw])
+        else:
+            raise RuntimeError('Malformed Tradier orders response')
+        if any(not isinstance(o, dict) for o in raw):
+            raise RuntimeError('Malformed Tradier order row')
+        matches.extend(o for o in raw if o.get('tag') == client_order_id)
+        if len(matches) > 1:
+            raise RuntimeError('Ambiguous Tradier order tag; broker reconciliation required')
+        if len(raw) < 1000:
+            return _normalize_order(matches[0]) if matches else None
+    raise RuntimeError('Incomplete Tradier order history; broker reconciliation required')
 
 
 def cancel_order(order_id: str) -> bool:
@@ -280,13 +307,11 @@ def latest_quote(symbol: str) -> Optional[float]:
                 q = q[0] if q else None
             if q:
                 last = q.get("last")
-                if last:
+                if isinstance(last, (int, float)) and not isinstance(last, bool) and valid_positive(last):
                     return float(last)
                 bid, ask = q.get("bid"), q.get("ask")
-                if bid and ask:
-                    return float((bid + ask) / 2)
-                if bid or ask:
-                    return float(bid or ask)
+                if all(isinstance(p, (int,float)) and not isinstance(p,bool) and valid_positive(p) for p in (bid,ask)) and bid <= ask:
+                    return float((bid+ask)/2)
     except Exception as e:
         log.warning(f"latest_quote failed for {symbol}: {e}")
     return None
@@ -353,6 +378,24 @@ def place_order(symbol: str, side: str, qty: str,
     expecting bracket legs back, when BROKER_PROVIDER=tradier.
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if type_ != "limit" or limit_price is None:
+            raise RuntimeError("Live entries require bounded limit prices")
+        account = get_account()
+        account_id = account.get("id") or account.get("account_number")
+        if not account_id:
+            raise RuntimeError("Live account identity unavailable")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True),account_id=account_id)
+
+    finite_number(qty, positive=True)
+    if side not in ("buy", "sell"):
+        raise ValueError("Invalid order side")
+    for value in (limit_price, take_profit, stop_loss):
+        if value is not None:
+            finite_number(value, positive=True)
+
     if take_profit is not None or stop_loss is not None:
         log.warning("place_order: take_profit/stop_loss requested but Tradier has no native bracket order here - "
                     "submitting a plain entry; the caller must use an active exit monitor instead.")
@@ -381,5 +424,5 @@ def place_order(symbol: str, side: str, qty: str,
         raise RuntimeError(f"Tradier order error {r.status_code}: {r.text}")
     order = r.json().get("order", {})
     result = _normalize_order(order)
-    result["client_order_id"] = client_order_id
+    result.setdefault("client_order_id", client_order_id)
     return result

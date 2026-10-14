@@ -66,34 +66,33 @@ by telling you the values to type.
    `[FAIL]` on Patreon credentials is expected until those are added too
    (see "What's still missing" below) - don't treat that one as broken.
 
-5. **Confirm the local Python environment matches what was tested
-   remotely:**
+5. **Verify the checked-out candidate, including repair regressions:**
    ```bash
-   pip install -r requirements.txt  # only if you need the full test extras beyond requirements-deploy.txt
-   pytest tests/
+   pip install -r requirements-validation.txt
+   TRADE_MODE=dry DISCORD_WEBHOOK_URL='' python -m pytest -q
    ```
-   Should be 261 passed (same count as the remote session that built
-   this). A different count means something about this local
-   environment's dependency versions diverges - investigate before
-   trusting the next step's results.
+   Run the entire repository suite, including `validation_tests/`. Test
+   counts depend on the commit; use its audit report and CI evidence rather
+   than treating a fixed count as a version check. The draft repair PRs are
+   not yet in the default branch. Verify the selected repair commit before
+   deployment. Do not substitute the unrelated experimental dependencies
+   in `requirements.txt` for the pinned validation environment.
 
-6. **The real first test - actually touches the broker and Discord:**
+6. **Repeat the offline signed-alert test before broker testing:**
    ```bash
-   python3 simulate_alerts.py --live
+   TRADE_MODE=dry DISCORD_WEBHOOK_URL='' python -m pytest -q validation_tests/test_synthetic_alert_following.py
    ```
-   Runs curated sample alerts through the REAL pipeline: real quotes,
-   the candle-confirmation gate (`lavish_core/trade/candle_gatekeeper.py`)
-   watching real 1-minute bars before letting any entry through, real
-   bracket orders, real paper fills. Watch them land in the Alpaca paper
-   dashboard, and watch the configured Discord channel - every
-   circuit-breaker trip / gatekeeper rejection / exit-monitor event
-   should start showing up there for the first time.
+   This exercises the production receiver, inbox, parser, sizing/risk,
+   broker adapters and exits with synthetic prices and fills. The gated
+   cases also run the real candle logic with synthetic closed bars and
+   deterministic worker scheduling. No broker orders are sent.
 
-   Expect this to take a while per alert if the gatekeeper is enabled
-   (`GATEKEEPER_ENABLED=true` by default) - it can wait up to
-   `GATEKEEPER_MAX_WAIT_SECONDS` (900s/15min default) per entry for a
-   real candle to confirm the move before trading. Lower that env var
-   temporarily if you want faster iteration while testing.
+   `simulate_alerts.py --live` is intentionally refused in the repaired
+   candidate; the old instructions incorrectly recommended that launcher.
+   Use the documented paper preflight/probe/cycle tools for separately
+   authorized account-bound observations. Offline passes do not verify
+   creator access, notification delivery, cash reconciliation, or deployed
+   recovery. Keep automatic entries halted while those remain unresolved.
 
 ## What's still missing
 
