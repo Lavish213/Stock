@@ -124,10 +124,11 @@ class Connection:
     def sendall(self,data):self.output.extend(data)
 
 
-def send(inbox,text,identity,clock,*,age=0):
+def send(inbox,text,identity,clock,*,age=0,created_epoch=None):
     from lavish_core.feeds import alert_feed as feed
     secret='f'*64  # Synthetic fixture only; never used outside this model.
-    body=json.dumps(dict(id=identity,text=text,created_at=datetime.fromtimestamp(clock.time()-age,timezone.utc).isoformat())).encode()
+    created_epoch = clock.time()-age if created_epoch is None else created_epoch
+    body=json.dumps(dict(id=identity,text=text,created_at=datetime.fromtimestamp(created_epoch,timezone.utc).isoformat())).encode()
     stamp=str(int(clock.time()));signature=feed.sign(secret,stamp,body)
     headers=['POST /v1/alerts HTTP/1.1','Host: localhost','Content-Type: application/json',
              'Content-Length: '+str(len(body)),'X-Alert-Timestamp: '+stamp,'X-Alert-Signature: '+signature]
@@ -137,9 +138,11 @@ def send(inbox,text,identity,clock,*,age=0):
     return int(head.split()[1]),json.loads(payload)
 
 
-def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='target',dte=7,age=0,market_open=True):
+def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='target',dte=7,age=0,market_open=True,gate=None):
     if instrument not in ('equity','call') or trigger not in ('target','stop'):
         raise ValueError('Unsupported synthetic scenario')
+    if gate not in (None,'confirmed','invalidated','timeout'):
+        raise ValueError('Unsupported synthetic candle outcome')
     db_path=Path(db_path)
     if db_path.exists():raise ValueError('Use a new isolated simulation journal')
     with ExitStack() as stack:
@@ -157,9 +160,32 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
         for module in (th,ta,eq,op):stack.enter_context(patch.object(module,'time',clock))
         stack.enter_context(patch.object(ba,'API_KEY','synthetic'))
         stack.enter_context(patch.object(ba,'API_SECRET','synthetic'))
-        for name,value in [('TRADE_MODE','paper'),('GATEKEEPER_ENABLED',False),('POSITION_SIZE_SCALE',1),
+        for name,value in [('TRADE_MODE','paper'),('GATEKEEPER_ENABLED',gate is not None),('POSITION_SIZE_SCALE',1),
                            ('DEFAULT_OPTION_TRADE_DOLLARS',budget),('get_clock',ba.get_clock)]:
             stack.enter_context(patch.object(th,name,value))
+        candle_reads = []
+        if gate is not None:
+            from lavish_core.trade import candle_gatekeeper as gk
+            # Execute the real gate and gated entry callback deterministically.
+            # Worker scheduling is tested separately; OHLC and broker data here
+            # are synthetic, with real closed-candle timestamps.
+            class InlineThread:
+                def __init__(self,target,args=(),kwargs=None,**unused):
+                    self.target,self.args,self.kwargs=target,args,kwargs or {}
+                def start(self):self.target(*self.args,**self.kwargs)
+            stack.enter_context(patch.object(th,'threading',SimpleNamespace(Thread=InlineThread)))
+            stack.enter_context(patch.object(th,'confirm_entry',gk.confirm_entry))
+            for name,value in [('time',clock),('ENABLED',True),('MAX_WAIT_SECONDS',30),('POLL_INTERVAL_SEC',1)]:
+                stack.enter_context(patch.object(gk,name,value))
+            base=datetime.now(timezone.utc).replace(second=0,microsecond=0)-timedelta(minutes=3)
+            ref=dict(t=base.isoformat(),o=100,h=101,l=99,c=100,v=1000)
+            close=102 if gate=='confirmed' else 98 if gate=='invalidated' else 100
+            follow=dict(t=(base+timedelta(minutes=1)).isoformat(),o=100,h=max(101,close),l=min(99,close),c=close,v=2000)
+            def bars(*args,**kwargs):
+                candle_reads.append(clock.elapsed)
+                if model.posts:raise AssertionError('Entry submitted before candle gate finished')
+                return [ref] if len(candle_reads)==1 else [ref,follow]
+            stack.enter_context(patch.object(gk,'get_bars',bars))
         for method in ('get','post','delete'):stack.enter_context(patch.object(ba.SESSION,method,getattr(model,method)))
         # Every other HTTP path is a test failure, including notification I/O.
         def blocked(*args,**kwargs):raise AssertionError('External network prohibited in alert simulator')
@@ -169,12 +195,13 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
         stack.enter_context(patch.object(th,'watch_and_exit_async',lambda **kwargs:monitors.append(('call',kwargs))))
         inbox=AlertInbox(db_path)
         text=f'BUY {ticker} now target 105 stop 95' if instrument=='equity' else f'BTO {ticker} 100 CALL exp {expiry:%m/%d/%Y} target 105 stop 95'
-        began=time.perf_counter();status,receipt=send(inbox,text,'entry-1',clock,age=age)
-        expected=age<=120 and age>=0 and math.isfinite(budget) and budget>=100 and market_open and (instrument=='equity' or dte>=0)
+        created_epoch=clock.time()-age
+        began=time.perf_counter();status,receipt=send(inbox,text,'entry-1',clock,age=age,created_epoch=created_epoch)
+        expected=age<=120 and age>=0 and math.isfinite(budget) and budget>=100 and market_open and (instrument=='equity' or dte>=0) and gate in (None,'confirmed')
         if status==202:inbox.dispatch_once(alert_handler.handle_alert_text,execute=True,now=clock.time())
         dispatch_ms=(time.perf_counter()-began)*1000
         # Repeated delivery must never create another model entry.
-        duplicate_status,duplicate=send(inbox,text,'entry-1',clock,age=age)
+        duplicate_status,duplicate=send(inbox,text,'entry-1',clock,age=age,created_epoch=created_epoch)
         if status==202 and (duplicate_status!=200 or duplicate.get('duplicate') is not True):
             raise AssertionError('Same alert receipt did not deduplicate')
         inbox.dispatch_once(alert_handler.handle_alert_text,execute=True,now=clock.time())
@@ -182,6 +209,8 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
         outcome=None
         if expected:
             entry=model.events[0];symbol=ticker if instrument=='equity' else model.contract
+            if gate is not None and (len(candle_reads)<2 or entry['elapsed']<candle_reads[1]):
+                raise AssertionError('Entry did not wait for a confirming candle')
             qty=math.floor(budget/100)
             if entry['symbol']!=symbol or entry['qty']!=qty or entry['side']!='buy':raise AssertionError('Wrong entry identity or quantity')
             if entry['price']*entry['qty']*(100 if instrument=='call' else 1)>budget:raise AssertionError('Entry exceeded premium/notional cap')
@@ -206,10 +235,11 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
         return dict(synthetic=True,passed=True,real_broker_orders=0,profitability_evidence=False,
                     instrument=instrument,ticker=ticker,budget=budget,expiry=expiry.isoformat() if instrument=='call' else None,
                     alert_text=text,trigger=trigger,age=age,market_open=market_open,entry_expected=expected,
+                    candle_gate=gate,candle_reads=len(candle_reads),
                     expected_qty=math.floor(budget/100) if expected else 0,
                     receipt_http_status=status,dispatch_wall_ms=round(dispatch_ms,3),
                     events=model.events,fill_count=len(fills),final_cash=model.cash,final_positions=0,
-                    scope='production signed HTTP handler, inbox, parser, sizing/risk logic, broker HTTP adapters and exit monitors; virtual clock and zero-fee broker; baseline candle gate disabled')
+                    scope='production signed HTTP handler, inbox, parser, sizing/risk logic, broker HTTP adapters and exit monitors; virtual clock and zero-fee broker; '+('real candle gate with synthetic closed bars and inline worker scheduling' if gate else 'baseline candle gate disabled'))
 
 
 def main():

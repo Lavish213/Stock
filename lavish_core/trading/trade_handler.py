@@ -96,8 +96,25 @@ RISK_CHECK_FAIL_OPEN = os.getenv("RISK_CHECK_FAIL_OPEN", "false").strip().lower(
 def _coerce_side(action: str) -> Optional[str]:
     a = (action or "").strip().lower()
     if a in ("buy", "long"): return "buy"
-    if a in ("sell", "short"): return "sell"
+    if a == "sell": return "sell"
     return None
+
+
+def _source_levels_valid(direction, price, target, stop):
+    """Hints are underlying prices; reject reversed/already-crossed plans."""
+    try:
+        price = finite_number(price, positive=True)
+        if target is not None:
+            target = finite_number(target, positive=True)
+            if (direction == 'bullish' and target <= price) or (direction == 'bearish' and target >= price):
+                return False
+        if stop is not None:
+            stop = finite_number(stop, positive=True)
+            if (direction == 'bullish' and stop >= price) or (direction == 'bearish' and stop <= price):
+                return False
+        return direction in ('bullish','bearish')
+    except ValueError:
+        return False
 
 def _kill_switch_reason() -> Optional[str]:
     """Checked first, before any other work, in both entry paths. Returns
@@ -429,6 +446,10 @@ def _finish_option_entry(
         if not valid_positive(underlying_now):
             log.warning("Skip options entry: current underlying quote unavailable")
             return False
+        if not _source_levels_valid('bullish' if option_side == 'CALL' else 'bearish',
+                                    underlying_now, target_hint, stop_hint):
+            log.warning("Skip options entry: source underlying levels invalid or already crossed")
+            return True
         drift_reason = None if skip_drift_check else _price_drift_reason(signal.get("_alert_time_price"), underlying_now)
         if drift_reason:
             store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
@@ -930,31 +951,22 @@ def _finish_equity_entry(
             return True
         qty = held_qty if qty is None else min(qty,held_qty)
 
-    # Only bracket new long entries. A "sell" here is closing/shorting, not
-    # opening a position, so there's nothing to attach a bracket exit to.
-    # Prefer her stated target/stop when she gave one (same principle as the
-    # options path) - only fall back to our fixed pct bracket for whichever
-    # side she didn't specify, or if her number fails a basic sanity check
-    # (a target below current price or a stop above it is a parsing miss,
-    # not a real level - trust the safe default instead of that number).
+    # Bracket new longs, using defaults only for levels the source omitted.
+    # Invalid or already-crossed explicit levels reject the entry; replacing
+    # them would execute a different plan from the one the creator stated.
     take_profit = stop_loss = None
     if side == "buy" and ref_price > 0:
+        if not _source_levels_valid('bullish', ref_price, target_hint, stop_hint):
+            store.submit_order(symbol=sym, side=side, qty=0, venue=TRADE_MODE, status='rejected',
+                               meta={'reason':'invalid_or_crossed_source_levels', **meta})
+            log.warning("Skip equity entry: source levels invalid or already crossed")
+            return True
         take_profit = round(ref_price * (1 + TAKE_PROFIT_PCT), 2)
         stop_loss = round(ref_price * (1 - STOP_LOSS_PCT), 2)
         if target_hint is not None:
-            t = float(target_hint)
-            if t > ref_price:
-                take_profit = round(t, 2)
-            else:
-                log.warning("Ignoring target_hint %.2f for %s (not above ref %.2f) - using default TP",
-                            t, sym, ref_price)
+            take_profit = round(float(target_hint), 2)
         if stop_hint is not None:
-            s = float(stop_hint)
-            if s < ref_price:
-                stop_loss = round(s, 2)
-            else:
-                log.warning("Ignoring stop_hint %.2f for %s (not below ref %.2f) - using default SL",
-                            s, sym, ref_price)
+            stop_loss = round(float(stop_hint), 2)
 
     # Same concentration check as the options path - only gates new long
     # entries, same reasoning as the bracket above (a sell is reducing/

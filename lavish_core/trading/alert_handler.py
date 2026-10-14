@@ -78,7 +78,12 @@ def _is_perp_or_leveraged(text: str) -> bool:
 
 def _nonactionable(text):
     normalized = " ".join((text or "").lower().split())
-    return "?" in normalized or bool(re.search(r"\b(do not|don't|don’t|never|no entry|no trade|not in yet|watch only|if|only if|might|maybe|should i|yesterday|cancel(?:ed|led)?|ignore|disregard|stay out|was wrong|was a mistake|failed entry|close to|into the close|long term|exit strategy)\b", normalized))
+    # There is no scheduler or conditional-order contract in this router.
+    # A source timestamp proves freshness, not that "tomorrow" means now.
+    return "?" in normalized or bool(re.search(
+        r"\b(do not|don't|don’t|never|no entry|no trade|not in yet|watch only|if|only if|might|maybe|should i|yesterday|cancel(?:ed|led)?|ignore|disregard|stay out|was wrong|was a mistake|failed entry|close to|into the close|long term|exit strategy|tomorrow|later|next (?:week|month|session)|at the open|when|once|until|after)\b"
+        r"|\b(?:not|no)\s+(?:going\s+to\s+)?(?:buy(?:ing)?|sell(?:ing)?|enter(?:ing)?|clos(?:e|ing)|exit(?:ing)?|long|short(?:ing)?)\b",
+        normalized))
 
 
 def _option_intent(text, parsed):
@@ -95,6 +100,13 @@ def _equity_action_from_text(text: str) -> Optional[str]:
     # otherwise miss "CALLS" entirely (the "L"->"S" boundary doesn't
     # exist, both are word characters).
     if _nonactionable(text):
+        return None
+    # This path opens longs or fully closes a verified long. It has no
+    # contract for shorts, covers, or source-directed partial quantities.
+    # Never turn "trim half" into liquidation of the entire holding.
+    if re.search(r"\b(short(?:s|ing)?|cover(?:s|ing)?|btc|trim(?:s|ming)?|half|quarter|partial(?:ly)?|some|portion)\b"
+                 r"|\d+(?:\.\d+)?\s*%"
+                 r"|\b(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten)\s+shares?\b", text or "", re.I):
         return None
     up = (text or "").upper()
 
@@ -176,6 +188,7 @@ def handle_alert_text(
         return
 
     if parsed.get("field_conflicts"):
+        log.warning("[%s] Conflicting or invalid alert fields require review: %s", source, parsed["field_conflicts"])
         return
     ticker = parsed.get("ticker")
     if not ticker:
@@ -223,7 +236,7 @@ def handle_alert_text(
 
     if _option_intent(text, parsed):
         return
-    action = _equity_action_from_text(text)
+    action = _equity_action_from_text(instructions)
     if not action:
         log.info("[%s] Ticker %s found but no clear BUY/SELL direction, skipping: %r",
                   source, ticker, (text or "")[:200])

@@ -15,7 +15,7 @@ def test_incomplete_option_never_becomes_equity(text,monkeypatch):
  d=Mock();monkeypatch.setattr(ah,'execute_trade_from_post',d);ah.handle_alert_text(text,source='adversarial')
  if d.called:
   s=d.call_args.args[0];assert s.get('side') in ('CALL','PUT') and s.get('strike') and s.get('expiry')
-@pytest.mark.parametrize('text,expected',[('AAPL grabbing shares here','BUY'),('adding AAPL on this pullback','BUY'),('AAPL trimming the position here','SELL'),('buying AAPL now','BUY'),('selling AAPL now','SELL'),('BUY AAPL now','BUY')])
+@pytest.mark.parametrize('text,expected',[('AAPL grabbing shares here','BUY'),('adding AAPL on this pullback','BUY'),('buying AAPL now','BUY'),('selling AAPL now','SELL'),('BUY AAPL now','BUY')])
 def test_plain_share_intent_reaches_correct_execution(text,expected,monkeypatch):
  d=Mock();monkeypatch.setattr(ah,'execute_trade_from_post',d);ah.handle_alert_text(text,source='adversarial');assert d.call_count==1;assert d.call_args.args[0]['action']==expected
 @pytest.mark.parametrize('field,value',[(f,v) for f in ['confidence','amount_usd'] for v in [float('nan'),float('inf'),-float('inf'),-1,0,'corrupt',{},[]]]+[('confidence',1.1),('confidence','nan'),('amount_usd','inf')])

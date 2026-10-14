@@ -22,3 +22,12 @@ def test_call_expiry_and_contract_identity(tmp_path,dte):
 def test_closed_market_never_places_synthetic_entry(tmp_path,instrument):
     result=run_case(tmp_path/'following.db',instrument=instrument,market_open=False)
     assert not result['entry_expected'] and result['fill_count']==0
+
+
+@pytest.mark.parametrize('instrument,gate,trigger',list(product(['equity','call'],['confirmed','invalidated','timeout'],['target','stop'])))
+def test_signed_alert_candle_gate_entry_fill_and_exit_together(tmp_path,instrument,gate,trigger):
+    result=run_case(tmp_path/'gated.db',instrument=instrument,gate=gate,trigger=trigger,budget=250)
+    assert result['passed'] and result['real_broker_orders']==0
+    assert result['candle_reads']>=2
+    assert result['entry_expected'] is (gate=='confirmed')
+    assert result['fill_count']==(2 if gate=='confirmed' else 0)

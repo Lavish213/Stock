@@ -449,6 +449,25 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
         expiry = None
     target = _find_target(text)
     stop   = _find_stop(text)
+    # The execution router accepts one instrument. Proximity can help OCR
+    # extraction, but cannot authorize one trade from a multi-ticker post.
+    exact_tickers = {m.group().upper() for m in re.finditer(r"\b[A-Za-z]{2,6}\b", text)
+                     if m.group().upper() in KNOWN_TICKERS
+                     and (len(m.group()) >= 3 or m.group().isupper())}
+    conflicts = ["ticker"] if len(exact_tickers) > 1 else []
+    if (re.search(r"\bcalls?\b|\d+c\b", text, re.I)
+            and re.search(r"\bputs?\b|\d+p\b", text, re.I)):
+        conflicts.append("side")
+    for field, pattern in (
+        ("target_hint", r"\btarget\s*(?:is\s*)?\$?\s*([+-]?(?:\d+(?:\.\d+)?|nan|inf(?:inity)?))\b"),
+        ("stop_hint", r"\b(?:stop\s*loss|stop|sl)\s*\$?\s*([+-]?(?:\d+(?:\.\d+)?|nan|inf(?:inity)?))\b"),
+    ):
+        values = {_to_float(match.group(1)) for match in re.finditer(pattern, text, re.I)}
+        # Zero, negative, nonfinite, or otherwise unparsed explicit levels
+        # must not disappear and be replaced by the bot's default exits.
+        extracted = target if field == "target_hint" else stop
+        if None in values or len(values) > 1 or (values and extracted not in values):
+            conflicts.append(field)
 
     conf = 0.0
     # Scaled by match quality (MIN_TICKER_SCORE=75 floor, 100=exact) - a
@@ -479,7 +498,8 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
         "notes_excerpt": text[:280],
         "instruction_text": text,
         "confidence": conf,
-        "needs_human_review": conf < 0.75,
+        "field_conflicts": conflicts,
+        "needs_human_review": bool(conflicts) or conf < 0.75,
     }
 
 # ---------- OCR Pipeline ----------
@@ -538,9 +558,11 @@ def parse_alert(text: str = "", img_path: Optional[Path] = None, source: str = "
 
     if text_result and image_result:
         merged = dict(text_result)
-        conflicts = [key for key in ("ticker", "side", "strike", "expiry")
+        conflicts = list(dict.fromkeys(text_result.get("field_conflicts", [])
+                                       + image_result.get("field_conflicts", [])))
+        conflicts += [key for key in ("ticker", "side", "strike", "expiry", "entry_price_est", "target_hint", "stop_hint")
                      if text_result.get(key) is not None and image_result.get(key) is not None
-                     and text_result[key] != image_result[key]]
+                     and text_result[key] != image_result[key] and key not in conflicts]
         merged["field_conflicts"] = conflicts
         for key in ("ticker", "side", "strike", "expiry", "entry_price_est", "target_hint", "stop_hint"):
             if not merged.get(key) and image_result.get(key):
