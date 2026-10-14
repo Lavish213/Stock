@@ -16,6 +16,7 @@ from lavish_core.logger_setup import get_logger
 from lavish_core.vision.extract_signal import parse_alert, has_hedge_language, HEDGE_CONFIDENCE_PENALTY
 from lavish_core.trading.trade_handler import execute_trade_from_post
 from lavish_core.utils.alerts import post_discord
+from lavish_core.feeds.research_context import classify, research_source, ResearchJournal
 
 log = get_logger("alert_handler", log_dir="logs")
 
@@ -166,6 +167,9 @@ def handle_alert_text(
     note: str = "",
     source: str = "alert",
     amount_usd: Optional[float] = None,
+    post_id: Optional[str] = None,
+    published_at: Optional[str] = None,
+    source_url: Optional[str] = None,
 ) -> None:
     """
     Core logic, independent of which source called it: parse an alert
@@ -175,6 +179,16 @@ def handle_alert_text(
     way - trade_handler.execute_trade_from_post() dedupes the second
     source's copy of the same alert.
     """
+    journal_path = os.getenv('RESEARCH_CONTEXT_DB')
+    if journal_path:
+        # Persist research before execution filtering. If configured storage
+        # fails, propagate failure so a durable source can retry safely.
+        ResearchJournal(journal_path).record(text=text, source=source, post_id=post_id,
+                                            published_at=published_at, source_url=source_url)
+    tags = classify(text)
+    if research_source(source) or tags['kind'] in ('progress_update', 'macro_context', 'conditional_setup'):
+        log.info('[%s] Retained/review-only context: %s', source, tags['kind'])
+        return
     if _nonactionable(text):
         return
     if amount_usd is not None:
@@ -196,6 +210,11 @@ def handle_alert_text(
     parsed = parse_alert(text=text, img_path=Path(image_path) if image_path else None, source=source)
 
     instructions = text + "\n" + (parsed.get("instruction_text") or "")
+    if image_path and journal_path:
+        ResearchJournal(journal_path).record(text=instructions, source=source, post_id=post_id,
+                                            published_at=published_at, source_url=source_url)
+    if classify(instructions)['kind'] in ('progress_update', 'macro_context', 'conditional_setup'):
+        return
     if _nonactionable(instructions) or _is_perp_or_leveraged(instructions):
         return
 
