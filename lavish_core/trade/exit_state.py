@@ -92,13 +92,18 @@ class ExitState:
                 delta = cumulative-recorded
                 if delta < 0:
                     raise ValueError("Regressing exit quantity")
+                fee=finite_number(order.get("filled_fee",recorded_fee),nonnegative=True)-recorded_fee
+                if fee < 0:
+                    raise ValueError("Regressing execution fees")
+                if not cumulative and fee > 0:
+                    raise ValueError("Fee without an execution")
                 if delta > 0:
                     average = finite_number(order.get("filled_avg_price"),positive=True)
                     incremental = finite_number((cumulative*average-notional)/delta,positive=True)
-                    fee=finite_number(order.get("filled_fee",0),nonnegative=True)-recorded_fee
-                    if fee<0:
-                        raise ValueError("Regressing execution fees")
                     store.log_fill(self.journal_id,self.symbol,"sell",delta,incremental,fee=fee,venue=self.venue,event_id=f"reconcile:{order['id']}:{cumulative}")
+                elif fee > 0:
+                    fid=store.fetchall('SELECT id FROM fills WHERE order_id=? ORDER BY ts DESC LIMIT 1',(self.journal_id,))[0][0]
+                    store.execute('UPDATE fills SET fee=fee+? WHERE id=?',(fee,fid))
                 store.set_order_status(self.journal_id,order.get("status","submission_unknown"))
             finally:
                 store.con.close()

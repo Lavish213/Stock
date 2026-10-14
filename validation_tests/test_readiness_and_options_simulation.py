@@ -55,13 +55,19 @@ def test_call_exercise_and_put_delivery():
     cash=x.cash;x.exercise('CALL');assert x.shares['SPY']==100 and x.cash==cash-20000
     x.exercise('PUT');assert x.shares['SPY']==0 and x.cash==cash
 
+@pytest.fixture(autouse=True)
+def configured_test_creator(monkeypatch):
+    monkeypatch.setenv('PATREON_CAMPAIGN_ID','123')
+    monkeypatch.setenv('PATREON_ACCESS_TOKEN','synthetic-fixture-token')
+
 def approval(tmp_path):
+    from lavish_core.trade.live_readiness import source_config_digest
     now=datetime.now(timezone.utc);checks={}
     for check,sources in REQUIRED.items():
         source=sorted(sources)[0];path=tmp_path/(check+'.json')
-        payload=json.dumps(dict(check=check,source=source,synthetic=False,passed=True,observed_at=(now-timedelta(minutes=2)).isoformat(),runtime_sha256=runtime_digest(),account_id_hash=hashlib.sha256(b'test-paper-account').hexdigest())).encode();path.write_bytes(payload)
+        payload=json.dumps(dict(check=check,source=source,synthetic=False,passed=True,observed_at=(now-timedelta(minutes=2)).isoformat(),runtime_sha256=runtime_digest(),account_id_hash=hashlib.sha256(b'test-paper-account').hexdigest(),source_id_hash=source_config_digest())).encode();path.write_bytes(payload)
         checks[check]=dict(status='passed',source=source,evidence_path=path.name,sha256=hashlib.sha256(payload).hexdigest())
-    data=dict(schema_version=1,operator_approved=True,issued_at=(now-timedelta(minutes=1)).isoformat(),expires_at=(now+timedelta(days=1)).isoformat(),runtime_sha256=runtime_digest(),live_account_id_hash=hashlib.sha256(b'test-account').hexdigest(),paper_account_id_hash=hashlib.sha256(b'test-paper-account').hexdigest(),limits=dict(max_trade_usd=200,max_gross_exposure=1000,max_daily_loss_usd=100),checks=checks)
+    data=dict(schema_version=1,operator_approved=True,issued_at=(now-timedelta(minutes=1)).isoformat(),expires_at=(now+timedelta(days=1)).isoformat(),runtime_sha256=runtime_digest(),source_id_hash=source_config_digest(),live_account_id_hash=hashlib.sha256(b'test-account').hexdigest(),paper_account_id_hash=hashlib.sha256(b'test-paper-account').hexdigest(),limits=dict(max_trade_usd=200,max_gross_exposure=1000,max_daily_loss_usd=100),checks=checks)
     path=tmp_path/'approval.json';path.write_text(json.dumps(data));return path,data
 
 def test_approval_account_limits_and_expiry(tmp_path):

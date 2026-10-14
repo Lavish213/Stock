@@ -8,6 +8,8 @@ from pathlib import Path
 from lavish_core.utils.safety import finite_number
 
 REQUIRED={
+ 'source_delivery':{'authenticated-source'},
+ 'cash_reconciliation':{'authenticated-paper'},
  'authenticated_paper_lifecycle':{'authenticated-paper'},
  'deployment_recovery':{'deployed-observation'},
  'notifications':{'deployed-observation'},
@@ -15,6 +17,22 @@ REQUIRED={
  'key_rotation':{'operator-review'},
  'option_settlement_review':{'operator-review','authenticated-paper'},
 }
+
+def source_config_digest():
+    """Bind evidence to configured source identities; never persist tokens."""
+    sources=[]
+    campaign=os.getenv('PATREON_CAMPAIGN_ID','')
+    patreon_auth=bool(os.getenv('PATREON_ACCESS_TOKEN') or all(os.getenv(k) for k in ('PATREON_CLIENT_ID','PATREON_CLIENT_SECRET','PATREON_REFRESH_TOKEN')))
+    if patreon_auth and re.fullmatch(r'[1-9][0-9]*',campaign):
+        sources.append({'kind':'patreon','campaign':campaign})
+    def ids(name):
+        values=[v.strip() for v in os.getenv(name,'').split(',') if v.strip()]
+        return sorted(set(values)) if values and all(re.fullmatch(r'[1-9][0-9]*',v) for v in values) else []
+    if os.getenv('DISCORD_USER_TOKEN') and os.getenv('DISCORD_INGEST_ACCEPT_TOS_RISK')=='1':
+        channels=ids('DISCORD_WATCH_CHANNEL_IDS');authors=ids('DISCORD_WATCH_AUTHOR_IDS');webhooks=ids('DISCORD_WATCH_WEBHOOK_IDS')
+        if channels and (authors or webhooks):sources.append({'kind':'discord','channels':channels,'authors':authors,'webhooks':webhooks})
+    # The private receiver supports paper/dry only; it is not a live source.
+    return hashlib.sha256(json.dumps(sources,sort_keys=True,separators=(',',':')).encode()).hexdigest() if sources else None
 
 def runtime_digest():
     root=Path(__file__).resolve().parents[2]
@@ -37,6 +55,8 @@ def validate_approval(path=None,*,now=None,notional=None,account_id=None):
         issued=datetime.fromisoformat(approval['issued_at'].replace('Z','+00:00'));expiry=datetime.fromisoformat(approval['expires_at'].replace('Z','+00:00'))
         if issued.tzinfo is None or expiry.tzinfo is None or not issued<=now<expiry or (expiry-issued).total_seconds()>7*86400:raise ValueError('Invalid approval dates')
         if approval.get('runtime_sha256')!=runtime_digest():raise ValueError('Approved runtime changed')
+        source_hash=source_config_digest()
+        if source_hash is None or approval.get('source_id_hash')!=source_hash:raise ValueError('Source configuration missing or changed')
         fingerprint=approval.get('live_account_id_hash','')
         if not re.fullmatch(r'[0-9a-f]{64}',fingerprint):raise ValueError('Missing approved account')
         if account_id is not None and hashlib.sha256(str(account_id).encode()).hexdigest()!=fingerprint:raise ValueError('Different account')
@@ -58,6 +78,7 @@ def validate_approval(path=None,*,now=None,notional=None,account_id=None):
             observed=datetime.fromisoformat(data['observed_at'].replace('Z','+00:00'))
             if observed.tzinfo is None or observed>issued or observed>now or (now-observed).total_seconds()>30*86400:reasons.append(check+':stale_or_unreviewed_evidence')
             if data.get('runtime_sha256')!=approval['runtime_sha256']:reasons.append(check+':different_runtime')
+            if check=='source_delivery' and data.get('source_id_hash')!=source_hash:reasons.append(check+':different_source')
             if record['source']=='authenticated-paper' and data.get('account_id_hash')!=paper_fingerprint:reasons.append(check+':different_paper_account')
         return dict(live_ready=not reasons,reasons=reasons,limits=limits)
     except (OSError,ValueError,KeyError,TypeError,AttributeError):
