@@ -46,18 +46,19 @@ def runtime_digest():
 def readiness_path():
     return Path(os.getenv('LAVISH_READINESS_FILE',str(Path(__file__).resolve().parents[2]/'data/live-readiness.json')))
 
-def validate_approval(path=None,*,now=None,notional=None,account_id=None):
+def validate_approval(path=None,*,now=None,notional=None,account_id=None,mode='live'):
     path=Path(path or readiness_path());now=now or datetime.now(timezone.utc);reasons=[]
     try:
         if path.stat().st_size>1024*1024:raise ValueError('Oversized approval')
         approval=json.loads(path.read_text())
+        if mode not in ('paper','live') or approval.get('mode','live') != mode:raise ValueError('Approval mode mismatch')
         if approval.get('schema_version')!=1 or approval.get('operator_approved') is not True:raise ValueError('Explicit approval required')
         issued=datetime.fromisoformat(approval['issued_at'].replace('Z','+00:00'));expiry=datetime.fromisoformat(approval['expires_at'].replace('Z','+00:00'))
         if issued.tzinfo is None or expiry.tzinfo is None or not issued<=now<expiry or (expiry-issued).total_seconds()>7*86400:raise ValueError('Invalid approval dates')
         if approval.get('runtime_sha256')!=runtime_digest():raise ValueError('Approved runtime changed')
         source_hash=source_config_digest()
         if source_hash is None or approval.get('source_id_hash')!=source_hash:raise ValueError('Source configuration missing or changed')
-        fingerprint=approval.get('live_account_id_hash','')
+        fingerprint=approval.get('paper_account_id_hash' if mode=='paper' else 'live_account_id_hash','')
         if not re.fullmatch(r'[0-9a-f]{64}',fingerprint):raise ValueError('Missing approved account')
         if account_id is not None and hashlib.sha256(str(account_id).encode()).hexdigest()!=fingerprint:raise ValueError('Different account')
         paper_fingerprint=approval.get('paper_account_id_hash','')
@@ -65,7 +66,8 @@ def validate_approval(path=None,*,now=None,notional=None,account_id=None):
         limits={key:finite_number(approval['limits'][key],positive=True) for key in ('max_trade_usd','max_gross_exposure','max_daily_loss_usd')}
         if limits['max_trade_usd']>limits['max_gross_exposure']:raise ValueError('Invalid caps')
         if notional is not None and finite_number(notional,positive=True)>limits['max_trade_usd']:raise ValueError('Trade cap exceeded')
-        for check,sources in REQUIRED.items():
+        required={key:value for key,value in REQUIRED.items() if mode=='live' or key not in ('strategy_evaluation','key_rotation')}
+        for check,sources in required.items():
             record=approval['checks'][check]
             if record.get('status')!='passed' or record.get('source') not in sources:reasons.append(check+':missing_verified_evidence');continue
             evidence=Path(record['evidence_path'])
@@ -80,9 +82,9 @@ def validate_approval(path=None,*,now=None,notional=None,account_id=None):
             if data.get('runtime_sha256')!=approval['runtime_sha256']:reasons.append(check+':different_runtime')
             if check=='source_delivery' and data.get('source_id_hash')!=source_hash:reasons.append(check+':different_source')
             if record['source']=='authenticated-paper' and data.get('account_id_hash')!=paper_fingerprint:reasons.append(check+':different_paper_account')
-        return dict(live_ready=not reasons,reasons=reasons,limits=limits)
+        return dict(live_ready=mode=='live' and not reasons,paper_ready=mode=='paper' and not reasons,reasons=reasons,limits=limits)
     except (OSError,ValueError,KeyError,TypeError,AttributeError):
-        return dict(live_ready=False,reasons=['missing_invalid_or_expired_live_approval'],limits={})
+        return dict(live_ready=False,paper_ready=False,reasons=['missing_invalid_or_expired_'+mode+'_approval'],limits={})
 
 def assert_live_ready(*,notional=None,account_id=None):
     result=validate_approval(notional=notional,account_id=account_id)

@@ -22,9 +22,14 @@ def test_shell_syntax(name):assert subprocess.run(['bash','-n',str(ROOT/name)],c
 @pytest.mark.parametrize('name',['scripts/kill_switch.py','scripts/flatten_all.py'])
 def test_documented_entrypoints_exist(name):assert (ROOT/name).is_file()
 def test_systemd_service_has_watchdog_and_preflight():
- files=list((ROOT/'deploy').glob('*.service'));assert files
- content=files[0].read_text()
+ content=(ROOT/'deploy/lavish-bot.service').read_text()
  for setting in ['Type=notify','WatchdogSec=90','ExecStartPre=','Restart=on-failure','User=lavish']:assert setting in content
+
+def test_synthetic_lab_service_has_separate_state_and_no_broker_runner():
+ content=(ROOT/'deploy/lavish-paper-lab.service').read_text()
+ for setting in ['Type=notify','WatchdogSec=90','ExecStartPre=','Restart=on-failure','StateDirectory=lavish-paper-lab','UMask=0077']:
+  assert setting in content
+ assert 'run_ingest.py' not in content and '--check' in content
 
 def test_ci_executes_full_validation_and_pins_actions():
  content=(ROOT/'.github/workflows/tests.yml').read_text()

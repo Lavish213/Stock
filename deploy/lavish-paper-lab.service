@@ -1,0 +1,33 @@
+# Synthetic lab ONLY. No broker credentials, orders, or production activation.
+[Unit]
+Description=Lavish synthetic creator execution lab
+After=network.target
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=notify
+NotifyAccess=main
+WatchdogSec=90
+User=lavish
+WorkingDirectory=/opt/lavish-bot
+EnvironmentFile=/etc/lavish-paper-lab.env
+StateDirectory=lavish-paper-lab
+UMask=0077
+ExecStartPre=/opt/lavish-bot/venv/bin/python -m lavish_core.validation.durable_paper_lab --check --db /var/lib/lavish-paper-lab/state.sqlite --cash 10000 --trade-budget 250 --gross-limit 1000 --daily-loss 100
+ExecStart=/opt/lavish-bot/venv/bin/python -m lavish_core.validation.durable_paper_lab --db /var/lib/lavish-paper-lab/state.sqlite --cash 10000 --trade-budget 250 --gross-limit 1000 --daily-loss 100
+Restart=on-failure
+RestartSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET
+
+[Install]
+WantedBy=multi-user.target
