@@ -92,6 +92,8 @@ def _nonactionable(text):
         r"|\bat\s+\d{1,2}:\d{2}\b"
         r"|\b(?:not\s+(?:going\s+long|opening)|not\s+yet|hold\s+off|skip|planning\s+to|considering|thinking\s+about)\b"
         r"|\b(?:could|may)\s+(?:buy|sell|enter|bto|open)\b"
+        r"|\bentry\s+trigger\b"
+        r"|\b(?:break|reclaim)\b.{0,40}\bhold\b"
         r"|\bonly\s+(?:above|below|over|under)\b"
         r"|\b(?:buy|buying|bto|entry|long)\b.{0,80}\bat\s+\$?\d",
         normalized))
