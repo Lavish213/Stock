@@ -127,6 +127,14 @@ def _handle_post(post: Dict[str, Any]) -> None:
     if not isinstance(title, str) or len(title) > 1000:
         raise ValueError("Invalid post title")
     body = f"{title}\n{content}"
+    from lavish_core.feeds.research_context import ResearchJournal, classify
+    if os.getenv('RESEARCH_CONTEXT_DB'):
+        ResearchJournal(os.environ['RESEARCH_CONTEXT_DB']).record(
+            text=body, source='patreon', post_id=str(post.get('id') or ''),
+            published_at=attrs.get('published_at'))
+    if classify(body)['kind'] in ('macro_context', 'progress_update', 'conditional_setup'):
+        log.info('Patreon context retained for review; no order dispatch')
+        return
     from lavish_core.vision.extract_signal import KNOWN_TICKERS
     symbols = {word.upper() for word in re.findall(r"\b[A-Za-z]{1,8}\b", body)
                if word.upper() in KNOWN_TICKERS}
@@ -160,6 +168,8 @@ def _handle_post(post: Dict[str, Any]) -> None:
         note=f"patreon:{pid}",
         source="patreon",
         amount_usd=float(patron_dollars) if patron_dollars else None,
+        post_id=str(pid) if pid is not None else None,
+        published_at=attrs.get('published_at'),
     )
 
 # A restart here means the WHOLE setup (campaign id resolution, cursor

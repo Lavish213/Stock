@@ -66,7 +66,7 @@ if not KNOWN_TICKERS:
             # because they were missing here (found while testing real
             # alerts, not guessed); DDOG was named explicitly in her own
             # text ("except on ddog") in a real recap post.
-            "AAPL,MSFT,AMD,NVDA,META,TSLA,SPY,QQQ,GOOGL,CRM,MSTR,MU,HOOD,ATAI,NVO,UNH,AVGO,CRWV,NFLX,AMZN,DDOG",
+            "AAPL,MSFT,AMD,NVDA,META,TSLA,SPY,QQQ,GOOGL,CRM,MSTR,MU,HOOD,ATAI,NVO,UNH,AVGO,CRWV,NFLX,AMZN,DDOG,JPM",
         ).split(",")
         if s.strip()
     }
