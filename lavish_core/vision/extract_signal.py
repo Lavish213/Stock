@@ -347,6 +347,23 @@ def _find_strike_and_side(text: str) -> Tuple[Optional[float], Optional[str], Op
         return _to_float(m3.group(1)), side, m3.start()
     return None, None, None
 
+
+def _explicit_option_pairs(text):
+    """All literal price/side pairs, excluding unpaired UI toggle labels."""
+    pairs = set()
+    for pattern, reverse in (
+        (r"(?<![\w.\-])\$?\s?(\d{1,4}(?:\.\d{1,2})?)\s*(?:strike\s+)?(calls?|puts?)(?:\s+strikes?)?\b", False),
+        (r"\b(calls?|puts?)\b[\s.,:\-]{0,10}\$\s?(\d{1,4}(?:\.\d{1,2})?)\b", True),
+        (r"(?<![\w.\-])(\d{1,4}(?:\.\d{1,2})?)([cp])\b", False),
+    ):
+        for match in re.finditer(pattern, text, re.I):
+            price, side = (match.group(2), match.group(1)) if reverse else match.groups()[:2]
+            side = 'CALL' if side.lower().startswith('c') else 'PUT'
+            value = _to_float(price)
+            if value is not None:
+                pairs.add((value, side))
+    return pairs
+
 def _find_side(text: str) -> Optional[str]:
     # Fallback for plain-text alerts with no visible strike+side pairing
     # (e.g. "buying NVDA calls here", no trade-card screenshot attached).
@@ -455,9 +472,17 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
                      if m.group().upper() in KNOWN_TICKERS
                      and (len(m.group()) >= 3 or m.group().isupper())}
     conflicts = ["ticker"] if len(exact_tickers) > 1 else []
-    if (re.search(r"\bcalls?\b|\d+c\b", text, re.I)
-            and re.search(r"\bputs?\b|\d+p\b", text, re.I)):
+    pairs = _explicit_option_pairs(text)
+    if len({pair[0] for pair in pairs}) > 1:
+        conflicts.append("strike")
+    if (len({pair[1] for pair in pairs}) > 1 or (not pairs
+            and re.search(r"\bcalls?\b", text, re.I) and re.search(r"\bputs?\b", text, re.I))):
         conflicts.append("side")
+    explicit_expiries = set()
+    for match in re.finditer(r"\b(?:exp(?:iry|iration)?|expires?)\s*[:=]?\s*(\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}(?:/\d{2,4})?)\b", text, re.I):
+        explicit_expiries.update(day for day, _ in _find_all_dates(match.group(1), now.year))
+    if len(explicit_expiries) > 1:
+        conflicts.append("expiry")
     for field, pattern in (
         ("target_hint", r"\btarget\s*(?:is\s*)?\$?\s*([+-]?(?:\d+(?:\.\d+)?|nan|inf(?:inity)?))\b"),
         ("stop_hint", r"\b(?:stop\s*loss|stop|sl)\s*\$?\s*([+-]?(?:\d+(?:\.\d+)?|nan|inf(?:inity)?))\b"),

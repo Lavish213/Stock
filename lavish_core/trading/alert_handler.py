@@ -7,7 +7,7 @@
 # awareness at all, so a Patreon-sourced options alert silently downgraded
 # into a plain equity guess. Both sources now get the same fidelity.
 from __future__ import annotations
-import os, re
+import os, re, unicodedata
 from lavish_core.utils.safety import finite_number
 from pathlib import Path
 from typing import Optional
@@ -77,12 +77,23 @@ def _is_perp_or_leveraged(text: str) -> bool:
 
 
 def _nonactionable(text):
+    # Invisible formatting can split a negation while leaving BUY/SELL
+    # recognizable. Review it rather than guessing the rendered instruction.
+    if any(unicodedata.category(character) == 'Cf' for character in (text or '')):
+        return True
     normalized = " ".join((text or "").lower().split())
     # There is no scheduler or conditional-order contract in this router.
     # A source timestamp proves freshness, not that "tomorrow" means now.
     return "?" in normalized or bool(re.search(
         r"\b(do not|don't|don’t|never|no entry|no trade|not in yet|watch only|if|only if|might|maybe|should i|yesterday|cancel(?:ed|led)?|ignore|disregard|stay out|was wrong|was a mistake|failed entry|close to|into the close|long term|exit strategy|tomorrow|later|next (?:week|month|session)|at the open|when|once|until|after)\b"
-        r"|\b(?:not|no)\s+(?:going\s+to\s+)?(?:buy(?:ing)?|sell(?:ing)?|enter(?:ing)?|clos(?:e|ing)|exit(?:ing)?|long|short(?:ing)?)\b",
+        r"|\b(?:not|no(?:\s+longer)?)\s+(?:going\s+to\s+)?(?:buy(?:ing)?|sell(?:ing)?|enter(?:ing)?|clos(?:e|ing)|exit(?:ing)?|long|short(?:ing)?)\b"
+        r"|\b(?:avoid|without|refrain\s+from|waiting\s+to)\s+(?:buy(?:ing)?|sell(?:ing)?|enter(?:ing)?|clos(?:e|ing)|exit(?:ing)?)\b"
+        r"|\bin\s+(?:an?|one|two|three|\d+)\s+(?:minutes?|hours?|days?|weeks?)\b"
+        r"|\bat\s+\d{1,2}:\d{2}\b"
+        r"|\b(?:not\s+(?:going\s+long|opening)|not\s+yet|hold\s+off|skip|planning\s+to|considering|thinking\s+about)\b"
+        r"|\b(?:could|may)\s+(?:buy|sell|enter|bto|open)\b"
+        r"|\bonly\s+(?:above|below|over|under)\b"
+        r"|\b(?:buy|buying|bto|entry|long)\b.{0,80}\bat\s+\$?\d",
         normalized))
 
 
@@ -104,8 +115,9 @@ def _equity_action_from_text(text: str) -> Optional[str]:
     # This path opens longs or fully closes a verified long. It has no
     # contract for shorts, covers, or source-directed partial quantities.
     # Never turn "trim half" into liquidation of the entire holding.
-    if re.search(r"\b(short(?:s|ing)?|cover(?:s|ing)?|btc|trim(?:s|ming)?|half|quarter|partial(?:ly)?|some|portion)\b"
-                 r"|\d+(?:\.\d+)?\s*%"
+    if re.search(r"\b(short(?:s|ing)?|cover(?:s|ing)?|btc|trim(?:s|ming)?|half|quarter|third|partial(?:ly)?|some|portion)\b"
+                 r"|\d+(?:\.\d+)?\s*(?:%|percent\b)"
+                 r"|\b\d+\s*/\s*\d+\b"
                  r"|\b(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten)\s+shares?\b", text or "", re.I):
         return None
     up = (text or "").upper()
@@ -189,6 +201,9 @@ def handle_alert_text(
 
     if parsed.get("field_conflicts"):
         log.warning("[%s] Conflicting or invalid alert fields require review: %s", source, parsed["field_conflicts"])
+        return
+    if not image_path and parsed.get('ticker_score') != 100:
+        log.warning("[%s] Text ticker requires an exact identity match; review fuzzy/OCR guess", source)
         return
     ticker = parsed.get("ticker")
     if not ticker:
