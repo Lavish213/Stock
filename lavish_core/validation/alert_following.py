@@ -28,6 +28,17 @@ class Clock:
         self.elapsed+=seconds
         if self.elapsed>600:raise AssertionError('Synthetic scenario exceeded bounded 600-second clock')
 
+class RealClock:
+    """Bounded accelerated market using actual wall-clock sleeps."""
+    def __init__(self):
+        self.epoch=time.time();self.started=time.monotonic();self.monitor_started=None
+    @property
+    def elapsed(self):return time.monotonic()-self.started
+    def time(self):return self.epoch+self.elapsed
+    def sleep(self,seconds):
+        if self.elapsed>20:raise AssertionError('Real-time simulation exceeded 20 seconds')
+        time.sleep(seconds)
+
 
 class Broker:
     """Zero-fee deterministic model; guards real HTTP adapter payloads."""
@@ -138,7 +149,7 @@ def send(inbox,text,identity,clock,*,age=0,created_epoch=None):
     return int(head.split()[1]),json.loads(payload)
 
 
-def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='target',dte=7,age=0,market_open=True,gate=None):
+def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='target',dte=7,age=0,market_open=True,gate=None,real_time=False):
     if instrument not in ('equity','call') or trigger not in ('target','stop'):
         raise ValueError('Unsupported synthetic scenario')
     if gate not in (None,'confirmed','invalidated','timeout'):
@@ -153,7 +164,9 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
         from lavish_core.trading import trade_handler as th,alert_handler
         from lavish_core.feeds.alert_feed import AlertInbox
         from lavish_core.db.hybrid_store import HybridStore
-        clock=Clock();expiry=date.today()+timedelta(days=dte)
+        clock=RealClock() if real_time else Clock();expiry=date.today()+timedelta(days=dte)
+        if real_time:
+            for module in (eq,op):stack.enter_context(patch.object(module,'POLL_INTERVAL_SEC',.05))
         interval=eq.POLL_INTERVAL_SEC if instrument=='equity' else op.POLL_INTERVAL_SEC
         model=Broker(clock,ticker,expiry,trigger,interval,market_open);monitors=[]
         for module in (th,eq,op):stack.enter_context(patch.object(module,'DEFAULT_DB',db_path))
@@ -175,7 +188,7 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
                 def start(self):self.target(*self.args,**self.kwargs)
             stack.enter_context(patch.object(th,'threading',SimpleNamespace(Thread=InlineThread)))
             stack.enter_context(patch.object(th,'confirm_entry',gk.confirm_entry))
-            for name,value in [('time',clock),('ENABLED',True),('MAX_WAIT_SECONDS',30),('POLL_INTERVAL_SEC',1)]:
+            for name,value in [('time',clock),('ENABLED',True),('MAX_WAIT_SECONDS',.3 if real_time else 30),('POLL_INTERVAL_SEC',.05 if real_time else 1)]:
                 stack.enter_context(patch.object(gk,name,value))
             base=datetime.now(timezone.utc).replace(second=0,microsecond=0)-timedelta(minutes=3)
             ref=dict(t=base.isoformat(),o=100,h=101,l=99,c=100,v=1000)
@@ -206,7 +219,7 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
             raise AssertionError('Same alert receipt did not deduplicate')
         inbox.dispatch_once(alert_handler.handle_alert_text,execute=True,now=clock.time())
         if bool(model.posts)!=expected:raise AssertionError('Entry acceptance differs from independent scenario rules')
-        outcome=None
+        outcome=None;trigger_at=None
         if expected:
             entry=model.events[0];symbol=ticker if instrument=='equity' else model.contract
             if gate is not None and (len(candle_reads)<2 or entry['elapsed']<candle_reads[1]):
@@ -221,7 +234,7 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
             if outcome.get('status')!='exited' or model.positions:raise AssertionError('Exit left unresolved exposure')
             exit_event=model.events[-1]
             trigger_at=clock.monitor_started+2*interval
-            if exit_event['elapsed']<trigger_at or exit_event['elapsed']>trigger_at+interval:
+            if exit_event['elapsed']<trigger_at or exit_event['elapsed']>trigger_at+interval+(2 if real_time else 0):
                 raise AssertionError('Exit did not follow first eligible observed trigger tick')
             if exit_event['symbol']!=symbol or exit_event['qty']!=qty or exit_event['side']!='sell':raise AssertionError('Wrong closing identity or quantity')
         store=HybridStore(db_path)
@@ -239,7 +252,9 @@ def run_case(db_path,*,instrument='equity',ticker='AAPL',budget=200,trigger='tar
                     expected_qty=math.floor(budget/100) if expected else 0,
                     receipt_http_status=status,dispatch_wall_ms=round(dispatch_ms,3),
                     events=model.events,fill_count=len(fills),final_cash=model.cash,final_positions=0,
-                    scope='production signed HTTP handler, inbox, parser, sizing/risk logic, broker HTTP adapters and exit monitors; virtual clock and zero-fee broker; '+('real candle gate with synthetic closed bars and inline worker scheduling' if gate else 'baseline candle gate disabled'))
+                    actual_wall_clock=real_time,monitor_poll_seconds=interval,
+                    first_eligible_exit_at=trigger_at,
+                    scope='production signed HTTP handler, inbox, parser, sizing/risk logic, broker HTTP adapters and exit monitors; '+('actual wall clock with accelerated synthetic market' if real_time else 'virtual clock')+' and zero-fee broker; '+('real candle gate with synthetic closed bars and inline worker scheduling' if gate else 'baseline candle gate disabled'))
 
 
 def main():
