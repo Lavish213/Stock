@@ -49,8 +49,8 @@ class Account:
             if self.seen[identity]!=digest: raise ValueError('Duplicate identity conflict')
             return 'duplicate'
         self.seen[identity]=digest
-        if self.halted: return 'halted'
         if not market_open: return 'closed_session'
+        if self.halted: return 'halted'
         if self.position: return 'position_exists'
         if not signal or signal.get('symbol')!='SPY' or signal.get('action')!='BUY' or signal.get('strike'):
             return 'not_spy_entry'
