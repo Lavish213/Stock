@@ -82,7 +82,7 @@ class CallAccount:
         if self.paused:self.paused=False;self.loss_streak=0
         self.day=day;self.baseline=self.balance;self.day_net=D(0)
 
-    def enter(self,event,signal,bid,ask,at,underlying=None):
+    def enter(self,event,signal,bid,ask,at,underlying=None,ticker='SPY'):
         digest=json.dumps(event,sort_keys=True)
         if event['id'] in self.seen:
             if self.seen[event['id']]!=digest:raise ValueError('Conflicting duplicate')
@@ -95,7 +95,7 @@ class CallAccount:
         if at.date()!=self.day or at.weekday()>=5 or not (6,30)<=(at.hour,at.minute)<(12,45):return 'closed_session'
         if self.paused:return 'paused'
         if self.position:return 'holding'
-        if not signal or (signal.get('ticker'),signal.get('side'),signal.get('action'))!=('SPY','CALL','BUY'):return 'not_spy_call'
+        if not signal or (signal.get('ticker'),signal.get('side'),signal.get('action'))!=(ticker,'CALL','BUY'):return 'not_spy_call'
         try:expiry=date.fromisoformat(signal['expiry']);strike=D(str(signal['strike']))
         except (ValueError,KeyError):return 'missing_contract'
         if not strike.is_finite() or strike<=0 or expiry<at.date():return 'invalid_contract'
