@@ -1,0 +1,427 @@
+{
+  "actual_source_captions": {
+    "cases": 10,
+    "entry_dispatches": 0,
+    "results": [
+      {
+        "file": "IMG_2890.png",
+        "sha256": "c5e3430cf47ede14ca022abd3e6fe1feddb682b5a379eb67f6e24207bdd9ea67",
+        "expected_role": "flow_context",
+        "observed_context": {
+          "kind": "flow_context",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2891.png",
+        "sha256": "8fbb2a252ec32fdabc3941fde4177fb55e788f49d87921cd2e4ecbd4c0fdd3eb",
+        "expected_role": "flow_context",
+        "observed_context": {
+          "kind": "flow_context",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2892.png",
+        "sha256": "959663eff74d452c2416690b59b7a9e5d427f6385245a55927d5aa3080f32975",
+        "expected_role": "speculative_watch",
+        "observed_context": {
+          "kind": "research_note",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2895.png",
+        "sha256": "2901c34480ff1d49de0c3d6136e2ec87a48f6d1f11474bf8f6891d3c51692593",
+        "expected_role": "invitation_review",
+        "observed_context": {
+          "kind": "research_note",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2893.jpeg",
+        "sha256": "2ce1714475404a10828b21ad3c89bfe8380402f78046505e3d6c05c13b146460",
+        "expected_role": "swing_context",
+        "observed_context": {
+          "kind": "flow_context",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2888.png",
+        "sha256": "b1718780db5099640ef46c457be7d87b01acc705c134ca717a1140c8e44f8ff1",
+        "expected_role": "corporate_action_context",
+        "observed_context": {
+          "kind": "instruction_candidate",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2886.png",
+        "sha256": "a1d5830688f223161a55e0a915656286ef4615a3bff2908cfca202ebc2792bf5",
+        "expected_role": "progress_update",
+        "observed_context": {
+          "kind": "research_note",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2889.png",
+        "sha256": "ce7abf577512ade8070ee1b9774c85babf2019c5de60b04721dc35dfc613d6de",
+        "expected_role": "position_management",
+        "observed_context": {
+          "kind": "position_management",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2884.jpeg",
+        "sha256": "218020f01932efc2e2f455fd2d063581dcd98c381f97e7d59e1b66dabfe8b4eb",
+        "expected_role": "conditional_setup",
+        "observed_context": {
+          "kind": "conditional_setup",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      },
+      {
+        "file": "IMG_2885.jpeg",
+        "sha256": "1b4f13f687d743be597f706e99654cc15fa05bb5c1ea2ed6ffbfa09bbc89813b",
+        "expected_role": "progress_update",
+        "observed_context": {
+          "kind": "research_note",
+          "condition": null,
+          "execution_authorized": false
+        },
+        "entry_dispatches": 0,
+        "signal": null
+      }
+    ]
+  },
+  "synthetic_alerts": {
+    "cases": 8,
+    "correct": 8,
+    "results": [
+      {
+        "id": "synthetic-NVDA",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "NVDA",
+          "side": "CALL",
+          "strike": 220.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 225.0,
+          "stop_hint": 218.0,
+          "note": "BTO NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+          "amount_usd": null
+        },
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "NVDA",
+          "side": "CALL",
+          "strike": 220.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 225.0,
+          "stop_hint": 218.0,
+          "note": "BTO NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-OPEN",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO OPEN 7 CALL exp 2026-11-20 target 12 stop 5",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": null,
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "OPEN",
+          "side": "CALL",
+          "strike": 7.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 12.0,
+          "stop_hint": 5.0,
+          "note": "BTO OPEN 7 CALL exp 2026-11-20 target 12 stop 5",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-AMD",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "AMD",
+          "side": "CALL",
+          "strike": 285.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 290.0,
+          "stop_hint": 283.0,
+          "note": "BTO AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+          "amount_usd": null
+        },
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "AMD",
+          "side": "CALL",
+          "strike": 285.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 290.0,
+          "stop_hint": 283.0,
+          "note": "BTO AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-MSTR",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "MSTR",
+          "side": "CALL",
+          "strike": 347.5,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 352.5,
+          "stop_hint": 345.5,
+          "note": "BTO MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+          "amount_usd": null
+        },
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "MSTR",
+          "side": "CALL",
+          "strike": 347.5,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 352.5,
+          "stop_hint": 345.5,
+          "note": "BTO MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-HOOD",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "HOOD",
+          "side": "CALL",
+          "strike": 170.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 175.0,
+          "stop_hint": 168.0,
+          "note": "BTO HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+          "amount_usd": null
+        },
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "HOOD",
+          "side": "CALL",
+          "strike": 170.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 175.0,
+          "stop_hint": 168.0,
+          "note": "BTO HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-INTC",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO INTC 40 CALL exp 2026-11-20 target 45 stop 38",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": null,
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "INTC",
+          "side": "CALL",
+          "strike": 40.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 45.0,
+          "stop_hint": 38.0,
+          "note": "BTO INTC 40 CALL exp 2026-11-20 target 45 stop 38",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-SNDK",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": null,
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "SNDK",
+          "side": "CALL",
+          "strike": 1600.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 1605.0,
+          "stop_hint": 1598.0,
+          "note": "BTO SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598",
+          "amount_usd": null
+        },
+        "correct": true
+      },
+      {
+        "id": "synthetic-GOOGL",
+        "synthetic": true,
+        "published_at": "2026-10-15T13:31:00Z",
+        "text": "BTO GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+        "assumptions": "Fresh date; missing contracts/levels completed artificially; no historical fill claim",
+        "baseline_signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "GOOGL",
+          "side": "CALL",
+          "strike": 305.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 310.0,
+          "stop_hint": 303.0,
+          "note": "BTO GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+          "amount_usd": null
+        },
+        "fixture_recognition_catalog_extended": true,
+        "signal": {
+          "source": "synthetic_creator",
+          "action": "BUY",
+          "ticker": "GOOGL",
+          "side": "CALL",
+          "strike": 305.0,
+          "expiry": "2026-11-20",
+          "confidence": 0.85,
+          "target_hint": 310.0,
+          "stop_hint": 303.0,
+          "note": "BTO GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+          "amount_usd": null
+        },
+        "correct": true
+      }
+    ]
+  },
+  "synthetic_conditional": {
+    "initial_dispatches": 0,
+    "hold_results": {
+      "touch_only": {
+        "state": "waiting",
+        "orders": 0,
+        "profitability_evidence": false,
+        "confirmations_assumption": 2
+      },
+      "false_break": {
+        "state": "waiting",
+        "orders": 0,
+        "profitability_evidence": false,
+        "confirmations_assumption": 2
+      },
+      "confirmed": {
+        "state": "condition_confirmed_review",
+        "orders": 0,
+        "profitability_evidence": false,
+        "confirmations_assumption": 2,
+        "confirmed_at": "2026-10-15T13:33:01+00:00"
+      }
+    },
+    "confirmation_bars_assumption": 2,
+    "volume_confirmation_certified": false
+  },
+  "synthetic_scaling": {
+    "synthetic": true,
+    "initial": 100,
+    "entry_contracts": 5,
+    "trim_contracts": 4,
+    "remaining_after_trim": 1,
+    "runner_exit_contracts": 1,
+    "duplicate_order_same_identity": true,
+    "final_cash": 158.5,
+    "net_pnl": 58.5,
+    "positions": {},
+    "scope": "Isolated exchange fixture; intentional scaling NOT production options monitor",
+    "quote_assumption": "Invented .15 entry/.30 trim/.20 runner; screenshot OPEN1.43 is not replaced in actual-source evidence"
+  },
+  "source_OPEN_100_dollar_feasibility": {
+    "premium_visible": 1.43,
+    "minimum_debit_before_fees": 143,
+    "can_afford_one": false
+  },
+  "real_orders": 0,
+  "historical_fills_verified": false,
+  "source_authentication_verified": false,
+  "production_conditional_or_scaling_wiring": false
+}

@@ -188,7 +188,7 @@ def handle_alert_text(
         ResearchJournal(journal_path).record(text=text, source=source, post_id=post_id,
                                             published_at=published_at, source_url=source_url)
     tags = classify(text)
-    if research_source(source) or tags['kind'] in ('progress_update', 'macro_context', 'conditional_setup'):
+    if research_source(source) or tags['kind'] in ('progress_update', 'macro_context', 'conditional_setup', 'flow_context', 'position_management'):
         log.info('[%s] Retained/review-only context: %s', source, tags['kind'])
         return
     if _nonactionable(text):
@@ -215,7 +215,7 @@ def handle_alert_text(
     if image_path and journal_path:
         ResearchJournal(journal_path).record(text=instructions, source=source, post_id=post_id,
                                             published_at=published_at, source_url=source_url)
-    if classify(instructions)['kind'] in ('progress_update', 'macro_context', 'conditional_setup'):
+    if classify(instructions)['kind'] in ('progress_update', 'macro_context', 'conditional_setup', 'flow_context', 'position_management'):
         return
     if _nonactionable(instructions) or _is_perp_or_leveraged(instructions):
         return

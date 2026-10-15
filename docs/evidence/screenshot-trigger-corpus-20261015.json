@@ -1,0 +1,324 @@
+{
+  "actual_source_screenshots": [
+    {
+      "file": "IMG_2890.png",
+      "kind": "flow_context",
+      "ticker": "OPEN",
+      "caption": "Whales are still in and still buying. A whale purchased $1 million of this position. Patience. The government shutdown is affecting the market.",
+      "date_visible": "November 7, 2025",
+      "contract": {
+        "side": "CALL",
+        "strike": 7,
+        "expiry": "2026-02-20"
+      },
+      "display": {
+        "premium": 1.43,
+        "breakeven": 8.39,
+        "spot": 6.34,
+        "daily_premium_change_pct": -18.71
+      },
+      "missing": [
+        "entry instruction",
+        "stop",
+        "exact publication time"
+      ],
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "c5e3430cf47ede14ca022abd3e6fe1feddb682b5a379eb67f6e24207bdd9ea67",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.513961+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2891.png",
+      "kind": "flow_context",
+      "ticker": "AMD",
+      "caption": "Whale loads up $300k on this position. It could be inside trade.",
+      "date_visible": "November 6, 2025",
+      "contract": {
+        "side": "CALL",
+        "strike": 285,
+        "expiry_month_day": "11-28",
+        "expiry": null
+      },
+      "display": {
+        "premium": 2.9,
+        "breakeven": 287.86,
+        "daily_premium_change_pct": -51.93
+      },
+      "missing": [
+        "explicit expiry year",
+        "entry condition",
+        "stop",
+        "exact publication time"
+      ],
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "8fbb2a252ec32fdabc3941fde4177fb55e788f49d87921cd2e4ecbd4c0fdd3eb",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.514591+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2892.png",
+      "kind": "speculative_watch",
+      "ticker": "MSTR",
+      "caption": "Could print next week ...",
+      "date_visible": "October 9, 2025",
+      "contract": {
+        "side": "CALL",
+        "strike": 347.5,
+        "expiry_month_day": "10-17",
+        "expiry": null
+      },
+      "display": {
+        "premium": 4,
+        "breakeven": 351.45,
+        "daily_premium_change_pct": -44.21
+      },
+      "missing": [
+        "explicit expiry year",
+        "entry instruction",
+        "stop",
+        "exact publication time"
+      ],
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "959663eff74d452c2416690b59b7a9e5d427f6385245a55927d5aa3080f32975",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.515050+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2895.png",
+      "kind": "invitation_review",
+      "ticker": "HOOD",
+      "caption": "Who has the heart to take this call with me? We up",
+      "date_visible": "September 24, 2025",
+      "contract": {
+        "side": "CALL",
+        "strike": 170,
+        "expiry_month_day": "10-31",
+        "expiry": null
+      },
+      "display": {
+        "premium": 1.68,
+        "breakeven": 171.6,
+        "daily_premium_change_pct": 28
+      },
+      "missing": [
+        "explicit expiry year",
+        "stop",
+        "exact publication time"
+      ],
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "2901c34480ff1d49de0c3d6136e2ec87a48f6d1f11474bf8f6891d3c51692593",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.515766+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2893.jpeg",
+      "kind": "swing_context",
+      "ticker": "INTC",
+      "caption": "Whales are loading up on intel. Some news may be dropping soon given the short dated expiration. This will be our trade for next week to end the month.",
+      "outer_caption": "It took a week, but the news dropped as I expected: Intel is partnering with AMD.",
+      "date_visible": "October 2, 2025; embedded September 26; relative 1/3 carousel",
+      "contract": {
+        "side": "CALL",
+        "strike": null,
+        "expiry_month_day": "10-17",
+        "expiry": null
+      },
+      "display": {
+        "spot": 35.91,
+        "later_spot": 37.01
+      },
+      "missing": [
+        "strike hidden",
+        "expiry year",
+        "premium",
+        "stop",
+        "original post timestamp"
+      ],
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "2ce1714475404a10828b21ad3c89bfe8380402f78046505e3d6c05c13b146460",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.515912+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2888.png",
+      "kind": "corporate_action_context",
+      "ticker": "OPEN",
+      "caption": "OPEN. Buy before the close today",
+      "date_visible": "November 18, 2025",
+      "contract": null,
+      "display": {
+        "instrument": "common shares/warrant distribution context"
+      },
+      "missing": [
+        "exact source/comment time",
+        "separate comment identity",
+        "verified corporate action terms"
+      ],
+      "note": "The AI Overview in the screenshot is an unverified claim, not broker contract metadata. Buy/Call board at bottom is an adjacent post, not this warrant instruction.",
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "b1718780db5099640ef46c457be7d87b01acc705c134ca717a1140c8e44f8ff1",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.516894+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2886.png",
+      "kind": "progress_update",
+      "ticker": "GOOGL",
+      "caption": "$2.63 to $7.55",
+      "date_visible": "March 11; year not visible",
+      "contract": {
+        "side": "CALL",
+        "strike": 305,
+        "expiry_month_day": "03-13",
+        "expiry": null
+      },
+      "display": {
+        "initial_premium": 2.63,
+        "later_premium": 7.55,
+        "later_spot": 311.02,
+        "initial_breakeven": 307.61,
+        "later_breakeven": 312.45,
+        "daily_premium_change_pct": 41.9
+      },
+      "missing": [
+        "expiry year",
+        "original entry timestamp",
+        "original execution price",
+        "readable stop"
+      ],
+      "note": "Target appears301 but partially obscured; preserve as uncertain text, not a validated executable level. The two premium panels are later montage observations.",
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "a1d5830688f223161a55e0a915656286ef4615a3bff2908cfca202ebc2792bf5",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.517558+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2889.png",
+      "kind": "position_management",
+      "ticker": "OPEN",
+      "caption": "Free trade up nicely. Patience pays off most times. Take 80% profits and ride the rest.",
+      "date_visible": "November 12, 2025; earlier inset November 7, 2025",
+      "contract": {
+        "side": "CALL",
+        "strike": 7,
+        "expiry": "2026-02-20"
+      },
+      "display": {
+        "initial_premium": 1.43,
+        "later_premium": 3.15,
+        "initial_spot": 6.34,
+        "later_spot": 8.7,
+        "initial_breakeven": 8.39,
+        "later_breakeven": 10.08
+      },
+      "missing": [
+        "matched held position",
+        "precise trim interpretation",
+        "original timestamps"
+      ],
+      "note": "Take80% profits does not unambiguously specify80% of contract quantity; synthetic fixtures explicitly assume that interpretation. Broker Buy tab is not a new BTO.",
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "ce7abf577512ade8070ee1b9774c85babf2019c5de60b04721dc35dfc613d6de",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.518182+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2884.jpeg",
+      "kind": "conditional_setup",
+      "ticker": "NVDA",
+      "caption": "These setups are not automatic entries; we only enter trades based on market confirmation. NVDA220 Call expiration September4,2026. Entry trigger: reclaim the $218-$220 range and hold above this area with buyers stepping in.",
+      "outer_caption": "Newsletter paying off. Not bad for $20",
+      "date_visible": "August27; outer year not visible",
+      "contract": {
+        "side": "CALL",
+        "strike": 220,
+        "expiry": "2026-09-04"
+      },
+      "entry": {
+        "type": "reclaim_and_hold",
+        "zone_low": 218,
+        "zone_high": 220,
+        "buyers_required": true,
+        "hold_duration": null
+      },
+      "targets": [
+        225,
+        230
+      ],
+      "display": {
+        "later_spot": 228.43
+      },
+      "missing": [
+        "visible stop",
+        "hold duration",
+        "original post timestamp",
+        "premium"
+      ],
+      "note": "Stretch target line is cropped; do not invent a value. Later chart is not original trigger evidence.",
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "218020f01932efc2e2f455fd2d063581dcd98c381f97e7d59e1b66dabfe8b4eb",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.518343+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    },
+    {
+      "file": "IMG_2885.jpeg",
+      "kind": "progress_update",
+      "ticker": "SNDK",
+      "caption": "The winner of the week is definitely the SNDK trade. It skyrocketed from $2.50 a contract to an incredible $70.00!",
+      "embedded_comment": "Strike call $1,600 8/14. Hoping for a move over the next48hours. Sndk is a risky investment. You can lose all money quickly.",
+      "date_visible": "August14; year not visible; embedded3d/4d relative times",
+      "contract": {
+        "side": "CALL",
+        "strike": 1600,
+        "expiry_month_day": "08-14",
+        "expiry": null
+      },
+      "display": {
+        "initial_premium_claim": 2.5,
+        "later_premium_claim": 70
+      },
+      "missing": [
+        "expiry year",
+        "original comment time",
+        "original stop",
+        "authentic option quotes"
+      ],
+      "note": "Other commenters are not creator instructions; unrelated AMD panel below is a different post.",
+      "source": "user_supplied_creator_screenshot",
+      "sha256": "1b4f13f687d743be597f706e99654cc15fa05bb5c1ea2ed6ffbfa09bbc89813b",
+      "original_post_id": null,
+      "published_at": null,
+      "observed_at": "2026-10-15T04:56:31.518487+00:00",
+      "execution_authorized": false,
+      "transcription": "manually inspected; excerpts, not full OCR"
+    }
+  ],
+  "historical_fills_verified": false
+}
