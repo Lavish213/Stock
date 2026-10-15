@@ -68,6 +68,13 @@ def _run_watchdog_pings(workers=None) -> None:
     from lavish_core.utils.worker_health import WORKER_HEALTH
     from lavish_core.utils.control_file import write_control
     while True:
+        if os.getenv('TRADE_MODE','dry') == 'paper':
+            from lavish_core.trade.paper_readiness import enforce
+            store=HybridStore(duckdb_path=str(DEFAULT_DB))
+            try:
+                enforce(store)
+            finally:
+                store.con.close()
         health=WORKER_HEALTH.status({name:thread.is_alive() for name,thread in workers.items()} if workers is not None else None)
         if not health["healthy"]:
             reason="worker health failure: "+", ".join(health["reasons"])
@@ -158,6 +165,15 @@ def main() -> None:
         from lavish_core.trade.reconcile import synchronize_broker_state
         synchronize_broker_state()
     _reconcile_startup()
+    if os.getenv('TRADE_MODE','dry') == 'paper':
+        from lavish_core.trade.paper_readiness import enforce
+        store=HybridStore(duckdb_path=str(DEFAULT_DB))
+        try:
+            readiness=enforce(store)
+            if not readiness['paper_ready']:
+                log.error('Paper entries remain halted; reconciliation and exit supervision continue')
+        finally:
+            store.con.close()
     from lavish_core.utils.worker_health import WORKER_HEALTH
     from lavish_core.trade.reconcile import RECONCILE_INTERVAL_SECONDS
     from lavish_core.trade.account_monitor import ACCOUNT_SNAPSHOT_INTERVAL_SECONDS
