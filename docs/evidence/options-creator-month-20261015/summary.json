@@ -1,0 +1,42 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "summary": {
+    "0": {
+      "trials": 200,
+      "profitable": 0,
+      "median": 10.0,
+      "worst": 1.2,
+      "best": 45.7,
+      "reached_500": 0,
+      "reached_1000": 0,
+      "trades": 957,
+      "unaffordable": 2584,
+      "worthless": 8
+    },
+    "60": {
+      "trials": 200,
+      "profitable": 0,
+      "median": 9.675,
+      "worst": 1.2,
+      "best": 45.3,
+      "reached_500": 0,
+      "reached_1000": 0,
+      "trades": 903,
+      "unaffordable": 2636,
+      "worthless": 10
+    },
+    "180": {
+      "trials": 200,
+      "profitable": 1,
+      "median": 9.55,
+      "worst": 1.0,
+      "best": 251.9,
+      "reached_500": 0,
+      "reached_1000": 0,
+      "trades": 902,
+      "unaffordable": 2540,
+      "worthless": 10
+    }
+  }
+}

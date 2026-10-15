@@ -1,0 +1,854 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "seed": 20261015,
+  "delay_seconds": 0,
+  "initial": 100.0,
+  "final": 16.3,
+  "trades": [
+    {
+      "entry_id": "synthetic-20261015-0",
+      "entry_at": "2026-10-01T07:30:00-07:00",
+      "exit_at": "2026-10-01T07:36:00-07:00",
+      "strike": "792.0",
+      "expiry": "2026-10-01",
+      "contracts": 2,
+      "multiplier": 100,
+      "allocation": 100.0,
+      "entry_ask_fill": 0.33,
+      "exit_bid_fill": 0.1,
+      "net_pnl": -48.6,
+      "fees": 2.6,
+      "reason": "stop",
+      "balance": 51.4,
+      "exit_signal_at": "2026-10-01T07:36:00-07:00",
+      "exit_delay_seconds": 0
+    },
+    {
+      "entry_id": "synthetic-20261015-1",
+      "entry_at": "2026-10-02T07:30:00-07:00",
+      "exit_at": "2026-10-02T07:51:00-07:00",
+      "strike": "788.0",
+      "expiry": "2026-10-02",
+      "contracts": 1,
+      "multiplier": 100,
+      "allocation": 51.4,
+      "entry_ask_fill": 0.34,
+      "exit_bid_fill": 0.43,
+      "net_pnl": 7.7,
+      "fees": 1.3,
+      "reason": "target",
+      "balance": 59.1,
+      "exit_signal_at": "2026-10-02T07:51:00-07:00",
+      "exit_delay_seconds": 0
+    },
+    {
+      "entry_id": "synthetic-20261015-7",
+      "entry_at": "2026-10-08T07:30:00-07:00",
+      "exit_at": "2026-10-08T08:11:00-07:00",
+      "strike": "776.0",
+      "expiry": "2026-10-08",
+      "contracts": 1,
+      "multiplier": 100,
+      "allocation": 59.1,
+      "entry_ask_fill": 0.5,
+      "exit_bid_fill": 0.76,
+      "net_pnl": 24.7,
+      "fees": 1.3,
+      "reason": "target",
+      "balance": 83.8,
+      "exit_signal_at": "2026-10-08T08:11:00-07:00",
+      "exit_delay_seconds": 0
+    },
+    {
+      "entry_id": "synthetic-20261015-8",
+      "entry_at": "2026-10-09T07:30:00-07:00",
+      "exit_at": "2026-10-09T07:42:00-07:00",
+      "strike": "779.0",
+      "expiry": "2026-10-09",
+      "contracts": 4,
+      "multiplier": 100,
+      "allocation": 83.8,
+      "entry_ask_fill": 0.17,
+      "exit_bid_fill": 0.05,
+      "net_pnl": -53.2,
+      "fees": 5.2,
+      "reason": "stop",
+      "balance": 30.6,
+      "exit_signal_at": "2026-10-09T07:42:00-07:00",
+      "exit_delay_seconds": 0
+    },
+    {
+      "entry_id": "synthetic-20261015-12",
+      "entry_at": "2026-10-13T07:30:00-07:00",
+      "exit_at": "2026-10-13T07:32:00-07:00",
+      "strike": "782.0",
+      "expiry": "2026-10-13",
+      "contracts": 1,
+      "multiplier": 100,
+      "allocation": 30.6,
+      "entry_ask_fill": 0.18,
+      "exit_bid_fill": 0.05,
+      "net_pnl": -14.3,
+      "fees": 1.3,
+      "reason": "stop",
+      "balance": 16.3,
+      "exit_signal_at": "2026-10-13T07:32:00-07:00",
+      "exit_delay_seconds": 0
+    }
+  ],
+  "records": [
+    {
+      "event": {
+        "id": "synthetic-20261015-0",
+        "created_at": "2026-10-01T07:30:00-07:00",
+        "text": "BTO SPY 792 CALL exp 2026-10-01 target 777.41 stop 772.41",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 792.0,
+        "expiry": "2026-10-01",
+        "confidence": 0.85,
+        "target_hint": 777.41,
+        "stop_hint": 772.41,
+        "note": "BTO SPY 792 CALL exp 2026-10-01 target 777.41 stop 772.41",
+        "amount_usd": null
+      },
+      "status": "entered",
+      "entry_delay_seconds": 0,
+      "exit_trigger": "stop",
+      "balance": 51.4
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-1",
+        "created_at": "2026-10-02T07:30:00-07:00",
+        "text": "BTO SPY 788 CALL exp 2026-10-02 target 773.59 stop 768.59",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 788.0,
+        "expiry": "2026-10-02",
+        "confidence": 0.85,
+        "target_hint": 773.59,
+        "stop_hint": 768.59,
+        "note": "BTO SPY 788 CALL exp 2026-10-02 target 773.59 stop 768.59",
+        "amount_usd": null
+      },
+      "status": "entered",
+      "entry_delay_seconds": 0,
+      "exit_trigger": "target",
+      "balance": 59.1
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-2",
+        "created_at": "2026-10-03T07:30:00-07:00",
+        "text": "BTO SPY 790 CALL exp 2026-10-03 target 770.51 stop 765.51",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 790.0,
+        "expiry": "2026-10-03",
+        "confidence": 0.85,
+        "target_hint": 770.51,
+        "stop_hint": 765.51,
+        "note": "BTO SPY 790 CALL exp 2026-10-03 target 770.51 stop 765.51",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 59.1
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-3",
+        "created_at": "2026-10-04T07:30:00-07:00",
+        "text": "BTO SPY 788 CALL exp 2026-10-04 target 772.07 stop 767.07",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 788.0,
+        "expiry": "2026-10-04",
+        "confidence": 0.85,
+        "target_hint": 772.07,
+        "stop_hint": 767.07,
+        "note": "BTO SPY 788 CALL exp 2026-10-04 target 772.07 stop 767.07",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 59.1
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-4",
+        "created_at": "2026-10-05T07:30:00-07:00",
+        "text": "SPY is at the second target",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "not_spy_call",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 59.1
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-5",
+        "created_at": "2026-10-06T07:30:00-07:00",
+        "text": "SPY is at the second target",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "not_spy_call",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 59.1
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-6",
+        "created_at": "2026-10-07T07:30:00-07:00",
+        "text": "BTO SPY 788 CALL exp 2026-10-07 target 776.55 stop 771.55",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 788.0,
+        "expiry": "2026-10-07",
+        "confidence": 0.85,
+        "target_hint": 776.55,
+        "stop_hint": 771.55,
+        "note": "BTO SPY 788 CALL exp 2026-10-07 target 776.55 stop 771.55",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 59.1
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-7",
+        "created_at": "2026-10-08T07:30:00-07:00",
+        "text": "BTO SPY 776 CALL exp 2026-10-08 target 764.11 stop 759.11",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 776.0,
+        "expiry": "2026-10-08",
+        "confidence": 0.85,
+        "target_hint": 764.11,
+        "stop_hint": 759.11,
+        "note": "BTO SPY 776 CALL exp 2026-10-08 target 764.11 stop 759.11",
+        "amount_usd": null
+      },
+      "status": "entered",
+      "entry_delay_seconds": 0,
+      "exit_trigger": "target",
+      "balance": 83.8
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-8",
+        "created_at": "2026-10-09T07:30:00-07:00",
+        "text": "BTO SPY 779 CALL exp 2026-10-09 target 761.31 stop 756.31",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 779.0,
+        "expiry": "2026-10-09",
+        "confidence": 0.85,
+        "target_hint": 761.31,
+        "stop_hint": 756.31,
+        "note": "BTO SPY 779 CALL exp 2026-10-09 target 761.31 stop 756.31",
+        "amount_usd": null
+      },
+      "status": "entered",
+      "entry_delay_seconds": 0,
+      "exit_trigger": "stop",
+      "balance": 30.6
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-9",
+        "created_at": "2026-10-10T07:30:00-07:00",
+        "text": "BTO SPY 793 CALL exp 2026-10-10 target 775.08 stop 770.08",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 793.0,
+        "expiry": "2026-10-10",
+        "confidence": 0.85,
+        "target_hint": 775.08,
+        "stop_hint": 770.08,
+        "note": "BTO SPY 793 CALL exp 2026-10-10 target 775.08 stop 770.08",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 30.6
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-10",
+        "created_at": "2026-10-11T07:30:00-07:00",
+        "text": "BTO SPY 788 CALL exp 2026-10-11 target 775.22 stop 770.22",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 788.0,
+        "expiry": "2026-10-11",
+        "confidence": 0.85,
+        "target_hint": 775.22,
+        "stop_hint": 770.22,
+        "note": "BTO SPY 788 CALL exp 2026-10-11 target 775.22 stop 770.22",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 30.6
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-11",
+        "created_at": "2026-10-12T07:30:00-07:00",
+        "text": "BTO SPY 785 CALL exp 2026-10-12 target 774.67 stop 769.67",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 785.0,
+        "expiry": "2026-10-12",
+        "confidence": 0.85,
+        "target_hint": 774.67,
+        "stop_hint": 769.67,
+        "note": "BTO SPY 785 CALL exp 2026-10-12 target 774.67 stop 769.67",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 30.6
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-12",
+        "created_at": "2026-10-13T07:30:00-07:00",
+        "text": "BTO SPY 782 CALL exp 2026-10-13 target 764.55 stop 759.55",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 782.0,
+        "expiry": "2026-10-13",
+        "confidence": 0.85,
+        "target_hint": 764.55,
+        "stop_hint": 759.55,
+        "note": "BTO SPY 782 CALL exp 2026-10-13 target 764.55 stop 759.55",
+        "amount_usd": null
+      },
+      "status": "entered",
+      "entry_delay_seconds": 0,
+      "exit_trigger": "stop",
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-13",
+        "created_at": "2026-10-14T07:30:00-07:00",
+        "text": "BTO SPY 806 CALL exp 2026-10-14 target 791.03 stop 786.03",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 806.0,
+        "expiry": "2026-10-14",
+        "confidence": 0.85,
+        "target_hint": 791.03,
+        "stop_hint": 786.03,
+        "note": "BTO SPY 806 CALL exp 2026-10-14 target 791.03 stop 786.03",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-14",
+        "created_at": "2026-10-15T07:30:00-07:00",
+        "text": "BTO SPY 789 CALL exp 2026-10-15 target 778.91 stop 773.91",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 789.0,
+        "expiry": "2026-10-15",
+        "confidence": 0.85,
+        "target_hint": 778.91,
+        "stop_hint": 773.91,
+        "note": "BTO SPY 789 CALL exp 2026-10-15 target 778.91 stop 773.91",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-15",
+        "created_at": "2026-10-16T07:30:00-07:00",
+        "text": "BTO SPY 775 CALL exp 2026-10-16 target 762.05 stop 757.05",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 775.0,
+        "expiry": "2026-10-16",
+        "confidence": 0.85,
+        "target_hint": 762.05,
+        "stop_hint": 757.05,
+        "note": "BTO SPY 775 CALL exp 2026-10-16 target 762.05 stop 757.05",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-16",
+        "created_at": "2026-10-17T07:30:00-07:00",
+        "text": "SPY is at the second target",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-17",
+        "created_at": "2026-10-18T07:30:00-07:00",
+        "text": "BTO SPY 787 CALL exp 2026-10-18 target 775.92 stop 770.92",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 787.0,
+        "expiry": "2026-10-18",
+        "confidence": 0.85,
+        "target_hint": 775.92,
+        "stop_hint": 770.92,
+        "note": "BTO SPY 787 CALL exp 2026-10-18 target 775.92 stop 770.92",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-18",
+        "created_at": "2026-10-19T07:30:00-07:00",
+        "text": "BTO SPY 780 CALL exp 2026-10-19 target 769.6 stop 764.6",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 780.0,
+        "expiry": "2026-10-19",
+        "confidence": 0.85,
+        "target_hint": 769.6,
+        "stop_hint": 764.6,
+        "note": "BTO SPY 780 CALL exp 2026-10-19 target 769.6 stop 764.6",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-19",
+        "created_at": "2026-10-20T07:30:00-07:00",
+        "text": "BTO SPY 780 CALL exp 2026-10-20 target 765.42 stop 760.42",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 780.0,
+        "expiry": "2026-10-20",
+        "confidence": 0.85,
+        "target_hint": 765.42,
+        "stop_hint": 760.42,
+        "note": "BTO SPY 780 CALL exp 2026-10-20 target 765.42 stop 760.42",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-20",
+        "created_at": "2026-10-21T07:30:00-07:00",
+        "text": "BTO SPY 774 CALL",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "not_spy_call",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-21",
+        "created_at": "2026-10-22T07:30:00-07:00",
+        "text": "BTO SPY 792 CALL exp 2026-10-22 target 782.27 stop 777.27",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 792.0,
+        "expiry": "2026-10-22",
+        "confidence": 0.85,
+        "target_hint": 782.27,
+        "stop_hint": 777.27,
+        "note": "BTO SPY 792 CALL exp 2026-10-22 target 782.27 stop 777.27",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-22",
+        "created_at": "2026-10-23T07:30:00-07:00",
+        "text": "BTO SPY 777 CALL exp 2026-10-23 target 765.5 stop 760.5",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 777.0,
+        "expiry": "2026-10-23",
+        "confidence": 0.85,
+        "target_hint": 765.5,
+        "stop_hint": 760.5,
+        "note": "BTO SPY 777 CALL exp 2026-10-23 target 765.5 stop 760.5",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-23",
+        "created_at": "2026-10-24T07:30:00-07:00",
+        "text": "BTO SPY 803 CALL exp 2026-10-24 target 787.67 stop 782.67",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 803.0,
+        "expiry": "2026-10-24",
+        "confidence": 0.85,
+        "target_hint": 787.67,
+        "stop_hint": 782.67,
+        "note": "BTO SPY 803 CALL exp 2026-10-24 target 787.67 stop 782.67",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-24",
+        "created_at": "2026-10-25T07:30:00-07:00",
+        "text": "BTO SPY 786 CALL exp 2026-10-25 target 767.75 stop 762.75",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 786.0,
+        "expiry": "2026-10-25",
+        "confidence": 0.85,
+        "target_hint": 767.75,
+        "stop_hint": 762.75,
+        "note": "BTO SPY 786 CALL exp 2026-10-25 target 767.75 stop 762.75",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-25",
+        "created_at": "2026-10-26T07:30:00-07:00",
+        "text": "SPY is at the second target",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "not_spy_call",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-26",
+        "created_at": "2026-10-27T07:30:00-07:00",
+        "text": "BTO SPY 800 CALL exp 2026-10-27 target 781.74 stop 776.74",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 800.0,
+        "expiry": "2026-10-27",
+        "confidence": 0.85,
+        "target_hint": 781.74,
+        "stop_hint": 776.74,
+        "note": "BTO SPY 800 CALL exp 2026-10-27 target 781.74 stop 776.74",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-27",
+        "created_at": "2026-10-28T07:30:00-07:00",
+        "text": "BTO SPY 780 CALL exp 2026-10-28 target 768.23 stop 763.23",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 780.0,
+        "expiry": "2026-10-28",
+        "confidence": 0.85,
+        "target_hint": 768.23,
+        "stop_hint": 763.23,
+        "note": "BTO SPY 780 CALL exp 2026-10-28 target 768.23 stop 763.23",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-28",
+        "created_at": "2026-10-29T07:30:00-07:00",
+        "text": "BTO SPY 802 CALL exp 2026-10-29 target 784.27 stop 779.27",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 802.0,
+        "expiry": "2026-10-29",
+        "confidence": 0.85,
+        "target_hint": 784.27,
+        "stop_hint": 779.27,
+        "note": "BTO SPY 802 CALL exp 2026-10-29 target 784.27 stop 779.27",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-29",
+        "created_at": "2026-10-30T07:30:00-07:00",
+        "text": "BTO SPY 784 CALL exp 2026-10-30 target 765.85 stop 760.85",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 784.0,
+        "expiry": "2026-10-30",
+        "confidence": 0.85,
+        "target_hint": 765.85,
+        "stop_hint": 760.85,
+        "note": "BTO SPY 784 CALL exp 2026-10-30 target 765.85 stop 760.85",
+        "amount_usd": null
+      },
+      "status": "unaffordable_contract",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-30",
+        "created_at": "2026-10-31T07:30:00-07:00",
+        "text": "BTO SPY 787 CALL exp 2026-10-31 target 767.04 stop 762.04",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "ticker": "SPY",
+        "side": "CALL",
+        "strike": 787.0,
+        "expiry": "2026-10-31",
+        "confidence": 0.85,
+        "target_hint": 767.04,
+        "stop_hint": 762.04,
+        "note": "BTO SPY 787 CALL exp 2026-10-31 target 767.04 stop 762.04",
+        "amount_usd": null
+      },
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    },
+    {
+      "event": {
+        "id": "synthetic-20261015-31",
+        "created_at": "2026-11-01T07:30:00-08:00",
+        "text": "BTO SPY 771 CALL",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "entry_delay_seconds": 0,
+      "exit_trigger": null,
+      "balance": 16.3
+    }
+  ],
+  "reviews": [
+    {
+      "at": "2026-10-01T07:36:00-07:00",
+      "trigger": "big_loss",
+      "automatic_training": false,
+      "production_resume": false
+    },
+    {
+      "at": "2026-10-09T07:42:00-07:00",
+      "trigger": "big_loss",
+      "automatic_training": false,
+      "production_resume": false
+    },
+    {
+      "at": "2026-10-13T07:32:00-07:00",
+      "trigger": "big_loss",
+      "automatic_training": false,
+      "production_resume": false
+    }
+  ],
+  "reached_500": false,
+  "reached_1000": false,
+  "real_orders": 0,
+  "cash_error": 0
+}
