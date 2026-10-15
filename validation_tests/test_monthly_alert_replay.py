@@ -94,3 +94,22 @@ def test_opening_target_gap_precedes_later_stop_touch():
     assert trade["reason"] == "target"
     assert not trade["ambiguous_bar_stop_first"]
     assert trade["exit_price"] == pytest.approx(alerts[0]["target"]*.9995)
+
+
+@pytest.mark.parametrize("allocation", [.1,.25,.5,1.])
+def test_aggressive_simulation_sizes_to_chosen_cap(allocation):
+    bars, calendar = session_fixture()
+    sessions = prepare(bars,calendar,"2026-09")
+    alerts = make_alerts(sessions)[:1]
+    receipts = [dict(gate=dict(confirmed=True,decision_at=alerts[0]["posted"].isoformat()))]
+    result = fractional_comparison(alerts,receipts,5,allocation)
+    trade = result["ledger"][0]
+    assert trade["budget"] == 1000*allocation
+    assert trade["qty"]*trade["entry_price"] <= trade["budget"]
+    assert result["allocation_fraction"] == allocation
+
+
+@pytest.mark.parametrize("allocation", [0,-.1,1.1,float('nan'),float('inf')])
+def test_simulation_refuses_invalid_allocation(allocation):
+    with pytest.raises(ValueError,match="Allocation"):
+        fractional_comparison([],[],5,allocation)

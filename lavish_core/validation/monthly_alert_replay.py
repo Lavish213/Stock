@@ -207,12 +207,14 @@ def production_replay(sessions, journal):
         scope="Production signed HTTP handler, inbox, parser, claims, candle gate and whole-share sizing; inline worker and historical clock. No orders submitted, so fills/exits are not exercised.")
 
 
-def fractional_comparison(alerts, receipts, cost_bps=5.):
-    """Long-only 10% equity allocation, one position, next-open execution.
+def fractional_comparison(alerts, receipts, cost_bps=5., allocation_fraction=.1):
+    """Long-only capped equity allocation, one position, next-open execution.
 
     No account/PDT/settlement eligibility claim. Cost is a stress assumption,
     not a measured broker fee. Stops win ambiguous same-minute TP/SL touches.
     """
+    if not math.isfinite(allocation_fraction) or not 0 < allocation_fraction <= 1:
+        raise ValueError("Allocation must be finite and in (0, 1]")
     cash, peak, drawdown, costs = 1000., 1000., 0., 0.
     busy_until = datetime.min.replace(tzinfo=timezone.utc)
     trades, skipped = [], Counter()
@@ -235,7 +237,7 @@ def fractional_comparison(alerts, receipts, cost_bps=5.):
         if not alert["stop"] < raw_entry < alert["target"]:
             skipped["crossed_source_levels"] += 1
             continue
-        budget = cash*.1
+        budget = cash*allocation_fraction
         entry = raw_entry*(1+cost)
         qty = math.floor(budget/entry*1e8)/1e8
         if qty*entry > budget+1e-8:
@@ -277,6 +279,7 @@ def fractional_comparison(alerts, receipts, cost_bps=5.):
             exit_at=busy_until.isoformat(),budget=budget,qty=qty,entry_price=entry,exit_price=exit_price,
             reason=reason,ambiguous_bar_stop_first=ambiguous,cost=trade_cost,net_pnl=pnl,cash_after=cash))
     return dict(hypothetical_fractional=True, live_bot_support=False, cost_bps_per_side=cost_bps,
+        allocation_fraction=allocation_fraction,
         starting_cash=1000.,final_cash=cash,net_pnl=cash-1000,return_pct=(cash/1000-1)*100,
         trades=len(trades),wins=sum(t["net_pnl"]>0 for t in trades),
         losses=sum(t["net_pnl"]<0 for t in trades),estimated_cost=costs,
