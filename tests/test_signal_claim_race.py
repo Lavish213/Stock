@@ -10,11 +10,17 @@ from __future__ import annotations
 
 import threading
 import time
+import pytest
 from datetime import date, timedelta
 from unittest.mock import patch
 
 import lavish_core.trading.trade_handler as th
 from lavish_core.db.hybrid_store import HybridStore
+
+
+@pytest.fixture(autouse=True)
+def deterministic_quote(monkeypatch):
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 200.)
 
 
 # ---------------------------------------------------------------------------
@@ -135,3 +141,20 @@ def test_option_signals_claim_on_exact_strike_and_expiry(tmp_path, monkeypatch):
         th.execute_trade_from_post(_option_signal())
         th.execute_trade_from_post(_option_signal())  # identical strike/expiry - same claim key
     assert mock_exec.call_count == 1
+
+
+def test_claim_timestamps_are_utc_on_non_utc_connection(tmp_path, monkeypatch):
+    from datetime import datetime, timezone
+    from lavish_core.db import hybrid_store as hs
+    original = hs.duckdb.connect
+    def non_utc(*args, **kwargs):
+        connection = original(*args, **kwargs)
+        connection.execute("SET TimeZone='Asia/Seoul'")
+        return connection
+    monkeypatch.setattr(hs.duckdb, "connect", non_utc)
+    now = datetime(2026, 10, 12, 11, tzinfo=timezone.utc)
+    monkeypatch.setattr(hs, "_utcnow", lambda:now)
+    store = hs.HybridStore(tmp_path / "timezone.duckdb")
+    assert store.try_claim_signal("utc", 300)
+    assert store.fetchall("SELECT claimed_at FROM signal_claims")[0][0] == now.replace(tzinfo=None)
+    store.con.close()

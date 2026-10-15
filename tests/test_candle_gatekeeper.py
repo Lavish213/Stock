@@ -5,6 +5,7 @@
 # time.sleep patched to a no-op, same style as test_options_exit_monitor.py.
 from __future__ import annotations
 
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 
 import lavish_core.trade.candle_gatekeeper as gk
@@ -15,6 +16,9 @@ def _no_sleep(*a, **k):
 
 
 def _bar(t, o, h, l, c, v=1000.0):
+    base = datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=4)
+    offset = (-10+int(t[2:])) if t.startswith("t-") else int(t[1:])
+    t = (base+timedelta(minutes=offset)).isoformat()
     return {"t": t, "o": o, "h": h, "l": l, "c": c, "v": v}
 
 
@@ -42,7 +46,7 @@ def test_bullish_wick_breakout_with_volume_confirms():
              lookback + [ref, breakout],
          ]):
         mock_time.sleep.side_effect = _no_sleep
-        mock_time.time.side_effect = list(range(20))
+        mock_time.monotonic.side_effect = list(range(20))
 
         result = gk.confirm_entry("AAPL", "bullish")
 
@@ -65,7 +69,7 @@ def test_bullish_breakout_without_volume_data_still_confirms_on_price_alone():
              lookback + [ref, breakout],
          ]):
         mock_time.sleep.side_effect = _no_sleep
-        mock_time.time.side_effect = list(range(20))
+        mock_time.monotonic.side_effect = list(range(20))
 
         result = gk.confirm_entry("AAPL", "bullish")
 
@@ -84,7 +88,7 @@ def test_bearish_wick_breakdown_confirms():
              lookback + [ref, breakdown],
          ]):
         mock_time.sleep.side_effect = _no_sleep
-        mock_time.time.side_effect = list(range(20))
+        mock_time.monotonic.side_effect = list(range(20))
 
         result = gk.confirm_entry("AAPL", "bearish")
 
@@ -103,7 +107,7 @@ def test_price_closing_through_the_opposite_wick_invalidates_a_bullish_alert():
              lookback + [ref, wrong_way],
          ]):
         mock_time.sleep.side_effect = _no_sleep
-        mock_time.time.side_effect = list(range(20))
+        mock_time.monotonic.side_effect = list(range(20))
 
         result = gk.confirm_entry("AAPL", "bullish")
 
@@ -120,7 +124,7 @@ def test_neither_breakout_nor_invalidation_times_out():
         mock_time.sleep.side_effect = _no_sleep
         # First call establishes deadline; everything after stays under it
         # except the final check, which pushes past.
-        mock_time.time.side_effect = [0] + [100] * 10 + [10**9]
+        mock_time.monotonic.side_effect = [0] + [100] * 10 + [10**9]
 
         result = gk.confirm_entry("AAPL", "bullish", max_wait_seconds=500)
 
@@ -134,7 +138,7 @@ def test_no_bar_data_at_all_fails_closed_not_open():
     with patch.object(gk, "time") as mock_time, \
          patch.object(gk, "get_bars", return_value=[]):
         mock_time.sleep.side_effect = _no_sleep
-        mock_time.time.side_effect = list(range(30))
+        mock_time.monotonic.side_effect = list(range(30))
 
         result = gk.confirm_entry("AAPL", "bullish")
 
@@ -155,7 +159,7 @@ def test_transient_no_data_recovers_once_bars_come_back():
              lookback + [ref, breakout],
          ]):
         mock_time.sleep.side_effect = _no_sleep
-        mock_time.time.side_effect = list(range(30))
+        mock_time.monotonic.side_effect = list(range(30))
 
         result = gk.confirm_entry("AAPL", "bullish")
 

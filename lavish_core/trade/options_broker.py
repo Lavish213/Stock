@@ -3,6 +3,7 @@
 # could place an options order before this - only plain equity orders existed.
 from __future__ import annotations
 import os, json, logging, time, uuid
+from lavish_core.utils.safety import finite_number, normalize_base_url, check_trading_endpoint, fresh_timestamp
 from datetime import date, datetime
 from typing import Optional, Dict, Any, List
 
@@ -13,7 +14,7 @@ from lavish_core.trade.broker_alpaca import HEADERS, DATA_URL, SESSION, _check_k
 
 log = logging.getLogger("options_broker")
 
-BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets").rstrip("/")
+BASE_URL = normalize_base_url(os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"))
 ORDERS_URL = f"{BASE_URL}/v2/orders"
 CONTRACTS_URL = f"{BASE_URL}/v2/options/contracts"
 
@@ -23,7 +24,13 @@ def build_occ_symbol(ticker: str, expiry: date, side: str, strike: float) -> str
     Standard OCC symbol: TICKER + YYMMDD + C/P + strike*1000 zero-padded to 8 digits.
     e.g. AAPL, 2024-05-31, "call", 190.0 -> AAPL240531C00190000
     """
+    import re
     ticker = ticker.upper().strip()
+    if not re.fullmatch(r"[A-Z]{1,6}", ticker) or side.lower() not in ("c", "p", "call", "put", "calls", "puts"):
+        raise ValueError("Invalid OCC symbol inputs")
+    strike = finite_number(strike, positive=True)
+    if strike * 1000 >= 100_000_000:
+        raise ValueError("Strike exceeds OCC range")
     cp = "C" if side.lower().startswith("c") else "P"
     strike_int = round(strike * 1000)
     return f"{ticker}{expiry.strftime('%y%m%d')}{cp}{strike_int:08d}"
@@ -46,23 +53,49 @@ def find_contract(
     _check_keys()
     params = {
         "underlying_symbols": ticker.upper(),
-        "expiration_date": expiry.isoformat(),
+        "expiration_date_gte": expiry.isoformat(),
+        "expiration_date_lte": expiry.isoformat(),
         "type": "call" if side.lower().startswith("c") else "put",
         "status": "active",
         "limit": 100,
     }
+    strike=finite_number(strike,positive=True)
+    tolerance=finite_number(strike_tolerance,nonnegative=True)
+    params["strike_price_gte"]=str(max(.001,strike-tolerance))
+    params["strike_price_lte"]=str(strike+tolerance)
     r = SESSION.get(CONTRACTS_URL, headers=HEADERS, params=params, timeout=20)
     if r.status_code != 200:
         log.warning("options contract lookup failed %s: %s", r.status_code, r.text[:300])
         return None
 
     contracts: List[Dict[str, Any]] = r.json().get("option_contracts", [])
+    if not isinstance(contracts,list):
+        return None
+    def matches(c):
+        if not isinstance(c,dict):
+            return False
+        try:
+            listed=finite_number(c.get('strike_price'),positive=True)
+            if abs(listed-strike)>tolerance:
+                return False  # Zero tolerance means exact strike, not unlimited.
+            if os.getenv('TRADE_MODE','dry') in ('paper','live'):
+                if not (c.get('tradable') is True and str(c.get('size'))=='100'
+                        and c.get('expiration_date')==expiry.isoformat() and c.get('type')==params['type']):
+                    return False
+                if c.get('underlying_symbol',ticker.upper()) != ticker.upper():
+                    return False
+                if c.get('symbol') != build_occ_symbol(ticker,expiry,side,listed):
+                    return False  # OCC ticker, expiry, call/put and strike must agree.
+            return True
+        except (ValueError,TypeError,OverflowError):
+            return False
+    contracts=[c for c in contracts if matches(c)]
     if not contracts:
         return None
 
     best = min(contracts, key=lambda c: abs(float(c.get("strike_price", 0)) - strike))
     deviation = abs(float(best.get("strike_price", 0)) - strike)
-    if strike_tolerance and deviation > strike_tolerance:
+    if deviation > tolerance:
         log.warning(
             "closest listed strike %.2f is %.2f away from requested %.2f (tolerance %.2f) for %s",
             float(best["strike_price"]), deviation, strike, strike_tolerance, ticker,
@@ -95,10 +128,17 @@ def latest_option_quote(contract_symbol: str) -> Optional[Dict[str, float]]:
         q = r.json().get("quotes", {}).get(contract_symbol)
         if not q:
             return None
-        bp, ap = q.get("bp"), q.get("ap")
+        if os.getenv("TRADE_MODE","dry") != "dry" and not fresh_timestamp(q.get("t")):
+            return None
+        bp,ap=q.get("bp"),q.get("ap")
         if bp is None or ap is None:
             return None
-        return {"bid": float(bp), "ask": float(ap)}
+        from lavish_core.utils.safety import finite_number
+        bid = finite_number(bp, nonnegative=True)
+        ask = finite_number(ap, positive=True)
+        if ask < bid:
+            return None
+        return {"bid": bid, "ask": ask}
     except Exception as e:
         log.warning("latest_option_quote failed for %s: %s", contract_symbol, e)
         return None
@@ -122,6 +162,24 @@ def place_option_order(
     (see options_exit_monitor.py).
     """
     _check_keys()
+    if os.getenv("TRADE_MODE","dry") == "live" and side.lower() == "buy":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
+        if order_type != "limit" or limit_price is None:
+            raise RuntimeError("Live option entries require bounded limit prices")
+        from lavish_core.trade.broker_alpaca import get_account
+        account=get_account()
+        account_id=account.get("id") or account.get("account_number")
+        if not account_id:
+            raise RuntimeError("Live account identity unavailable")
+        assert_live_ready(notional=finite_number(qty,positive=True)*finite_number(limit_price,positive=True)*100,account_id=account_id)
+
+    check_trading_endpoint(os.getenv("TRADE_MODE", "dry"), ORDERS_URL)
+    quantity = finite_number(qty, positive=True)
+    if not quantity.is_integer():
+        raise ValueError("Option quantities must be whole contracts")
+    if limit_price is not None:
+        finite_number(limit_price, positive=True)
     side = side.lower()
     if side not in ("buy", "sell"):
         raise ValueError("side must be 'buy' or 'sell'")
@@ -144,6 +202,7 @@ def place_option_order(
         "type": order_type,
         "time_in_force": time_in_force,
         "client_order_id": client_order_id,
+        "position_intent": "buy_to_open" if side == "buy" else "sell_to_close",
     }
     if order_type == "limit":
         payload["limit_price"] = str(limit_price)

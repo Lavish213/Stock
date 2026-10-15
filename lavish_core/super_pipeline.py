@@ -46,7 +46,7 @@ class NewsItem:
     id: str; src: str; url: str; title: str; summary: str; tickers: List[str]
     published: str; score: float = 0.0; raw: dict = field(default_factory=dict)
 
-def sha1(s: str) -> str: return hashlib.sha1(s.encode("utf-8","ignore")).hexdigest()
+def sha1(s: str) -> str: return hashlib.sha1(s.encode("utf-8","ignore"), usedforsecurity=False).hexdigest()
 def now() -> datetime: return datetime.now(timezone.utc)
 def iso(dt: datetime) -> str: return dt.astimezone(timezone.utc).isoformat()
 

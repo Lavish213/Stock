@@ -30,6 +30,7 @@
 
 from __future__ import annotations
 
+from lavish_core.utils.safety import finite_number, check_trading_endpoint
 import os
 import time
 import json
@@ -108,7 +109,7 @@ def _stable_client_id(symbol: str, side: str, qty: float) -> str:
 
 def hashlib_md5(s: str) -> str:
     import hashlib
-    return hashlib.md5(s.encode("utf-8", "ignore")).hexdigest()
+    return hashlib.md5(s.encode("utf-8", "ignore"), usedforsecurity=False).hexdigest()
 
 def _soft_quote(symbol: str) -> Optional[float]:
     """
@@ -179,7 +180,9 @@ def _estimate_exposure_by_symbol(store: HybridStore) -> Dict[str, float]:
     out: Dict[str, float] = {}
     for sym, qty, avg in rows:
         sym_u = str(sym).upper()
-        out[sym_u] = abs(float(qty) * float(avg))
+        import re
+        multiplier = 100 if re.search(r"\d{6}[CP]\d{8}$", sym_u) else 1
+        out[sym_u] = abs(float(qty) * float(avg)) * multiplier
     return out
 
 def estimate_equity_and_exposure(store: HybridStore) -> Dict[str, float]:
@@ -197,14 +200,23 @@ def would_violate_limits(
     account_equity: Optional[float] = None,
 ) -> Optional[str]:
     sym = symbol.upper()
-    qty = float(qty)
-    price = float(price)
+    try:
+        qty = finite_number(qty, positive=True)
+        price = finite_number(price, positive=True)
+        for value in (limits.max_gross_exposure, limits.max_pos_per_symbol, limits.max_leverage):
+            finite_number(value, positive=True)
+        if account_equity is not None:
+            finite_number(account_equity, positive=True)
+    except ValueError:
+        return "invalid_risk_input"
     side = side.lower()
 
     pos = store.get_position(sym) or {"qty": 0.0, "avg_price": 0.0}
     prev_qty = float(pos.get("qty", 0.0))
     new_qty = prev_qty + (qty if side == "buy" else -qty)
 
+    if side == "sell" and prev_qty > 0 and 0 <= new_qty < prev_qty:
+        return None
     if abs(new_qty) > limits.max_pos_per_symbol:
         return f"max_pos_per_symbol exceeded: {abs(new_qty)} > {limits.max_pos_per_symbol}"
 
@@ -250,6 +262,10 @@ def _with_retries(fn: Callable[[], Dict[str, Any]]) -> Dict[str, Any]:
     raise RuntimeError(f"Broker retries exhausted: {last_err}")
 
 
+class SubmissionUnknown(RuntimeError):
+    """A submission outcome requires reconciliation before another POST."""
+
+
 def _submit_with_retries(submit_fn: Callable[[], Dict[str, Any]], client_order_id: str) -> Dict[str, Any]:
     """
     Order submission's own retry wrapper. The gap a bare retry-on-exception
@@ -278,7 +294,10 @@ def _submit_with_retries(submit_fn: Callable[[], Dict[str, Any]], client_order_i
                     )
                     return existing
             except Exception as lookup_err:
-                LOG.warning("client_order_id lookup also failed: %s", lookup_err)
+                raise SubmissionUnknown("Order outcome unknown; reconcile client_order_id") from lookup_err
+            from lavish_core.trade.broker import BROKER_PROVIDER
+            if BROKER_PROVIDER == "tradier":
+                raise SubmissionUnknown("Tradier tag cannot prove order idempotency") from e
             sleep_s = RETRY_BASE * (2 ** attempt)
             time.sleep(sleep_s)
     raise RuntimeError(f"Broker retries exhausted: {last_err}")
@@ -310,10 +329,21 @@ def place_trade(
 
     if side not in ("buy", "sell"):
         raise ValueError(f"Invalid side: {side}")
-    if qty is None or float(qty) <= 0:
-        raise ValueError(f"Quantity must be > 0, got {qty}")
+    qty = finite_number(qty, positive=True)
+    if mode not in ("dry", "paper", "live"):
+        raise ValueError("Unknown trading mode")
+    for value in (limit_price, take_profit, stop_loss):
+        if value is not None:
+            finite_number(value, positive=True)
+    if mode in ("paper", "live"):
+        from lavish_core.trade.broker import BROKER_PROVIDER
+        from importlib import import_module
+        provider = import_module("lavish_core.trade.broker_" + BROKER_PROVIDER)
+        check_trading_endpoint(mode, provider.BASE_URL, BROKER_PROVIDER)
 
-    qty = float(qty)
+    if side == "buy" and mode == "live":
+        from lavish_core.trade.live_readiness import assert_live_ready
+        assert_live_ready()
 
     # Circuit breaker only blocks new risk-taking (buys), never closes/sells -
     # you should always be able to get out of a position, even mid-halt.
@@ -342,21 +372,40 @@ def place_trade(
 
     # If broker quote exists, use it for sanity
     real_quote = _soft_quote(symbol)
-    if real_quote:
-        ref_price = real_quote
+    if real_quote is not None:
+        try:
+            ref_price = finite_number(real_quote, positive=True)
+        except ValueError:
+            real_quote = None
+    if mode in ("paper", "live") and real_quote is None:
+        oid = store.submit_order(symbol, side, qty, venue=mode, status="rejected", client_id=client_id, meta={"reason":"no_real_quote_available"})
+        return {"status":"rejected", "order_id":oid, "reason":"no_real_quote_available"}
 
     if take_profit is not None or stop_loss is not None:
         meta.setdefault("take_profit", take_profit)
         meta.setdefault("stop_loss", stop_loss)
 
+    if side == "buy" and mode == "live":
+        if order_type == "market":
+            order_type="limit"
+            limit_price=round(ref_price*(1+MAX_SLIPPAGE_PCT),2)
+        ref_price=finite_number(limit_price,positive=True)
+        assert_live_ready(notional=qty*ref_price)
     limits = load_risk_limits(store)
     acct_equity = None
     if HAS_ALPACA and mode in ("paper", "live"):
         try:
             acct = get_account()
-            acct_equity = float(acct.get("equity") or 0.0)
+            acct_equity = finite_number(acct.get("equity"), positive=True)
         except Exception as e:
-            LOG.warning("Account read failed; proceeding without equity: %s", e)
+            if side == "buy":
+                oid = store.submit_order(symbol, side, qty, venue=mode, status="rejected", client_id=client_id, meta={"reason":"account_unavailable"})
+                return {"status":"rejected", "order_id":oid, "reason":"account_unavailable"}
+
+    if side == "buy" and mode == "live":
+        from lavish_core.trade.live_readiness import approved_entry_limits
+        approved=approved_entry_limits(store,qty*ref_price,acct_equity,acct.get("id") or acct.get("account_number"))
+        limits.max_gross_exposure=min(limits.max_gross_exposure,approved["max_gross_exposure"])
 
     # Build risk ctx
     by_sym = _estimate_exposure_by_symbol(store)
@@ -432,6 +481,12 @@ def place_trade(
         LOG.error("REJECTED %s %s×%s: %s", side.upper(), qty, symbol, violation)
         return {"status": "rejected", "order_id": oid, "reason": violation}
 
+    if side == "buy":
+        reservation_reason = store.reserve_entry(client_id, symbol, qty, ref_price, limits, acct_equity)
+        if reservation_reason:
+            oid = store.submit_order(symbol, side, qty, venue=mode, status="rejected", client_id=client_id, meta={"reason":reservation_reason})
+            return {"status":"rejected", "order_id":oid, "reason":reservation_reason}
+
     # ── DRY MODE ────────────────────────────────────────────────
     if mode == "dry":
         oid = store.submit_order(
@@ -455,6 +510,7 @@ def place_trade(
             price=price,
             fee=0.00,
             venue="dry_run",
+            reservation_client_id=client_id,
         )
         LOG.info("DRY FILL %s %s×%s @ %.2f (order=%s fill=%s)",
                  side.upper(), qty, symbol, price, oid, fid)
@@ -478,6 +534,11 @@ def place_trade(
             )
             return {"status": "rejected", "order_id": oid, "reason": "broker_unavailable"}
 
+        if side == "buy" and store.get_kill_switch()[0]:
+            store.release_entry(client_id)
+            oid = store.submit_order(symbol, side, qty, venue=mode, status="rejected", client_id=client_id, meta={"reason":"kill_switch"})
+            return {"status":"rejected", "order_id":oid, "reason":"kill_switch"}
+
         def _submit():
             return broker_place_order(
                 symbol=symbol,
@@ -491,9 +552,24 @@ def place_trade(
                 client_order_id=client_id or None,
             )
 
+        oid = store.submit_order(symbol, side, qty, order_type=order_type, limit_price=limit_price, tif=tif, venue=mode, status="pending_submit", client_id=client_id, meta=meta)
+        broker_resp = None
         try:
             broker_resp = _submit_with_retries(_submit, client_id)
+            def verify_identity(snapshot, expected_id=None):
+                if (not isinstance(snapshot, dict) or not snapshot.get('id')
+                        or (expected_id is not None and str(snapshot['id']) != str(expected_id))
+                        or ('symbol' in snapshot and snapshot['symbol'] != symbol)
+                        or ('side' in snapshot and snapshot['side'] != side)
+                        or ('client_order_id' in snapshot and snapshot['client_order_id'] != client_id)
+                        or ('qty' in snapshot and finite_number(snapshot['qty'], positive=True) != qty)):
+                    raise ValueError('Equity execution identity mismatch')
+            if not isinstance(broker_resp, dict) or not broker_resp.get('id'):
+                raise SubmissionUnknown('Broker response lacks order ID')
+            verify_identity(broker_resp)
             broker_oid = broker_resp.get("id")
+            if not broker_oid:
+                raise SubmissionUnknown("Broker response lacks order ID")
             client_ord_id = client_id or broker_resp.get("client_order_id")
 
             # Market orders usually fill within a couple seconds; poll briefly
@@ -501,6 +577,7 @@ def place_trade(
             final_status = broker_resp.get("status", "submitted")
             filled_qty = broker_resp.get("filled_qty")
             filled_avg_price = broker_resp.get("filled_avg_price")
+            filled_fee = broker_resp.get('filled_fee', 0)
             if broker_oid:
                 for _ in range(FILL_POLL_ATTEMPTS):
                     if final_status in ("filled", "canceled", "expired", "rejected"):
@@ -508,34 +585,41 @@ def place_trade(
                     time.sleep(FILL_POLL_INTERVAL_SEC)
                     try:
                         polled = broker_get_order(broker_oid)
+                        if not isinstance(polled, dict):
+                            raise ValueError('Malformed equity order poll')
+                        verify_identity(dict(broker_resp, **polled), broker_oid)
                         final_status = polled.get("status", final_status)
                         filled_qty = polled.get("filled_qty", filled_qty)
                         filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
+                        filled_fee = polled.get('filled_fee', filled_fee)
+                        broker_resp = dict(broker_resp, **polled)
+                    except ValueError:
+                        raise
                     except Exception as e:
                         LOG.warning("Order status poll failed for %s: %s", broker_oid, e)
                         break
 
-            oid = store.submit_order(
-                symbol=symbol,
-                side=side,
-                qty=qty,
-                order_type=order_type,
-                limit_price=limit_price,
-                tif=tif,
-                venue=mode,
-                status=final_status,
-                client_id=client_ord_id,
-                meta={"broker": "alpaca", "raw": broker_resp, "expected_price": ref_price, **meta},
-            )
-            if final_status in ("filled", "partially_filled") and filled_qty:
+            if final_status not in ('filled','partially_filled','canceled','expired','rejected',
+                                    'new','pending_new','accepted','submitted','pending_cancel','pending'):
+                raise ValueError('Unknown equity execution status')
+            actual_qty = finite_number(filled_qty if filled_qty is not None else 0, nonnegative=True)
+            execution_fee = finite_number(filled_fee, nonnegative=True)
+            if actual_qty > qty or (final_status == 'filled' and actual_qty != qty):
+                raise ValueError('Equity cumulative fill does not match request')
+            if actual_qty > 0:
+                actual_price = finite_number(filled_avg_price, positive=True)
+            elif execution_fee > 0:
+                raise ValueError('Equity fee without a fill')
+            store.set_order_status(oid, final_status)
+            store.execute("UPDATE orders SET meta=? WHERE id=?", (json.dumps({"broker_id":broker_oid,"raw":broker_resp,"expected_price":ref_price,**meta}), oid))
+            if actual_qty > 0:
                 # Real gap found and fixed: this used to only log a fill
                 # when status was EXACTLY "filled" - a partial fill (rare
                 # for a liquid, small-size market order, but not
                 # impossible) was never recorded in the local positions/
                 # fills ledger at all, even though real shares were
                 # actually held at the broker.
-                actual_price = float(filled_avg_price or ref_price)
-                actual_qty = float(filled_qty)
+                actual_price = finite_number(filled_avg_price, positive=True)
                 slippage = round(actual_price - ref_price, 4)
                 store.log_fill(
                     order_id=oid,
@@ -543,9 +627,12 @@ def place_trade(
                     side=side,
                     qty=actual_qty,
                     price=actual_price,
-                    fee=0.00,
+                    fee=execution_fee,
                     venue=mode,
+                    event_id=f"entry:{broker_oid or client_id}:{side}",
+                    reservation_client_id=client_id if final_status == "filled" else None,
                 )
+                store.set_order_status(oid, final_status)
                 if abs(slippage) > 0:
                     LOG.info("Slippage %s %s: expected %.2f actual %.2f (%.4f)",
                              side.upper(), symbol, ref_price, actual_price, slippage)
@@ -557,10 +644,13 @@ def place_trade(
                     # risk gates) were ever re-validated against. Cancel
                     # it; the confirmed partial fill above is final.
                     try:
-                        broker_cancel_order(broker_oid)
-                        LOG.info("Canceled unfilled remainder of partially-filled order for %s.", symbol)
+                        if broker_cancel_order(broker_oid):
+                            store.set_order_status(oid, 'pending_cancel')
+                        LOG.info("Requested cancellation of unfilled remainder for %s; awaiting terminal confirmation.", symbol)
                     except Exception as e:
                         LOG.warning("Cancel of partially-filled order remainder for %s failed: %s", symbol, e)
+            if final_status in ("canceled", "expired", "rejected"):
+                store.release_entry(client_id)
             LOG.info("%s %s %s×%s (order=%s broker_id=%s client_id=%s status=%s)",
                      mode.upper(), final_status.upper(), qty, symbol, oid, broker_oid, client_ord_id, final_status)
             return {
@@ -578,26 +668,20 @@ def place_trade(
             }
 
         except Exception as e:
-            oid = store.submit_order(
-                symbol=symbol,
-                side=side,
-                qty=qty,
-                order_type=order_type,
-                limit_price=limit_price,
-                tif=tif,
-                venue=mode,
-                status="rejected",
-                client_id=client_id,
-                meta={"reason": f"broker_error: {e}", **meta},
-            )
-            LOG.error("%s REJECTED by broker: %s", mode.upper(), e)
-            return {"status": "rejected", "order_id": oid, "reason": str(e)}
+            unknown = isinstance(e, SubmissionUnknown) or broker_resp is not None
+            status = "submission_unknown" if isinstance(e, SubmissionUnknown) else ("fill_unverified" if unknown else "rejected")
+            store.set_order_status(oid, status)
+            if status == 'fill_unverified':
+                store.set_kill_switch(True, 'Equity execution snapshot unverified; broker reconciliation required')
+            if not unknown:
+                store.release_entry(client_id)
+            return {"status":status, "order_id":oid, "reason":"reconciliation_required" if unknown else f"broker_error: {e}"}
 
     raise ValueError("mode must be one of: dry, paper, live")
 
 def sha1_str(s: str) -> str:
     import hashlib
-    return hashlib.sha1(s.encode("utf-8", "ignore")).hexdigest()
+    return hashlib.sha1(s.encode("utf-8", "ignore"), usedforsecurity=False).hexdigest()
 
 # ───────────────────────────────────────────────────────────────
 # TradeAgent class (SuperCore-compatible)

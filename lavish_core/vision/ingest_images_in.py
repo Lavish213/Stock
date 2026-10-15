@@ -143,7 +143,7 @@ def list_images(root: str) -> List[str]:
     return hits
 
 def sha1_file(path: str) -> str:
-    h = hashlib.sha1()
+    h = hashlib.sha1(usedforsecurity=False)
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 16), b""):
             h.update(chunk)

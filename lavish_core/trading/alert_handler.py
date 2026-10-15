@@ -7,7 +7,8 @@
 # awareness at all, so a Patreon-sourced options alert silently downgraded
 # into a plain equity guess. Both sources now get the same fidelity.
 from __future__ import annotations
-import os, re
+import os, re, unicodedata
+from lavish_core.utils.safety import finite_number
 from pathlib import Path
 from typing import Optional
 
@@ -15,6 +16,7 @@ from lavish_core.logger_setup import get_logger
 from lavish_core.vision.extract_signal import parse_alert, has_hedge_language, HEDGE_CONFIDENCE_PENALTY
 from lavish_core.trading.trade_handler import execute_trade_from_post
 from lavish_core.utils.alerts import post_discord
+from lavish_core.feeds.research_context import classify, research_source, ResearchJournal
 
 log = get_logger("alert_handler", log_dir="logs")
 
@@ -75,6 +77,31 @@ def _is_perp_or_leveraged(text: str) -> bool:
     return bool(_PERP_RE.search(text or ""))
 
 
+def _nonactionable(text):
+    # Invisible formatting can split a negation while leaving BUY/SELL
+    # recognizable. Review it rather than guessing the rendered instruction.
+    if any(unicodedata.category(character) == 'Cf' for character in (text or '')):
+        return True
+    normalized = " ".join((text or "").lower().split())
+    # There is no scheduler or conditional-order contract in this router.
+    # A source timestamp proves freshness, not that "tomorrow" means now.
+    return "?" in normalized or bool(re.search(
+        r"\b(do not|don't|don’t|never|no entry|no trade|not in yet|watch only|if|only if|might|maybe|should i|yesterday|cancel(?:ed|led)?|ignore|disregard|stay out|was wrong|was a mistake|failed entry|close to|into the close|long term|exit strategy|tomorrow|later|next (?:week|month|session)|at the open|when|once|until|after)\b"
+        r"|\b(?:not|no(?:\s+longer)?)\s+(?:going\s+to\s+)?(?:buy(?:ing)?|sell(?:ing)?|enter(?:ing)?|clos(?:e|ing)|exit(?:ing)?|long|short(?:ing)?)\b"
+        r"|\b(?:avoid|without|refrain\s+from|waiting\s+to)\s+(?:buy(?:ing)?|sell(?:ing)?|enter(?:ing)?|clos(?:e|ing)|exit(?:ing)?)\b"
+        r"|\bin\s+(?:an?|one|two|three|\d+)\s+(?:minutes?|hours?|days?|weeks?)\b"
+        r"|\bat\s+\d{1,2}:\d{2}\b"
+        r"|\b(?:not\s+(?:going\s+long|opening)|not\s+yet|hold\s+off|skip|planning\s+to|considering|thinking\s+about)\b"
+        r"|\b(?:could|may)\s+(?:buy|sell|enter|bto|open)\b"
+        r"|\bonly\s+(?:above|below|over|under)\b"
+        r"|\b(?:buy|buying|bto|entry|long)\b.{0,80}\bat\s+\$?\d",
+        normalized))
+
+
+def _option_intent(text, parsed):
+    return bool(parsed.get("side") or re.search(r"\b(calls?|puts?|options?|bto|stc)\b|\d[cp]\b", text or "", re.I))
+
+
 def _equity_action_from_text(text: str) -> Optional[str]:
     # Word-boundary match, not substring - "w in up" would match "CALL"
     # inside "RECALL"/"CALLBACK" and "PUT" inside "DISPUTE"/"COMPUTE"/
@@ -84,6 +111,16 @@ def _equity_action_from_text(text: str) -> Optional[str]:
     # longs", "exits the position") still matches - a bare \bCALL\b would
     # otherwise miss "CALLS" entirely (the "L"->"S" boundary doesn't
     # exist, both are word characters).
+    if _nonactionable(text):
+        return None
+    # This path opens longs or fully closes a verified long. It has no
+    # contract for shorts, covers, or source-directed partial quantities.
+    # Never turn "trim half" into liquidation of the entire holding.
+    if re.search(r"\b(short(?:s|ing)?|cover(?:s|ing)?|btc|trim(?:s|ming)?|half|quarter|third|partial(?:ly)?|some|portion)\b"
+                 r"|\d+(?:\.\d+)?\s*(?:%|percent\b)"
+                 r"|\b\d+\s*/\s*\d+\b"
+                 r"|\b(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten)\s+shares?\b", text or "", re.I):
+        return None
     up = (text or "").upper()
 
     def _any_match(words: tuple) -> bool:
@@ -95,8 +132,8 @@ def _equity_action_from_text(text: str) -> Optional[str]:
                 return True
         return False
 
-    has_buy = _any_match(BUY_WORDS)
-    has_sell = _any_match(SELL_WORDS)
+    has_buy = _any_match(BUY_WORDS) or bool(re.search(r"\b(adding|grabbing shares)\b", up, re.I))
+    has_sell = _any_match(SELL_WORDS) or bool(re.search(r"\btrimming\b", up, re.I))
     if has_buy and not has_sell:
         return "BUY"
     if has_sell and not has_buy:
@@ -130,6 +167,9 @@ def handle_alert_text(
     note: str = "",
     source: str = "alert",
     amount_usd: Optional[float] = None,
+    post_id: Optional[str] = None,
+    published_at: Optional[str] = None,
+    source_url: Optional[str] = None,
 ) -> None:
     """
     Core logic, independent of which source called it: parse an alert
@@ -139,6 +179,23 @@ def handle_alert_text(
     way - trade_handler.execute_trade_from_post() dedupes the second
     source's copy of the same alert.
     """
+    journal_path = os.getenv('RESEARCH_CONTEXT_DB')
+    if journal_path:
+        # Persist research before execution filtering. If configured storage
+        # fails, propagate failure so a durable source can retry safely.
+        ResearchJournal(journal_path).record(text=text, source=source, post_id=post_id,
+                                            published_at=published_at, source_url=source_url)
+    tags = classify(text)
+    if research_source(source) or tags['kind'] in ('progress_update', 'macro_context', 'conditional_setup'):
+        log.info('[%s] Retained/review-only context: %s', source, tags['kind'])
+        return
+    if _nonactionable(text):
+        return
+    if amount_usd is not None:
+        try:
+            finite_number(amount_usd, positive=True)
+        except ValueError:
+            return
     if _is_perp_or_leveraged(text):
         log.warning("[%s] Alert looks like a perp/leveraged-token trade (not equity/options) - "
                     "skipping, can't be safely copied as a plain stock buy: %r", source, (text or "")[:200])
@@ -152,6 +209,21 @@ def handle_alert_text(
 
     parsed = parse_alert(text=text, img_path=Path(image_path) if image_path else None, source=source)
 
+    instructions = text + "\n" + (parsed.get("instruction_text") or "")
+    if image_path and journal_path:
+        ResearchJournal(journal_path).record(text=instructions, source=source, post_id=post_id,
+                                            published_at=published_at, source_url=source_url)
+    if classify(instructions)['kind'] in ('progress_update', 'macro_context', 'conditional_setup'):
+        return
+    if _nonactionable(instructions) or _is_perp_or_leveraged(instructions):
+        return
+
+    if parsed.get("field_conflicts"):
+        log.warning("[%s] Conflicting or invalid alert fields require review: %s", source, parsed["field_conflicts"])
+        return
+    if not image_path and parsed.get('ticker_score') != 100:
+        log.warning("[%s] Text ticker requires an exact identity match; review fuzzy/OCR guess", source)
+        return
     ticker = parsed.get("ticker")
     if not ticker:
         log.info("[%s] No ticker found in alert, skipping: %r", source, (text or "")[:200])
@@ -173,8 +245,15 @@ def handle_alert_text(
     options_confidence = parsed.get("confidence") or DEFAULT_CONFIDENCE
 
     if parsed.get("side") in ("CALL", "PUT") and parsed.get("strike") and parsed.get("expiry"):
+        # This route only opens long contracts. Exit/short instructions must
+        # never be translated into another buy; bracket exits use their own
+        # verified-position lifecycle.
+        if re.search(r"\b(stc|sto|btc|sell(?:ing)?|clos(?:e|ing)|exit(?:ing)?|trim(?:ming)?|short(?:ing)?)\b", instructions, re.I):
+            log.warning("[%s] Options close/short instruction requires position review", source)
+            return
         signal = {
             "source": source,
+            "action": "BUY",
             "ticker": ticker,
             "side": parsed["side"],
             "strike": parsed["strike"],
@@ -189,7 +268,9 @@ def handle_alert_text(
         execute_trade_from_post(signal)
         return
 
-    action = _equity_action_from_text(text)
+    if _option_intent(text, parsed):
+        return
+    action = _equity_action_from_text(instructions)
     if not action:
         log.info("[%s] Ticker %s found but no clear BUY/SELL direction, skipping: %r",
                   source, ticker, (text or "")[:200])

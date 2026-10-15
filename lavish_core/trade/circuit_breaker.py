@@ -8,6 +8,7 @@
 # a row) - all overridable via env, all conservative-by-default so a missing
 # env var never silently disables protection.
 from __future__ import annotations
+from lavish_core.utils.safety import finite_number
 import os, time, logging
 from typing import Tuple, Optional
 
@@ -63,7 +64,7 @@ def check_ok(store: HybridStore) -> Tuple[bool, str]:
     """
     try:
         acct = get_account()
-        equity = float(acct.get("equity") or 0.0)
+        equity = finite_number(acct.get("equity"), positive=True)
     except Exception as e:
         if RISK_CHECK_FAIL_OPEN:
             log.warning("circuit_breaker: could not read account equity (%s) - allowing trade "

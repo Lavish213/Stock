@@ -1,6 +1,7 @@
 # lavish_core/trading/trade_handler.py
 from __future__ import annotations
-import os, json, time, threading
+import os, json, time, threading, math
+from lavish_core.utils.safety import finite_number, valid_positive
 from datetime import date, datetime, timezone, timedelta
 from typing import Dict, Any, Optional
 
@@ -8,6 +9,7 @@ from lavish_core.logger_setup import get_logger
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
 from lavish_core.trade.trade_agent import place_trade, _dry_price  # dry-run fallback pricing only
 from lavish_core.trade.broker import (
+    get_account, get_order_by_client_id,
     latest_quote, get_order as broker_get_order, cancel_order as broker_cancel_order,
     get_position as broker_get_position, get_clock, resolve_and_price_contract, place_option_order,
     SUPPORTS_NATIVE_BRACKETS,
@@ -94,8 +96,25 @@ RISK_CHECK_FAIL_OPEN = os.getenv("RISK_CHECK_FAIL_OPEN", "false").strip().lower(
 def _coerce_side(action: str) -> Optional[str]:
     a = (action or "").strip().lower()
     if a in ("buy", "long"): return "buy"
-    if a in ("sell", "short"): return "sell"
+    if a == "sell": return "sell"
     return None
+
+
+def _source_levels_valid(direction, price, target, stop):
+    """Hints are underlying prices; reject reversed/already-crossed plans."""
+    try:
+        price = finite_number(price, positive=True)
+        if target is not None:
+            target = finite_number(target, positive=True)
+            if (direction == 'bullish' and target <= price) or (direction == 'bearish' and target >= price):
+                return False
+        if stop is not None:
+            stop = finite_number(stop, positive=True)
+            if (direction == 'bullish' and stop >= price) or (direction == 'bearish' and stop <= price):
+                return False
+        return direction in ('bullish','bearish')
+    except ValueError:
+        return False
 
 def _kill_switch_reason() -> Optional[str]:
     """Checked first, before any other work, in both entry paths. Returns
@@ -131,7 +150,7 @@ def _market_closed_reason() -> Optional[str]:
                         "(RISK_CHECK_FAIL_OPEN=true), but this needs attention.", e)
             return None
         return f"market_hours: could not verify market is open ({e})"
-    if not clk.get("is_open"):
+    if not isinstance(clk,dict) or clk.get("is_open") is not True:
         return "market_hours: market is closed - refusing to queue a new entry for the next open"
     return None
 
@@ -145,6 +164,8 @@ def _price_drift_reason(alert_time_price: Optional[float], current_price: Option
         return None
     if not alert_time_price or not current_price or alert_time_price <= 0:
         return None
+    if not valid_positive(alert_time_price) or not valid_positive(current_price):
+        return "price_drift_unverifiable: invalid quote"
     drift = abs(current_price - alert_time_price) / alert_time_price
     if drift > MAX_PRICE_DRIFT_SINCE_ALERT_PCT:
         return (f"price_drift: underlying moved {drift:.1%} since the alert arrived "
@@ -187,8 +208,24 @@ def execute_trade_from_post(signal: Dict[str, Any]) -> None:
       { source, action('BUY'|'SELL'|etc), symbol, confidence(0..1),
         amount_usd(optional), note(optional) }
     """
+    signal = dict(signal)
+    try:
+        confidence = finite_number(signal.get("confidence", 0))
+        if not 0 <= confidence <= 1:
+            return
+        for key in ("amount_usd", "strike", "target_hint", "stop_hint"):
+            if signal.get(key) is not None:
+                finite_number(signal[key], positive=True)
+    except ValueError:
+        return
+    if signal.get("field_conflicts"):
+        return
+    if str(signal.get("side", "")).upper() in ("CALL", "PUT") and not (signal.get("strike") and signal.get("expiry")):
+        return
     is_option = bool(signal.get("strike") and signal.get("expiry")
                       and str(signal.get("side", "")).upper() in ("CALL", "PUT"))
+    if is_option and str(signal.get("action", "BUY")).upper() not in ("BUY", "BTO", "BUY_TO_OPEN"):
+        return  # options entry route cannot execute a close or short instruction
     symbol = str(signal.get("ticker") or signal.get("symbol") or "").upper().strip()
     dedup_side = str(signal.get("side") or signal.get("action") or "").lower().strip()
     source = signal.get("source", "unknown")
@@ -203,6 +240,10 @@ def execute_trade_from_post(signal: Dict[str, Any]) -> None:
             signal["_alert_time_price"] = latest_quote(symbol)
         except Exception:
             signal["_alert_time_price"] = None
+    if TRADE_MODE in ("paper", "live") and (is_option or _coerce_side(str(signal.get("action", ""))) == "buy"):
+        if not valid_positive(signal.get("_alert_time_price")):
+            log.warning("Skip entry: alert-time underlying quote unavailable")
+            return
 
     store = None
     strike = expiry = None
@@ -308,6 +349,9 @@ def _execute_option_trade(signal: Dict[str, Any]) -> bool:
         log.warning("Skip options trade: unparseable expiry %r: %s", expiry_raw, e)
         return True
 
+    if expiry < date.today() or option_side not in ("CALL", "PUT") or not valid_positive(strike):
+        return True
+
     # Candle-confirmation gate - this bot only ever opens long options
     # (buy_to_open, never a new short), so every options signal that
     # reaches here is a new entry and gating applies to all of them,
@@ -364,6 +408,14 @@ def _finish_option_entry(
     and sizes off a contract quote taken right before it actually trades,
     not one that's been stale for up to 15 minutes.
     """
+    if _kill_switch_reason() or _market_closed_reason() or expiry < date.today():
+        return True
+    if TRADE_MODE in ("paper","live"):
+        from importlib import import_module
+        from lavish_core.trade.broker import BROKER_PROVIDER
+        from lavish_core.utils.safety import check_trading_endpoint
+        provider = import_module("lavish_core.trade.broker_"+BROKER_PROVIDER)
+        check_trading_endpoint(TRADE_MODE,provider.BASE_URL,BROKER_PROVIDER)
     contract = resolve_and_price_contract(
         ticker, expiry, option_side, float(strike), strike_tolerance=OPTION_STRIKE_TOLERANCE,
     )
@@ -374,7 +426,7 @@ def _finish_option_entry(
         return False
 
     mid_price = contract.get("mid_price")
-    if not mid_price or mid_price <= 0:
+    if not valid_positive(mid_price):
         log.warning("Skip options trade: no usable quote for %s (may be transient - not recording as seen).",
                     contract.get("symbol"))
         return False
@@ -386,12 +438,19 @@ def _finish_option_entry(
     # reasoning as _finish_equity_entry's identical skip: that gate's
     # entire purpose is to WAIT FOR and REQUIRE a favorable move, which a
     # flat max-drift check would often reject right after confirming.
-    if not skip_drift_check and TRADE_MODE in ("paper", "live"):
+    if TRADE_MODE in ("paper", "live"):
         try:
             underlying_now = latest_quote(ticker)
         except Exception:
             underlying_now = None
-        drift_reason = _price_drift_reason(signal.get("_alert_time_price"), underlying_now)
+        if not valid_positive(underlying_now):
+            log.warning("Skip options entry: current underlying quote unavailable")
+            return False
+        if not _source_levels_valid('bullish' if option_side == 'CALL' else 'bearish',
+                                    underlying_now, target_hint, stop_hint):
+            log.warning("Skip options entry: source underlying levels invalid or already crossed")
+            return True
+        drift_reason = None if skip_drift_check else _price_drift_reason(signal.get("_alert_time_price"), underlying_now)
         if drift_reason:
             store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
             store.submit_order(
@@ -409,6 +468,11 @@ def _finish_option_entry(
     # or, worse, does fill and burns most of the position's value on the
     # spread alone. Reject outright rather than submit into that.
     bid, ask = contract.get("bid"), contract.get("ask")
+    if TRADE_MODE in ("paper", "live") and (bid is None or ask is None):
+        return False  # a midpoint alone cannot establish a tradable two-sided market
+    if bid is not None or ask is not None:
+        if not valid_positive(bid) or not valid_positive(ask) or ask < bid:
+            return True
     if bid is not None and ask is not None and bid > 0:
         spread_pct = (ask - bid) / mid_price
         if spread_pct > OPTION_MAX_SPREAD_PCT:
@@ -417,6 +481,8 @@ def _finish_option_entry(
             return True
 
     dollars = (float(amt) if amt is not None else DEFAULT_OPTION_TRADE_DOLLARS) * POSITION_SIZE_SCALE
+    if not valid_positive(dollars):
+        return True
     qty = int(dollars // (mid_price * 100))
     if qty < 1:
         # max(1, ...) used to force a purchase here regardless of cost -
@@ -466,20 +532,64 @@ def _finish_option_entry(
         log.error("Skip options trade: %s", pdt_reason)
         return True
 
+    from lavish_core.trade.trade_agent import load_risk_limits, sha1_str
+    client_id = "option_" + sha1_str(f"{contract['symbol']}|buy|{qty}|{int(time.time()//60)}")[:24]
     try:
-        order = place_option_order(
-            contract_symbol=contract["symbol"], side="buy", qty=qty,
-            order_type="limit", limit_price=mid_price,
-        )
-    except Exception as e:
-        log.error("Options order failed for %s: %s (not recording as seen - may be retried)", contract["symbol"], e)
-        store.submit_order(
-            symbol=contract["symbol"], side="buy", qty=qty, order_type="limit",
-            limit_price=mid_price, tif="day", venue=TRADE_MODE, status="rejected",
-            meta={"reason": str(e), "source": signal.get("source", "discord"), "note": note},
-        )
+        account=get_account()
+        equity=finite_number(account.get("equity"),positive=True)
+    except Exception:
         return False
+    limits=load_risk_limits(store)
+    if TRADE_MODE == "live":
+        from lavish_core.trade.live_readiness import approved_entry_limits
+        approved=approved_entry_limits(store,qty*mid_price*100,equity,account.get("id") or account.get("account_number"))
+        limits.max_gross_exposure=min(limits.max_gross_exposure,approved["max_gross_exposure"])
+    reservation=store.reserve_entry(client_id,contract["symbol"],qty,mid_price,limits,equity,multiplier=100)
+    if reservation:
+        return True
+    oid = store.submit_order(contract["symbol"], "buy", qty, order_type="limit", limit_price=mid_price, venue=TRADE_MODE, status="pending_submit", client_id=client_id, meta={"source":signal.get("source"), "target_underlying":target_hint, "stop_underlying":stop_hint})
+    if _kill_switch_reason() or _market_closed_reason():
+        store.set_order_status(oid, "rejected")
+        store.release_entry(client_id)
+        return True
+    try:
+        order = place_option_order(contract_symbol=contract["symbol"], side="buy", qty=qty, order_type="limit", limit_price=mid_price, client_order_id=client_id)
+    except Exception:
+        try:
+            order = get_order_by_client_id(client_id)
+        except Exception:
+            store.set_order_status(oid,"submission_unknown")
+            return True
+        if order is None and BROKER_PROVIDER == "tradier":
+            store.set_order_status(oid,"submission_unknown")
+            return True
+        if order is None:
+            store.set_order_status(oid,"rejected")
+            store.release_entry(client_id)
+            return False
+        if not order:
+            store.set_order_status(oid,"submission_unknown")
+            return True
 
+    if not isinstance(order,dict) or not order.get("id"):
+        store.set_order_status(oid,"submission_unknown")
+        return True
+    def quarantine():
+        store.set_order_status(oid, 'fill_unverified')
+        store.set_kill_switch(True, 'Option execution snapshot unverified; broker reconciliation required')
+        return True
+    def verify_identity(snapshot, expected_id=None):
+        if (not isinstance(snapshot, dict) or not snapshot.get('id')
+                or (expected_id is not None and str(snapshot['id']) != str(expected_id))
+                or ('symbol' in snapshot and snapshot['symbol'] != contract['symbol'])
+                or ('side' in snapshot and snapshot['side'] != 'buy')
+                or ('client_order_id' in snapshot and snapshot['client_order_id'] != client_id)
+                or ('qty' in snapshot and finite_number(snapshot['qty'],positive=True) != qty)):
+            raise ValueError('Option execution identity mismatch')
+    try:
+        verify_identity(order)
+    except ValueError:
+        return quarantine()
     log.info("Options order result: %s", order)
 
     # Confirm the entry actually filled before starting exit monitoring -
@@ -498,39 +608,53 @@ def _finish_option_entry(
             time.sleep(OPTIONS_FILL_POLL_INTERVAL_SEC)
             try:
                 polled = broker_get_order(broker_oid)
+                if not isinstance(polled, dict):
+                    raise ValueError('Malformed option order poll')
+                verify_identity(dict(order, **polled), broker_oid)
                 final_status = polled.get("status", final_status)
                 filled_qty = polled.get("filled_qty", filled_qty)
                 filled_avg_price = polled.get("filled_avg_price", filled_avg_price)
+                order = dict(order, **polled)
+            except ValueError:
+                return quarantine()
             except Exception as e:
                 log.warning("Options order status poll failed for %s: %s", broker_oid, e)
                 break
 
-    oid = store.submit_order(
-        symbol=contract["symbol"], side="buy", qty=qty, order_type="limit",
-        limit_price=mid_price, tif="day", venue=TRADE_MODE, status=final_status,
-        client_id=order.get("client_order_id"),
-        meta={"broker": "alpaca", "raw": order, "source": signal.get("source", "discord"), "note": note,
-              "ticker": ticker, "option_side": option_side, "strike": float(strike), "expiry": expiry.isoformat(),
-              "expected_price": mid_price, "filled_avg_price": filled_avg_price,
-              # Her original stated levels - reconcile.py reads these back
-              # on crash recovery so a recovered position runs on what she
-              # actually called instead of silently falling back to our
-              # generic defaults (previously lost entirely on any restart).
-              "target_underlying": float(target_hint) if target_hint is not None else None,
-              "stop_underlying": float(stop_hint) if stop_hint is not None else None},
-    )
+    try:
+        if final_status not in ('filled','partially_filled','canceled','expired','rejected',
+                                'new','pending_new','accepted','submitted','pending_cancel','pending'):
+            raise ValueError('Unknown option execution status')
+        actual_qty = finite_number(filled_qty if filled_qty is not None else 0, nonnegative=True)
+        entry_fee = finite_number(order.get('filled_fee',0), nonnegative=True)
+        if not actual_qty.is_integer() or actual_qty > qty or (final_status=='filled' and actual_qty!=qty):
+            raise ValueError('Option cumulative fill does not match request')
+        if actual_qty > 0:
+            entry_price = finite_number(filled_avg_price,positive=True)
+        elif entry_fee > 0:
+            raise ValueError('Option fee without a fill')
+        filled_qty_n = int(actual_qty)
+    except ValueError:
+        return quarantine()
+    store.set_order_status(oid, final_status)
+    store.execute("UPDATE orders SET meta=? WHERE id=?", (json.dumps({"broker_id":broker_oid,"raw":order,"source":signal.get("source","discord"),"ticker":ticker,"option_side":option_side,"strike":float(strike),"expiry":expiry.isoformat(),"expected_price":mid_price,"target_underlying":target_hint,"stop_underlying":stop_hint}),oid))
+    if not broker_oid:
+        store.set_order_status(oid,"submission_unknown")
+        return True
 
-    if final_status not in ("filled", "partially_filled"):
+    if actual_qty == 0:
         log.warning("Options order for %s never confirmed filled after %d polls (status=%s) - canceling, no exit monitor started.",
                     contract["symbol"], OPTIONS_FILL_POLL_ATTEMPTS, final_status)
-        if broker_oid and TRADE_MODE in ("paper", "live"):
+        if broker_oid and TRADE_MODE in ("paper", "live") and final_status not in ('canceled','expired','rejected'):
             try:
                 broker_cancel_order(broker_oid)
             except Exception as e:
                 log.warning("Cancel of unfilled options order %s failed: %s", broker_oid, e)
-        return False
+        if final_status in ("canceled", "expired", "rejected"):
+            store.release_entry(client_id)
+        return True
 
-    if final_status == "partially_filled" and broker_oid and TRADE_MODE in ("paper", "live"):
+    if final_status not in ('filled','canceled','expired','rejected') and broker_oid and TRADE_MODE in ("paper", "live"):
         # Real gap found and fixed: the poll loop above only waits up to
         # OPTIONS_FILL_POLL_ATTEMPTS x OPTIONS_FILL_POLL_INTERVAL_SEC
         # (~5s default) for the rest to fill too. Leaving the unfilled
@@ -550,15 +674,16 @@ def _finish_option_entry(
     # Use the real fill price (slippage vs. the mid_price we sized/quoted
     # against) for both the exit-monitor's entry baseline and P&L, not the
     # pre-fill estimate.
-    entry_price = float(filled_avg_price) if filled_avg_price else mid_price
-    filled_qty_n = int(float(filled_qty)) if filled_qty else qty
     slippage = round(entry_price - mid_price, 4)
     log.info("Options entry filled: %s qty=%s entry=%.2f (quoted mid=%.2f, slippage=%.4f)",
               contract["symbol"], filled_qty_n, entry_price, mid_price, slippage)
     store.log_fill(
         order_id=oid, symbol=contract["symbol"], side="buy",
-        qty=filled_qty_n, price=entry_price, fee=0.0, venue=TRADE_MODE,
+        qty=filled_qty_n, price=entry_price, fee=entry_fee, venue=TRADE_MODE,
+        event_id=f"option-entry:{broker_oid}",
+        reservation_client_id=client_id if final_status in ('filled','canceled','expired','rejected') else None,
     )
+    store.set_order_status(oid, final_status)
 
     if target_hint is None and stop_hint is None:
         log.info("No target/stop given for %s - relying on our own guardrails (stop/trail/expiry) for the exit.",
@@ -572,28 +697,36 @@ def _finish_option_entry(
         exit_price = result.get("option_price")
         if result.get("status") == "exited" and exit_price is not None:
             pnl = (float(exit_price) - entry_price) * 100 * filled_qty_n
-            exit_store.log_fill(
+            outcome_id = (result.get("order") or {}).get("id",oid)
+            applied = (True if exit_store.try_claim_outcome(f"outcome:{outcome_id}") else None) if result.get("ledger_recorded") else exit_store.log_fill(
                 order_id=oid, symbol=contract["symbol"], side="sell",
                 qty=filled_qty_n, price=float(exit_price), fee=0.0, venue=TRADE_MODE,
+                event_id=f"option-exit:{oid}",
             )
-            record_trade_outcome(exit_store, pnl)
+            if applied is not None:
+                record_trade_outcome(exit_store, pnl)
             log.info("Closed %s: entry=%.2f exit=%.2f realized_pnl=%.2f (%s)",
                       contract["symbol"], entry_price, exit_price, pnl, result.get("reason"))
         else:
             log.warning("Exit monitor for %s ended without a clean fill: %s", contract["symbol"], result)
 
     mark_watched(contract["symbol"])
-    watch_and_exit_async(
-        underlying_symbol=ticker,
-        contract_symbol=contract["symbol"],
-        qty=filled_qty_n,
-        option_side=option_side,
-        entry_price=entry_price,
-        expiry=expiry,
-        target_underlying=float(target_hint) if target_hint is not None else None,
-        stop_underlying=float(stop_hint) if stop_hint is not None else None,
-        on_exit=_on_exit,
-    )
+    try:
+        watch_and_exit_async(
+            underlying_symbol=ticker,
+            contract_symbol=contract["symbol"],
+            qty=filled_qty_n,
+            option_side=option_side,
+            entry_price=entry_price,
+            expiry=expiry,
+            target_underlying=float(target_hint) if target_hint is not None else None,
+            stop_underlying=float(stop_hint) if stop_hint is not None else None,
+            on_exit=_on_exit,
+        )
+    except Exception:
+        unmark_watched(contract['symbol'])
+        store.set_kill_switch(True, 'Option exit monitor failed to start')
+        raise
     return True
 
 def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
@@ -656,7 +789,7 @@ def _execute_equity_trade(signal: Dict[str, Any]) -> bool:
     except Exception as e:
         log.warning("latest_quote failed for %s: %s", sym, e)
 
-    if not ref_price or ref_price <= 0:
+    if not isinstance(ref_price, (int, float)) or isinstance(ref_price, bool) or not valid_positive(ref_price):
         if TRADE_MODE in ("paper", "live"):
             store.submit_order(
                 symbol=sym, side=side, qty=0, order_type="market", tif="day", venue=TRADE_MODE,
@@ -772,6 +905,10 @@ def _finish_equity_entry(
     # reject exactly the breakouts the gate just confirmed. The gate is a
     # stricter, better-informed replacement for this check on anything
     # routed through it, not an additional hurdle on top of it.
+    if side == "buy" and (_kill_switch_reason() or _market_closed_reason()):
+        return True
+    if not valid_positive(ref_price):
+        return False
     if side == "buy" and not skip_drift_check and TRADE_MODE in ("paper", "live"):
         drift_reason = _price_drift_reason(signal.get("_alert_time_price"), ref_price)
         if drift_reason:
@@ -782,70 +919,60 @@ def _finish_equity_entry(
             log.warning("Skip trade: %s", drift_reason)
             return True
 
-    dollars = (float(amt) if amt is not None else float(os.getenv("DEFAULT_TRADE_DOLLARS", "500"))) * POSITION_SIZE_SCALE
-    qty = max(1.0, round(dollars / max(0.01, ref_price), 0))
+    # Entry budgets and scaling never prevent closing a verified holding.
+    # An explicit sale amount still limits a partial exit; an unsized SELL
+    # closes the remaining long position.
+    qty = None
+    if side == "buy" or amt is not None:
+        dollars = (float(amt) if amt is not None else float(os.getenv("DEFAULT_TRADE_DOLLARS", "500")))
+        if side == "buy":
+            dollars *= POSITION_SIZE_SCALE
+        if not valid_positive(dollars):
+            return True
+        sizing_price=ref_price
+        if TRADE_MODE == "live" and side == "buy":
+            from lavish_core.trade.trade_agent import MAX_SLIPPAGE_PCT
+            sizing_price=ref_price*(1+MAX_SLIPPAGE_PCT)
+        qty=float(math.floor(dollars/sizing_price))
+        if qty < 1:
+            return True
 
     meta = {"source": signal.get("source", "patreon"), "confidence": conf, "note": note}
-
-    # Reduce-only: a sell must never exceed (or exist without) an actual
-    # held position. qty up to here is sized purely from the configured
-    # dollar amount - with nothing checked against what's actually held, a
-    # sell signal for more shares than owned (or for a symbol with no
-    # position at all) opened a real short by accident. Checked against the
-    # broker's own position, not this bot's local bookkeeping, so this is
-    # right even if the DB's view of what's held has ever drifted.
-    if side == "sell" and TRADE_MODE in ("paper", "live"):
+    if side == "sell":
         try:
-            broker_pos = broker_get_position(sym)
+            broker_pos = broker_get_position(sym) if TRADE_MODE in ("paper", "live") else store.get_position(sym)
+            held_qty = finite_number(broker_pos.get("qty",0),nonnegative=True) if broker_pos else 0.0
         except Exception as e:
-            store.submit_order(
-                symbol=sym, side=side, qty=0, order_type="market", tif="day", venue=TRADE_MODE,
-                status="rejected", meta={"reason": f"position_check_failed: {e}", **meta},
-            )
-            log.error("Skip trade: SELL %s but couldn't verify held position (%s) - refusing to risk a short "
-                      "(not recording as seen - may be retried).", sym, e)
+            store.submit_order(symbol=sym,side=side,qty=0,venue=TRADE_MODE,status="rejected",meta={"reason":"position_check_failed",**meta})
+            log.error("Skip SELL %s: held position could not be verified (%s)",sym,type(e).__name__)
             return False
-        held_qty = float(broker_pos.get("qty", 0)) if broker_pos else 0.0
         if held_qty <= 0:
-            store.submit_order(
-                symbol=sym, side=side, qty=0, order_type="market", tif="day", venue=TRADE_MODE,
-                status="rejected", meta={"reason": "reduce_only_no_position_held", **meta},
-            )
-            log.warning("Skip trade: SELL %s but nothing held (qty=%.2f) - refusing to open a short.", sym, held_qty)
+            store.submit_order(symbol=sym,side=side,qty=0,venue=TRADE_MODE,status="rejected",meta={"reason":"reduce_only_no_position_held",**meta})
             return True
-        if qty > held_qty:
-            log.info("Capping SELL %s qty %.0f -> %.0f (reduce-only - only %.0f held)", sym, qty, held_qty, held_qty)
-            qty = held_qty
+        qty = held_qty if qty is None else min(qty,held_qty)
 
-    # Only bracket new long entries. A "sell" here is closing/shorting, not
-    # opening a position, so there's nothing to attach a bracket exit to.
-    # Prefer her stated target/stop when she gave one (same principle as the
-    # options path) - only fall back to our fixed pct bracket for whichever
-    # side she didn't specify, or if her number fails a basic sanity check
-    # (a target below current price or a stop above it is a parsing miss,
-    # not a real level - trust the safe default instead of that number).
+    # Bracket new longs, using defaults only for levels the source omitted.
+    # Invalid or already-crossed explicit levels reject the entry; replacing
+    # them would execute a different plan from the one the creator stated.
     take_profit = stop_loss = None
     if side == "buy" and ref_price > 0:
+        if not _source_levels_valid('bullish', ref_price, target_hint, stop_hint):
+            store.submit_order(symbol=sym, side=side, qty=0, venue=TRADE_MODE, status='rejected',
+                               meta={'reason':'invalid_or_crossed_source_levels', **meta})
+            log.warning("Skip equity entry: source levels invalid or already crossed")
+            return True
         take_profit = round(ref_price * (1 + TAKE_PROFIT_PCT), 2)
         stop_loss = round(ref_price * (1 - STOP_LOSS_PCT), 2)
         if target_hint is not None:
-            t = float(target_hint)
-            if t > ref_price:
-                take_profit = round(t, 2)
-            else:
-                log.warning("Ignoring target_hint %.2f for %s (not above ref %.2f) - using default TP",
-                            t, sym, ref_price)
+            take_profit = round(float(target_hint), 2)
         if stop_hint is not None:
-            s = float(stop_hint)
-            if s < ref_price:
-                stop_loss = round(s, 2)
-            else:
-                log.warning("Ignoring stop_hint %.2f for %s (not below ref %.2f) - using default SL",
-                            s, sym, ref_price)
+            stop_loss = round(float(stop_hint), 2)
 
     # Same concentration check as the options path - only gates new long
     # entries, same reasoning as the bracket above (a sell is reducing/
     # closing exposure, not adding to it).
+    if side == 'buy':
+        meta.update(take_profit=take_profit, stop_loss=stop_loss)
     if side == "buy" and TRADE_MODE in ("paper", "live"):
         corr_ok, corr_reason = check_correlation_ok(sym)
         if not corr_ok:
@@ -870,6 +997,8 @@ def _finish_equity_entry(
     log.info("🔔 signal → %s %s (qty=%.0f, conf=%.2f, mode=%s, ref=%.2f, tp=%s, sl=%s, her_target=%s, her_stop=%s)",
              side.upper(), sym, qty, conf, TRADE_MODE, ref_price, take_profit, stop_loss, target_hint, stop_hint)
 
+    if side == "buy" and (_kill_switch_reason() or _market_closed_reason()):
+        return True
     out = place_trade(
         store=store,
         symbol=sym,
@@ -903,20 +1032,40 @@ def _finish_equity_entry(
     if side == "buy" and out.get("status") == "filled" and (take_profit is not None or stop_loss is not None):
         entry_price = float(out.get("filled_avg_price") or ref_price)
         legs = out.get("legs") or []
+        def equity_finished(result):
+            unmark_watched(sym)
+            if result.get('status') != 'exited':
+                s = HybridStore(DEFAULT_DB)
+                try:
+                    s.set_kill_switch(True, 'Equity exit protection ended without a verified close')
+                finally:
+                    s.con.close()
+        mark_watched(sym)
+        def start_equity_monitor(launch, **kwargs):
+            try:
+                return launch(**kwargs)
+            except Exception:
+                unmark_watched(sym)
+                store.set_kill_switch(True, 'Equity exit monitor failed to start')
+                raise
         if SUPPORTS_NATIVE_BRACKETS:
             leg_ids = [leg.get("id") for leg in legs if leg.get("id")]
             if leg_ids:
-                watch_bracket_async(
+                start_equity_monitor(watch_bracket_async,
                     order_id=out["order_id"], symbol=sym, qty=qty,
                     entry_price=entry_price, leg_ids=leg_ids, venue=TRADE_MODE,
+                    on_exit=equity_finished,
                 )
             else:
+                unmark_watched(sym)
+                store.set_kill_switch(True, 'Equity bracket legs unavailable; protection review required')
                 log.warning("No bracket legs came back for %s despite take_profit/stop_loss being set - "
                             "position has no automated exit watch.", sym)
         else:
-            watch_and_exit_active_async(
+            start_equity_monitor(watch_and_exit_active_async,
                 symbol=sym, qty=qty, entry_price=entry_price,
                 take_profit=take_profit, stop_loss=stop_loss, venue=TRADE_MODE,
+                on_exit=equity_finished,
             )
 
     # A broker-side failure inside place_trade (unreachable, request error)

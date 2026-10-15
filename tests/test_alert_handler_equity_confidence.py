@@ -113,6 +113,7 @@ def test_options_alert_confidence_is_unaffected_by_this_fix(monkeypatch):
     # equity branch.
     monkeypatch.setattr(th, "DEFAULT_DB", tempfile.mktemp(suffix=".duckdb"))
     monkeypatch.setattr(th, "TRADE_MODE", "paper")
+    monkeypatch.setattr(th, "latest_quote", lambda *a: 190.)
     captured = {}
 
     def _capture(signal):

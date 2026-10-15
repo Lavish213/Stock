@@ -17,13 +17,21 @@ on:
         description: "RNG seed (reproducible generation)"
         default: "42"
 
+permissions:
+  contents: read
+
 jobs:
   simulate:
     runs-on: ubuntu-latest
+    env:
+      TRADE_MODE: dry
+      DISCORD_WEBHOOK_URL: ""
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.11"
 
@@ -31,11 +39,15 @@ jobs:
         run: pip install -r requirements-deploy.txt
 
       - name: Run simulation
+        env:
+          SIM_ALERTS: ${{ github.event.inputs.alerts_per_ticker }}
+          SIM_DAYS: ${{ github.event.inputs.days }}
+          SIM_SEED: ${{ github.event.inputs.seed }}
         run: |
           python3 simulate_ticker_watch.py \
-            --alerts-per-ticker "${{ github.event.inputs.alerts_per_ticker }}" \
-            --days "${{ github.event.inputs.days }}" \
-            --seed "${{ github.event.inputs.seed }}" \
+            --alerts-per-ticker "$SIM_ALERTS" \
+            --days "$SIM_DAYS" \
+            --seed "$SIM_SEED" \
             | tee simulation_output.txt
 
       - name: Write job summary
@@ -45,7 +57,7 @@ jobs:
           cat simulation_output.txt >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: simulation-output
           path: simulation_output.txt

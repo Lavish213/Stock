@@ -115,18 +115,14 @@ def dry_run(alerts: list[dict]) -> None:
 
 def live_run(alerts: list[dict], pause: float) -> None:
     mode = os.getenv("TRADE_MODE", "dry")
-    if mode not in ("paper", "live"):
-        print(f"TRADE_MODE={mode!r} in .env - nothing will actually submit. Set TRADE_MODE=paper for this to do anything.")
-        return
-    if mode == "live":
-        confirm = input("TRADE_MODE=live - this will submit REAL orders with REAL money. Type 'yes' to continue: ")
-        if confirm.strip().lower() != "yes":
-            print("Aborted.")
-            return
+    if mode != "paper":
+        raise RuntimeError("Simulated alerts may execute only in TRADE_MODE=paper; live execution is prohibited")
+    from lavish_core.utils.safety import finite_number
+    pause = finite_number(pause,nonnegative=True)
 
     from lavish_core.trading.alert_handler import handle_alert_text
 
-    print(f"=== LIVE RUN ({mode}): submitting {len(alerts)} simulated alerts to the real pipeline ===")
+    print(f"=== PAPER RUN ({mode}): submitting {len(alerts)} simulated alerts to the real pipeline ===")
     print(f"Watch your Alpaca dashboard - {pause}s pause between each so they're easy to follow.\n")
     for i, a in enumerate(alerts, 1):
         print(f"[{i}/{len(alerts)}] {a['label']}")
@@ -140,7 +136,7 @@ def live_run(alerts: list[dict], pause: float) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--live", action="store_true",
+    p.add_argument("--execute-paper", "--live", dest="live", action="store_true",
                    help="Actually submit real (paper) orders instead of just parsing. Requires TRADE_MODE=paper "
                         "and real Alpaca keys in .env.")
     p.add_argument("--pause", type=float, default=8.0,

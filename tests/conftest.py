@@ -17,6 +17,8 @@ import pytest
 def _default_market_open(monkeypatch):
     import lavish_core.trading.trade_handler as th
     monkeypatch.setattr(th, "get_clock", lambda: {"is_open": True})
+    monkeypatch.setattr(th, "get_account", lambda: {"equity": 100000})
+    monkeypatch.setattr(th, "get_order_by_client_id", lambda *args: None)
 
 
 # Default the candle-confirmation gatekeeper OFF for every test. Same
@@ -32,3 +34,11 @@ def _default_market_open(monkeypatch):
 def _default_gatekeeper_disabled(monkeypatch):
     import lavish_core.trading.trade_handler as th
     monkeypatch.setattr(th, "GATEKEEPER_ENABLED", False)
+
+
+@pytest.fixture(autouse=True)
+def _default_exit_lookup_confirms_absent(monkeypatch,tmp_path):
+    from lavish_core.trade import options_exit_monitor, equity_exit_monitor
+    for module in (options_exit_monitor, equity_exit_monitor):
+        monkeypatch.setattr(module,"get_order_by_client_id",lambda *args:None)
+        monkeypatch.setattr(module,"DEFAULT_DB",tmp_path / "exit-journal.duckdb")

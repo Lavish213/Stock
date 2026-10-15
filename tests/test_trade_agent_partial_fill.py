@@ -21,7 +21,9 @@ def _no_sleep(*a, **k):
 
 def test_partial_fill_is_recorded_with_the_real_filled_quantity(tmp_path):
     store = HybridStore(duckdb_path=tmp_path / "test.duckdb")
-    with patch.object(ta, "HAS_ALPACA", True), \
+    with patch.object(ta, "_soft_quote", return_value=150.0), \
+         patch.object(ta, "get_account", return_value={"equity":100000}), \
+         patch.object(ta, "HAS_ALPACA", True), \
          patch.object(ta, "_circuit_breaker_check_ok", return_value=(True, "ok")), \
          patch.object(ta, "time") as mock_time, \
          patch.object(ta, "broker_place_order",
@@ -42,7 +44,9 @@ def test_partial_fill_is_recorded_with_the_real_filled_quantity(tmp_path):
 
 def test_full_fill_still_works_normally(tmp_path):
     store = HybridStore(duckdb_path=tmp_path / "test.duckdb")
-    with patch.object(ta, "HAS_ALPACA", True), \
+    with patch.object(ta, "_soft_quote", return_value=150.0), \
+         patch.object(ta, "get_account", return_value={"equity":100000}), \
+         patch.object(ta, "HAS_ALPACA", True), \
          patch.object(ta, "_circuit_breaker_check_ok", return_value=(True, "ok")), \
          patch.object(ta, "time") as mock_time, \
          patch.object(ta, "broker_place_order",
@@ -60,7 +64,9 @@ def test_full_fill_still_works_normally(tmp_path):
 
 def test_fully_unfilled_order_is_not_logged_as_a_fill(tmp_path):
     store = HybridStore(duckdb_path=tmp_path / "test.duckdb")
-    with patch.object(ta, "HAS_ALPACA", True), \
+    with patch.object(ta, "_soft_quote", return_value=150.0), \
+         patch.object(ta, "get_account", return_value={"equity":100000}), \
+         patch.object(ta, "HAS_ALPACA", True), \
          patch.object(ta, "_circuit_breaker_check_ok", return_value=(True, "ok")), \
          patch.object(ta, "time") as mock_time, \
          patch.object(ta, "broker_place_order",

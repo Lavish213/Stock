@@ -132,7 +132,7 @@ def utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 def sha1(s: str) -> str:
-    return hashlib.sha1(s.encode("utf-8", "ignore")).hexdigest()
+    return hashlib.sha1(s.encode("utf-8", "ignore"), usedforsecurity=False).hexdigest()
 
 TICKER_RE = re.compile(r"\b([A-Z]{1,5})(?:\b|[^a-zA-Z])")
 BUY_WORDS = ("BUY", "CALL", "LONG", "OPEN", "ENTRY")

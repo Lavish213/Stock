@@ -56,7 +56,7 @@ class Brain:
         self.con.executescript(SCHEMA)
 
     def _hash(self, text: str, kind: str, meta: Dict) -> str:
-        return hashlib.sha1(f"{kind}|{json.dumps(meta,sort_keys=True)}|{text}".encode("utf-8","ignore")).hexdigest()
+        return hashlib.sha1(f"{kind}|{json.dumps(meta,sort_keys=True)}|{text}".encode("utf-8","ignore"), usedforsecurity=False).hexdigest()
 
     def upsert(self, text: str, kind: str = "note", meta: Optional[Dict] = None) -> Tuple[int, bool]:
         meta = meta or {}
@@ -75,8 +75,8 @@ class Brain:
 
     def search(self, query: str, k: int = 8, filter_kind: Optional[str] = None) -> List[Dict]:
         qv = embed(query)
-        rows = self.con.execute("SELECT id, kind, meta, text, vec FROM docs" + (" WHERE kind=?" if filter_kind else ""),
-                                ((filter_kind,) if filter_kind else ()))
+        rows = (self.con.execute("SELECT id, kind, meta, text, vec FROM docs WHERE kind=?", (filter_kind,))
+                if filter_kind else self.con.execute("SELECT id, kind, meta, text, vec FROM docs"))
         scored = []
         for i, kind, meta, text, vblob in rows:
             vec = json.loads(vblob.decode("utf-8"))

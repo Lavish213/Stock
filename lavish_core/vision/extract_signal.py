@@ -66,7 +66,7 @@ if not KNOWN_TICKERS:
             # because they were missing here (found while testing real
             # alerts, not guessed); DDOG was named explicitly in her own
             # text ("except on ddog") in a real recap post.
-            "AAPL,MSFT,AMD,NVDA,META,TSLA,SPY,QQQ,GOOGL,CRM,MSTR,MU,HOOD,ATAI,NVO,UNH,AVGO,CRWV,NFLX,AMZN,DDOG",
+            "AAPL,MSFT,AMD,NVDA,META,TSLA,SPY,QQQ,GOOGL,CRM,MSTR,MU,HOOD,ATAI,NVO,UNH,AVGO,CRWV,NFLX,AMZN,DDOG,JPM",
         ).split(",")
         if s.strip()
     }
@@ -132,7 +132,8 @@ def _clean_text(s: str) -> str:
 def _to_float(x: str) -> Optional[float]:
     try:
         x = x.replace(",", "")
-        return float(x)
+        from lavish_core.utils.safety import finite_number
+        return finite_number(x, positive=True)
     except Exception:
         return None
 
@@ -157,6 +158,13 @@ def _find_all_dates(text: str, year: int) -> List[Tuple[date, int]]:
     # wrong one. Collect every candidate with its position instead, and
     # let the caller pick by proximity to the actual trade (anchor_pos).
     found: List[Tuple[date, int]] = []
+    # Explicit ISO dates preserve the stated contract date, including year;
+    # never roll or nudge them onto a different expiry.
+    for match in re.finditer(r"(?<![\w-])(\d{4}-\d{2}-\d{2})(?![\w-])", text):
+        try:
+            found.append((date.fromisoformat(match.group(1)), match.start()))
+        except ValueError:
+            continue
 
     # \s* (not \s+) so a glued "NOV1st" matches the same as "Nov 1st" or
     # "Nov 1" - and an optional ordinal suffix (st/nd/rd/th) so "1st"/"31st"
@@ -310,7 +318,7 @@ def _find_strike_and_side(text: str) -> Tuple[Optional[float], Optional[str], Op
     # "$1,120 Call" (trade-card UI), but also her real chat phrasing:
     # "$235 strike call" and "$570 call strike" - "strike" can land on
     # either side of the call/put word, not just be absent.
-    m = re.search(r"\$?\s?(\d{1,4}(?:\.\d{1,2})?)\s*(?:strike\s+)?(calls?|puts?)(?:\s+strikes?)?\b", text, re.I)
+    m = re.search(r"(?<![\w.\-])\$?\s?(\d{1,4}(?:\.\d{1,2})?)\s*(?:strike\s+)?(calls?|puts?)(?:\s+strikes?)?\b", text, re.I)
     if m:
         return _to_float(m.group(1)), m.group(2).rstrip("sS").upper(), m.start()
 
@@ -333,11 +341,28 @@ def _find_strike_and_side(text: str) -> Tuple[Optional[float], Optional[str], Op
     # confirmed bug. Deliberately GLUED (no space allowed between the
     # number and the letter) so this doesn't fire on "5 p.m."/"10 a.m."
     # style time references, which do match if a space is allowed.
-    m3 = re.search(r"\b(\d{1,4}(?:\.\d{1,2})?)([cp])\b", text)
+    m3 = re.search(r"(?<![\w.\-])(\d{1,4}(?:\.\d{1,2})?)([cp])\b", text, re.I)
     if m3:
         side = "CALL" if m3.group(2).lower() == "c" else "PUT"
         return _to_float(m3.group(1)), side, m3.start()
     return None, None, None
+
+
+def _explicit_option_pairs(text):
+    """All literal price/side pairs, excluding unpaired UI toggle labels."""
+    pairs = set()
+    for pattern, reverse in (
+        (r"(?<![\w.\-])\$?\s?(\d{1,4}(?:\.\d{1,2})?)\s*(?:strike\s+)?(calls?|puts?)(?:\s+strikes?)?\b", False),
+        (r"\b(calls?|puts?)\b[\s.,:\-]{0,10}\$\s?(\d{1,4}(?:\.\d{1,2})?)\b", True),
+        (r"(?<![\w.\-])(\d{1,4}(?:\.\d{1,2})?)([cp])\b", False),
+    ):
+        for match in re.finditer(pattern, text, re.I):
+            price, side = (match.group(2), match.group(1)) if reverse else match.groups()[:2]
+            side = 'CALL' if side.lower().startswith('c') else 'PUT'
+            value = _to_float(price)
+            if value is not None:
+                pairs.add((value, side))
+    return pairs
 
 def _find_side(text: str) -> Optional[str]:
     # Fallback for plain-text alerts with no visible strike+side pairing
@@ -441,6 +466,33 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
         expiry = None
     target = _find_target(text)
     stop   = _find_stop(text)
+    # The execution router accepts one instrument. Proximity can help OCR
+    # extraction, but cannot authorize one trade from a multi-ticker post.
+    exact_tickers = {m.group().upper() for m in re.finditer(r"\b[A-Za-z]{2,6}\b", text)
+                     if m.group().upper() in KNOWN_TICKERS
+                     and (len(m.group()) >= 3 or m.group().isupper())}
+    conflicts = ["ticker"] if len(exact_tickers) > 1 else []
+    pairs = _explicit_option_pairs(text)
+    if len({pair[0] for pair in pairs}) > 1:
+        conflicts.append("strike")
+    if (len({pair[1] for pair in pairs}) > 1 or (not pairs
+            and re.search(r"\bcalls?\b", text, re.I) and re.search(r"\bputs?\b", text, re.I))):
+        conflicts.append("side")
+    explicit_expiries = set()
+    for match in re.finditer(r"\b(?:exp(?:iry|iration)?|expires?)\s*[:=]?\s*(\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}(?:/\d{2,4})?)\b", text, re.I):
+        explicit_expiries.update(day for day, _ in _find_all_dates(match.group(1), now.year))
+    if len(explicit_expiries) > 1:
+        conflicts.append("expiry")
+    for field, pattern in (
+        ("target_hint", r"\btarget\s*(?:is\s*)?\$?\s*([+-]?(?:\d+(?:\.\d+)?|nan|inf(?:inity)?))\b"),
+        ("stop_hint", r"\b(?:stop\s*loss|stop|sl)\s*\$?\s*([+-]?(?:\d+(?:\.\d+)?|nan|inf(?:inity)?))\b"),
+    ):
+        values = {_to_float(match.group(1)) for match in re.finditer(pattern, text, re.I)}
+        # Zero, negative, nonfinite, or otherwise unparsed explicit levels
+        # must not disappear and be replaced by the bot's default exits.
+        extracted = target if field == "target_hint" else stop
+        if None in values or len(values) > 1 or (values and extracted not in values):
+            conflicts.append(field)
 
     conf = 0.0
     # Scaled by match quality (MIN_TICKER_SCORE=75 floor, 100=exact) - a
@@ -469,8 +521,10 @@ def _extract(text: str, img_path: Path) -> Dict[str, Any]:
         "target_hint": target,
         "stop_hint": stop,
         "notes_excerpt": text[:280],
+        "instruction_text": text,
         "confidence": conf,
-        "needs_human_review": conf < 0.75,
+        "field_conflicts": conflicts,
+        "needs_human_review": bool(conflicts) or conf < 0.75,
     }
 
 # ---------- OCR Pipeline ----------
@@ -479,6 +533,9 @@ def _preprocess_for_ocr(img_bgr) -> "np.ndarray":
     import cv2
     # 1) make a hi-contrast grayscale
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    import numpy as np
+    if np.median(gray) < 127:
+        gray = cv2.bitwise_not(gray)
     # 2) light denoise & sharpen
     gray = cv2.bilateralFilter(gray, 7, 60, 60)
     # 3) adaptive threshold (works well on dark discord UIs)
@@ -526,12 +583,19 @@ def parse_alert(text: str = "", img_path: Optional[Path] = None, source: str = "
 
     if text_result and image_result:
         merged = dict(text_result)
+        conflicts = list(dict.fromkeys(text_result.get("field_conflicts", [])
+                                       + image_result.get("field_conflicts", [])))
+        conflicts += [key for key in ("ticker", "side", "strike", "expiry", "entry_price_est", "target_hint", "stop_hint")
+                     if text_result.get(key) is not None and image_result.get(key) is not None
+                     and text_result[key] != image_result[key] and key not in conflicts]
+        merged["field_conflicts"] = conflicts
         for key in ("ticker", "side", "strike", "expiry", "entry_price_est", "target_hint", "stop_hint"):
             if not merged.get(key) and image_result.get(key):
                 merged[key] = image_result[key]
         merged["confidence"] = max(text_result.get("confidence", 0.0), image_result.get("confidence", 0.0))
-        merged["needs_human_review"] = merged["confidence"] < 0.75
+        merged["needs_human_review"] = bool(conflicts) or merged["confidence"] < 0.75
         merged["notes_excerpt"] = (text_result.get("notes_excerpt") or image_result.get("notes_excerpt"))
+        merged["instruction_text"] = "\n".join((text_result.get("instruction_text", ""), image_result.get("instruction_text", "")))
         return merged
 
     return text_result or image_result or _extract("", Path(source))

@@ -114,7 +114,7 @@ class NewsFailover:
 
     def _yahoo_rss(self, want: int) -> List[Dict[str, Any]]:
         # Simple RSS pulls that rarely rate-limit
-        import xml.etree.ElementTree as ET
+        import defusedxml.ElementTree as ET
         urls = [
             "https://finance.yahoo.com/rss/topstories",
             "https://finance.yahoo.com/news/rssindex"
@@ -125,6 +125,8 @@ class NewsFailover:
             if not r: 
                 continue
             try:
+                if len(r.content) > 3*1024*1024:
+                    continue
                 root = ET.fromstring(r.text)
                 for item in root.findall(".//item"):
                     out.append({

@@ -134,7 +134,9 @@ def test_the_forced_close_retry_loop_also_survives_an_unexpected_error():
     assert mock_discord.called
 
 
-def test_a_confirmed_worthless_option_exits_as_a_terminal_loss_not_a_retry():
+def test_zero_bid_after_expiry_requires_broker_settlement_confirmation():
+    # Zero bid after expiry is not proof of a filled sell or settlement.
+    # Historical behavior invented a realized total loss from a quote.
     # Real corner case found this round: a deep-OTM/near-expiry option
     # with a confirmed $0.00 bid used to be treated identically to "no
     # quote data available" (both collapsed to None), so _exit() retried
@@ -156,8 +158,9 @@ def test_a_confirmed_worthless_option_exits_as_a_terminal_loss_not_a_retry():
             stop_underlying=50.0,  # her stop never fires (price stays at 100) - forces our_stop_loss path
         )
 
-    assert result["status"] == "exited"
-    assert result["option_price"] == 0.0
+    assert result["status"] == "settlement_unverified"
+    assert result["option_price"] is None
+    assert result["quoted_bid"] == 0.0
     assert "worthless" in result["reason"]
     mock_place.assert_not_called()  # never attempts to submit a sell for a confirmed-worthless contract
     assert mock_discord.called
@@ -203,7 +206,7 @@ def test_unconfirmed_fill_is_canceled_and_retried():
              {"id": "stale-1", "status": "pending_new"},
              {"id": "o2", "status": "filled", "filled_avg_price": "4.0", "filled_qty": "1"},
          ]) as mock_place, \
-         patch.object(oem, "get_order", return_value={"status": "pending_new"}), \
+         patch.object(oem, "get_order", side_effect=[{"status":"pending_new"}]*5+[{"status":"canceled", "filled_qty":"0"}]), \
          patch.object(oem, "cancel_order") as mock_cancel, \
          patch.object(oem, "post_discord"):
         mock_time.sleep.side_effect = _no_sleep

@@ -7,12 +7,10 @@
 # =====================================================================
 # READ THIS BEFORE SETTING DISCORD_USER_TOKEN
 # =====================================================================
-# There is no "bot" path for reading someone else's paid Discord server:
-# a bot application has to be invited by the server owner, and that isn't
-# going to happen for a server whose value proposition is paid alerts.
-# The only way to read messages here is a *user account token* - logging
-# in as yourself (or a throwaway account with its own paid membership) and
-# having a script watch messages as if you were reading them yourself.
+# A bot application needs an invitation and access from the server owner.
+# An incoming webhook URL by itself cannot read channel messages. This
+# optional existing adapter implements a user session, not bot OAuth.
+# Prefer an owner-authorized relay or invited bot where one is available.
 #
 # Automating a Discord user account like this is against Discord's Terms
 # of Service and can get that account warned or disabled - this isn't
@@ -23,6 +21,8 @@
 #   DISCORD_USER_TOKEN=<your account's token>
 #   DISCORD_INGEST_ACCEPT_TOS_RISK=1        (explicit opt-in, no default)
 #   DISCORD_WATCH_CHANNEL_IDS=123,456,789   (channel IDs to watch)
+#   DISCORD_WATCH_AUTHOR_IDS=123          (trusted creator user IDs)
+#   DISCORD_WATCH_WEBHOOK_IDS=456         (trusted incoming webhook IDs)
 #
 # Requires the `discord.py-self` package (NOT `discord.py` - they occupy
 # the same import name and cannot both be installed; discord.py-self is
@@ -50,6 +50,9 @@ ACCEPT_TOS_RISK = os.getenv("DISCORD_INGEST_ACCEPT_TOS_RISK", "0") == "1"
 WATCH_CHANNEL_IDS = {
     int(c) for c in os.getenv("DISCORD_WATCH_CHANNEL_IDS", "").split(",") if c.strip().isdigit()
 }
+WATCH_AUTHOR_IDS = {int(c) for c in os.getenv('DISCORD_WATCH_AUTHOR_IDS', '').split(',') if c.strip().isdigit()}
+WATCH_WEBHOOK_IDS = {int(c) for c in os.getenv('DISCORD_WATCH_WEBHOOK_IDS', '').split(',') if c.strip().isdigit()}
+MAX_ALERT_AGE_SECONDS = int(os.getenv('DISCORD_MAX_ALERT_AGE_SECONDS', '120'))
 SIGNAL_SOURCE_NAME = os.getenv("DISCORD_SIGNAL_SOURCE_NAME", "discord")
 
 # Kept as a module-level alias so existing callers/tests using
@@ -69,6 +72,8 @@ def run() -> None:
     if not WATCH_CHANNEL_IDS:
         log.warning("DISCORD_WATCH_CHANNEL_IDS is empty - nothing to listen to. Not starting.")
         return
+    if not (WATCH_AUTHOR_IDS or WATCH_WEBHOOK_IDS):
+        raise ValueError('Configure trusted Discord creator or webhook IDs before listening')
 
     try:
         import discord
@@ -80,39 +85,31 @@ def run() -> None:
         )
         return
 
-    intents = discord.Intents.default()
-    intents.message_content = True
-    client = discord.Client(intents=intents, self_bot=True)
+    if hasattr(discord, 'Intents'):
+        raise RuntimeError('Discord bot package conflicts with the configured user-session listener; install discord.py-self only')
+    # discord.py-self deliberately removes discord.Intents. The old bot-API
+    # constructor crashed before connecting when the documented package was
+    # installed. Never log in during validation; tests inject this boundary.
+    client = discord.Client()
+    from lavish_core.db.hybrid_store import DEFAULT_DB
+    from lavish_core.discord_ingest.message_processor import DiscordProcessor
+    processor = DiscordProcessor(DEFAULT_DB, channels=WATCH_CHANNEL_IDS, authors=WATCH_AUTHOR_IDS,
+                                 webhooks=WATCH_WEBHOOK_IDS, callback=_handle_alert_text,
+                                 source=SIGNAL_SOURCE_NAME, max_age=MAX_ALERT_AGE_SECONDS)
 
     @client.event
     async def on_ready():
+        processor.own_user_id = client.user.id
         log.info("Discord listener connected as %s, watching channels: %s",
                   client.user, sorted(WATCH_CHANNEL_IDS))
 
     async def _process(message) -> None:
-        if message.channel.id not in WATCH_CHANNEL_IDS:
-            return
-        if message.author.id == client.user.id:
-            return
-
-        image_path = None
-        for att in message.attachments:
-            if att.content_type and att.content_type.startswith("image/"):
-                import tempfile
-                fd, image_path = tempfile.mkstemp(suffix=os.path.splitext(att.filename)[-1])
-                os.close(fd)
-                await att.save(image_path)
-                break
-
         try:
-            handle_alert_text(
-                text=message.content,
-                image_path=image_path,
-                note=f"discord:{message.channel.id}:{message.id}",
-            )
-        finally:
-            if image_path and os.path.exists(image_path):
-                os.remove(image_path)
+            result = await processor.process(message)
+            if result == 'review_required':
+                log.warning('Discord message requires reconciliation; inspect durable receipt journal')
+        except Exception as exc:
+            log.error('Discord message rejected: %s', type(exc).__name__)
 
     @client.event
     async def on_message(message):
@@ -120,9 +117,20 @@ def run() -> None:
 
     @client.event
     async def on_message_edit(before, after):
-        # Alert callers sometimes correct themselves right after posting
-        # ("Target $1,120 I meant.") - handle edits, not just new messages.
+        # Corrections to dispatched alerts are quarantined for review; an edit
+        # must never silently create another entry or reverse an existing one.
         await _process(after)
+
+    @client.event
+    async def on_raw_message_edit(payload):
+        # Uncached MESSAGE_UPDATE payloads can omit author/content/attachments.
+        # Never reconstruct a tradable alert from a partial correction.
+        if payload.cached_message is None:
+            await processor.retract(payload.channel_id,payload.message_id,'uncached_message_edit')
+
+    @client.event
+    async def on_raw_message_delete(payload):
+        await processor.retract(payload.channel_id,payload.message_id)
 
     log.info("Starting Discord listener (channels=%s)...", sorted(WATCH_CHANNEL_IDS))
     client.run(DISCORD_USER_TOKEN)

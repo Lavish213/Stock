@@ -27,6 +27,7 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
 from lavish_core.utils.alerts import post_discord
+from lavish_core.utils.control_file import read_control,write_control
 
 
 def main() -> None:
@@ -35,25 +36,34 @@ def main() -> None:
     g.add_argument("--on", metavar="REASON", help="halt all new entries, with a reason recorded for the log/alert")
     g.add_argument("--off", action="store_true", help="resume normal trading")
     g.add_argument("--status", action="store_true", help="print the current state without changing it")
+    p.add_argument("--db",type=Path,default=None,help="Override bot database/control path")
     args = p.parse_args()
 
-    store = HybridStore(duckdb_path=str(DEFAULT_DB))
+    db_path=args.db or DEFAULT_DB
 
     if args.status:
-        enabled, reason = store.get_kill_switch()
+        state=read_control(db_path)
+        if state is None:
+            try:
+                store=HybridStore(db_path)
+                state=store.get_kill_switch()
+                store.con.close()
+            except Exception:
+                state=(True,"Database locked and control state unavailable")
+        enabled,reason=state
         if enabled:
             print(f"KILL SWITCH IS ON - new entries are blocked. Reason: {reason!r}")
         else:
             print("Kill switch is off - trading normally.")
         return
 
-    if args.on:
-        store.set_kill_switch(True, args.on)
+    if args.on is not None:
+        write_control(db_path,True,args.on)
         print(f"Kill switch turned ON. New entries will be refused starting with the next alert. Reason: {args.on!r}")
         print("Existing open positions are unaffected and will keep exiting normally.")
         post_discord(f"🛑 Kill switch turned ON: {args.on}. New entries blocked; open positions keep exiting normally.")
     else:
-        store.set_kill_switch(False, "")
+        write_control(db_path,False,"")
         print("Kill switch turned OFF. Trading resumes normally.")
         post_discord("✅ Kill switch turned OFF. Trading resumes normally.")
 

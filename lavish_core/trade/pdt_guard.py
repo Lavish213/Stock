@@ -12,6 +12,7 @@
 # does NOT check. This guard assumes a margin account, both the more
 # common retail default and what Alpaca opens by default.
 from __future__ import annotations
+from lavish_core.utils.safety import finite_number
 import os, logging
 from datetime import date, timedelta
 from typing import Optional, Tuple
@@ -90,7 +91,7 @@ def check_pdt_ok(store: HybridStore) -> Tuple[bool, str]:
 
     try:
         acct = get_account()
-        equity = float(acct.get("equity") or 0.0)
+        equity = finite_number(acct.get("equity"), positive=True)
     except Exception as e:
         if RISK_CHECK_FAIL_OPEN:
             log.warning("pdt_guard: could not read account equity (%s) - allowing trade "

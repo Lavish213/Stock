@@ -30,7 +30,6 @@ except Exception:
 # Vector memory
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import pickle
 
 # ---------- Logging ----------
 os.makedirs("logs", exist_ok=True)
@@ -82,7 +81,7 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 def sha1(s: str) -> str:
-    return hashlib.sha1(s.encode("utf-8", errors="ignore")).hexdigest()
+    return hashlib.sha1(s.encode("utf-8", errors="ignore"), usedforsecurity=False).hexdigest()
 
 def clamp(v, lo, hi):
     return max(lo, min(hi, v))
@@ -130,7 +129,7 @@ class TradeResult:
 # ---------- Memory (TF-IDF) ----------
 class Memory:
     """
-    Simple local vector store (TF-IDF) with persistence to .pkl
+    Simple local vector store (TF-IDF) with data-only JSON persistence
     Content sources: RSS news + OCR text + any appended notes.
     """
     def __init__(self, vec_path=VEC_PKL, mem_path=MEMORY_PKL):
@@ -143,26 +142,36 @@ class Memory:
         self._load()
 
     def _load(self):
-        if os.path.exists(self.vec_path) and os.path.exists(self.mem_path):
-            try:
-                with open(self.vec_path, "rb") as f:
-                    self.vectorizer = pickle.load(f)
-                with open(self.mem_path, "rb") as f:
-                    payload = pickle.load(f)
-                self.docs = payload["docs"]
-                self.meta = payload["meta"]
-                if self.vectorizer and self.docs:
-                    self.matrix = self.vectorizer.fit_transform(self.docs)
-                logger.info(f"Memory loaded: {len(self.docs)} docs")
-            except Exception as e:
-                logger.warning(f"Memory load failed, starting fresh: {e}")
+        from lavish_core.utils.vector_cache import read_memory
+        path = str(self.mem_path) + ".json"
+        if not os.path.exists(path):
+            return
+        try:
+            payload = read_memory(path)
+            self.docs, self.meta = payload["docs"], payload["meta"]
+            if self.docs:
+                self.vectorizer = TfidfVectorizer(max_features=50000, ngram_range=(1,2))
+                self.matrix = self.vectorizer.fit_transform(self.docs)
+        except (OSError, ValueError, TypeError):
+            self.docs, self.meta, self.vectorizer, self.matrix = [], [], None, None
+            logger.warning("Invalid data-only memory cache; starting fresh")
 
     def _save(self):
-        if self.vectorizer and self.docs is not None:
-            with open(self.vec_path, "wb") as f:
-                pickle.dump(self.vectorizer, f)
-            with open(self.mem_path, "wb") as f:
-                pickle.dump({"docs": self.docs, "meta": self.meta}, f)
+        import tempfile
+        from pathlib import Path
+        path = Path(str(self.mem_path) + ".json")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w",dir=path.parent,delete=False) as handle:
+                temporary = Path(handle.name)
+                os.chmod(temporary,0o600)
+                json.dump({"docs":self.docs,"meta":self.meta},handle)
+                handle.flush(); os.fsync(handle.fileno())
+            os.replace(temporary,path)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     def add(self, text: str, meta: Dict[str, Any]):
         if not text:

@@ -1,0 +1,2377 @@
+{
+  "source": "Alpaca historical SIP",
+  "daily_adjustment": "all",
+  "daily_bars": 2512,
+  "daily_start": "2016-10-14T04:00:00+00:00",
+  "daily_end": "2026-10-13T04:00:00+00:00",
+  "daily_sha256": "1ec717de13edb7ecb7037630e5a9e8e770d70ed9aaae4740c43f992ecef6ba2e",
+  "intraday_bars": 157490,
+  "excluded_intraday_sessions": [
+    "2016-11-25",
+    "2017-07-03",
+    "2017-11-24",
+    "2018-07-03",
+    "2018-11-23",
+    "2018-12-24",
+    "2019-07-03",
+    "2019-08-12",
+    "2019-11-29",
+    "2019-12-24",
+    "2020-11-27",
+    "2020-12-24",
+    "2021-11-26",
+    "2022-11-25",
+    "2023-07-03",
+    "2023-11-24",
+    "2024-07-03",
+    "2024-11-29",
+    "2024-12-24",
+    "2025-07-03",
+    "2025-11-28",
+    "2025-12-24"
+  ],
+  "intraday_sha256": "47709c13fb2253569fd617b07829e6f19b895f4f923f30826c37adbb03440552",
+  "calendar_sha256": "29bac964596aa242943432baa97281ca392990398b70b186b89cca92ccacc3f4",
+  "trial_count": 10,
+  "costs_bps_per_side": [
+    1.0,
+    5.0,
+    10.0,
+    25.0
+  ],
+  "split_dates": {
+    "development": [
+      "2017-10-14",
+      "2022-12-31"
+    ],
+    "selection": [
+      "2023-01-01",
+      "2024-12-31"
+    ],
+    "evaluation": [
+      "2025-01-01",
+      "2026-10-13"
+    ]
+  },
+  "selection_locked_before_evaluation": "blend_trend_pullback",
+  "summaries": {
+    "1.0": {
+      "cash": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0,
+            "2022": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2023": 0.0,
+            "2024": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2025": 0.0,
+            "2026": 0.0
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "buy_hold": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 64.14435389988344,
+          "cagr_pct": 9.986436257290343,
+          "max_drawdown_pct": -32.04936181297212,
+          "sharpe_zero_cash": 0.5809466781129866,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.837860780984717,
+            "2019": 34.024329126611775,
+            "2020": 18.166366386783018,
+            "2021": 28.60101838267035,
+            "2022": -17.992081068384678
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 57.66775777414048,
+          "cagr_pct": 25.679763814842072,
+          "max_drawdown_pct": -9.5851280888688,
+          "sharpe_zero_cash": 1.819372168285046,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2023": 24.708128750681936,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 34.48556253352011,
+          "cagr_pct": 18.26820799510336,
+          "max_drawdown_pct": -19.765561169192758,
+          "sharpe_zero_cash": 1.0566798552647025,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2025": 17.707306101970623,
+            "2026": 14.254218354988414
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "trend_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 36.4421023940491,
+          "cagr_pct": 6.149992444744212,
+          "max_drawdown_pct": -19.89274814792732,
+          "sharpe_zero_cash": 0.517870860827736,
+          "exposure_pct": 74.6189024390244,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -5.7347726188023636,
+            "2019": 15.254233483231339,
+            "2020": 6.662483850526035,
+            "2021": 28.60101838267035,
+            "2022": -13.208914213519185
+          },
+          "turnover_units": 35.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 41.81205866334929,
+          "cagr_pct": 19.167766120328224,
+          "max_drawdown_pct": -9.100025526018296,
+          "sharpe_zero_cash": 1.4595334454415916,
+          "exposure_pct": 96.61354581673307,
+          "yearly_return_pct": {
+            "2023": 12.166981505008657,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 9.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 23.525975566637314,
+          "cagr_pct": 12.709883099339446,
+          "max_drawdown_pct": -10.99981342025359,
+          "sharpe_zero_cash": 1.1053734580656036,
+          "exposure_pct": 87.86516853932585,
+          "yearly_return_pct": {
+            "2025": 10.893017693263008,
+            "2026": 11.392022812759706
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "dual_50_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 34.16596758992452,
+          "cagr_pct": 5.8075538634673185,
+          "max_drawdown_pct": -19.326099689437683,
+          "sharpe_zero_cash": 0.5218064519573117,
+          "exposure_pct": 68.4451219512195,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -5.7347726188023636,
+            "2019": 13.82995727693459,
+            "2020": 1.7324105499736175,
+            "2021": 28.60101838267035,
+            "2022": -9.401343503338634
+          },
+          "turnover_units": 25.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 42.02160488182229,
+          "cagr_pct": 19.256127519410924,
+          "max_drawdown_pct": -9.10002552601834,
+          "sharpe_zero_cash": 1.4921343364340556,
+          "exposure_pct": 95.0199203187251,
+          "yearly_return_pct": {
+            "2023": 12.332723170657168,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 7.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 16.384900895483078,
+          "cagr_pct": 8.97245864005065,
+          "max_drawdown_pct": -10.001155464839439,
+          "sharpe_zero_cash": 0.8358438054836691,
+          "exposure_pct": 80.67415730337079,
+          "yearly_return_pct": {
+            "2025": 4.482258205433487,
+            "2026": 11.392022812759706
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "channel_20_10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 57.712442319805255,
+          "cagr_pct": 9.145225325761697,
+          "max_drawdown_pct": -8.489054946172669,
+          "sharpe_zero_cash": 0.8588085782023821,
+          "exposure_pct": 58.00304878048781,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -0.3214538443798709,
+            "2019": 13.954590241156772,
+            "2020": 25.31592890286669,
+            "2021": 6.529794569209235,
+            "2022": -1.4069511249468536
+          },
+          "turnover_units": 45.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 25.97002508806725,
+          "cagr_pct": 12.287999193333587,
+          "max_drawdown_pct": -6.206852855468059,
+          "sharpe_zero_cash": 1.4727300568314639,
+          "exposure_pct": 60.1593625498008,
+          "yearly_return_pct": {
+            "2023": 16.320304556942467,
+            "2024": 8.295817800581196
+          },
+          "turnover_units": 20.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 17.348915076827897,
+          "cagr_pct": 9.482689073128437,
+          "max_drawdown_pct": -7.733210472507823,
+          "sharpe_zero_cash": 1.0820226490085516,
+          "exposure_pct": 60.0,
+          "yearly_return_pct": {
+            "2025": 7.780392213190024,
+            "2026": 8.877795549965374
+          },
+          "turnover_units": 17.0
+        }
+      },
+      "trend_pullback_rsi2": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 2.822627590872595,
+          "cagr_pct": 0.5360723326052863,
+          "max_drawdown_pct": -23.12736818529958,
+          "sharpe_zero_cash": 0.10542430707793328,
+          "exposure_pct": 21.798780487804876,
+          "yearly_return_pct": {
+            "2017": 1.9033502328456464,
+            "2018": -8.167895203801102,
+            "2019": -1.2037070195186406,
+            "2020": -6.247143553935997,
+            "2021": 26.767523647653736,
+            "2022": -6.4222642831626935
+          },
+          "turnover_units": 204.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 29.82053317840041,
+          "cagr_pct": 13.998064521767017,
+          "max_drawdown_pct": -5.2346643155190336,
+          "sharpe_zero_cash": 1.787304444094064,
+          "exposure_pct": 29.482071713147413,
+          "yearly_return_pct": {
+            "2023": 5.741969403022629,
+            "2024": 22.771056668715172
+          },
+          "turnover_units": 115.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 3.3348798557756965,
+          "cagr_pct": 1.8750721738755693,
+          "max_drawdown_pct": -7.0876798397577545,
+          "sharpe_zero_cash": 0.2837088814381202,
+          "exposure_pct": 29.213483146067414,
+          "yearly_return_pct": {
+            "2025": 5.157782132102451,
+            "2026": -1.733492509414869
+          },
+          "turnover_units": 96.0
+        }
+      },
+      "trend_vol10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 31.563660836637418,
+          "cagr_pct": 5.4102442285306696,
+          "max_drawdown_pct": -12.327692727492268,
+          "sharpe_zero_cash": 0.6284425943439016,
+          "exposure_pct": 59.02361679456381,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -3.0534602924435106,
+            "2019": 9.82403025759031,
+            "2020": 6.8819700086599545,
+            "2021": 18.76285092781562,
+            "2022": -7.718972573664629
+          },
+          "turnover_units": 34.45447838959536
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 30.241357500333276,
+          "cagr_pct": 14.183418376404777,
+          "max_drawdown_pct": -8.139874927727575,
+          "sharpe_zero_cash": 1.3817313401782239,
+          "exposure_pct": 79.40357060059172,
+          "yearly_return_pct": {
+            "2023": 9.120320893615341,
+            "2024": 19.3557317589905
+          },
+          "turnover_units": 15.29473915933119
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 17.100629884337316,
+          "cagr_pct": 9.351451816399958,
+          "max_drawdown_pct": -8.426551440149133,
+          "sharpe_zero_cash": 1.0249269901271056,
+          "exposure_pct": 72.16991221579188,
+          "yearly_return_pct": {
+            "2025": 9.07004216689511,
+            "2026": 7.362780427969495
+          },
+          "turnover_units": 11.582881678683798
+        }
+      },
+      "blend_trend_pullback": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 19.233771230023144,
+          "cagr_pct": 3.4366036553769685,
+          "max_drawdown_pct": -20.020042875550757,
+          "sharpe_zero_cash": 0.38999519991586556,
+          "exposure_pct": 48.208841463414636,
+          "yearly_return_pct": {
+            "2017": 3.6864247630322033,
+            "2018": -6.841399350120225,
+            "2019": 6.786845938164343,
+            "2020": 0.2836553710902079,
+            "2021": 27.827609165211786,
+            "2022": -9.82589445529154
+          },
+          "turnover_units": 119.5
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 36.0308036273181,
+          "cagr_pct": 16.70375813158531,
+          "max_drawdown_pct": -6.055240344767299,
+          "sharpe_zero_cash": 1.757719752322911,
+          "exposure_pct": 63.047808764940235,
+          "yearly_return_pct": {
+            "2023": 9.03410011118513,
+            "2024": 24.75987190117941
+          },
+          "turnover_units": 62.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 13.164920443621098,
+          "cagr_pct": 7.254761775232987,
+          "max_drawdown_pct": -8.505144578199275,
+          "sharpe_zero_cash": 0.8504876943925734,
+          "exposure_pct": 58.539325842696634,
+          "yearly_return_pct": {
+            "2025": 8.091754748081502,
+            "2026": 4.693388230548146
+          },
+          "turnover_units": 51.0
+        }
+      },
+      "orb15": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": 2.2759427559043033,
+          "cagr_pct": 0.43719001467392715,
+          "max_drawdown_pct": -19.839253735458804,
+          "sharpe_zero_cash": 0.09491638217147691,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -0.2778651350127226,
+            "2018": 0.0541797757474205,
+            "2019": 0.4605095546387661,
+            "2020": -7.341728475135023,
+            "2021": 7.496022024861926,
+            "2022": 2.4412156974401356
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 46.55172413793103
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -0.4891400126799006,
+          "cagr_pct": -0.24831439751815676,
+          "max_drawdown_pct": -7.1403958713850635,
+          "sharpe_zero_cash": -0.016695603413622643,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": 2.9171562657710703,
+            "2024": -3.309745820856802
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 42.0
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": 5.148909636888299,
+          "cagr_pct": 2.8972145219534395,
+          "max_drawdown_pct": -10.397927195184042,
+          "sharpe_zero_cash": 0.4003512161897809,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": 9.868057261952167,
+            "2026": -4.295286312210256
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 46.45161290322581
+        }
+      },
+      "orb15_vwap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": 2.2759427559043033,
+          "cagr_pct": 0.43719001467392715,
+          "max_drawdown_pct": -19.839253735458804,
+          "sharpe_zero_cash": 0.09491638217147691,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -0.2778651350127226,
+            "2018": 0.0541797757474205,
+            "2019": 0.4605095546387661,
+            "2020": -7.341728475135023,
+            "2021": 7.496022024861926,
+            "2022": 2.4412156974401356
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 46.55172413793103
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -0.4891400126799006,
+          "cagr_pct": -0.24831439751815676,
+          "max_drawdown_pct": -7.1403958713850635,
+          "sharpe_zero_cash": -0.016695603413622643,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": 2.9171562657710703,
+            "2024": -3.309745820856802
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 42.0
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": 5.148909636888299,
+          "cagr_pct": 2.8972145219534395,
+          "max_drawdown_pct": -10.397927195184042,
+          "sharpe_zero_cash": 0.4003512161897809,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": 9.868057261952167,
+            "2026": -4.295286312210256
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 46.45161290322581
+        }
+      },
+      "vwap_pullback": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -23.688736510781737,
+          "cagr_pct": -5.105670774726767,
+          "max_drawdown_pct": -25.78401304284441,
+          "sharpe_zero_cash": -0.8592582643788363,
+          "exposure_pct": 80.07692307692308,
+          "yearly_return_pct": {
+            "2017": -0.14383697234927606,
+            "2018": 0.8552158530781284,
+            "2019": -2.50772028303623,
+            "2020": -11.571636987466471,
+            "2021": -1.4066143797626052,
+            "2022": -10.853188330502695
+          },
+          "turnover_units": 2082.0,
+          "trades": 1041,
+          "win_rate_pct": 23.34293948126801
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -6.797958833852413,
+          "cagr_pct": -3.5066469593227345,
+          "max_drawdown_pct": -10.724064867005756,
+          "sharpe_zero_cash": -0.8605080241990752,
+          "exposure_pct": 78.67203219315896,
+          "yearly_return_pct": {
+            "2023": -3.3384775804406686,
+            "2024": -3.5789641698335983
+          },
+          "turnover_units": 782.0,
+          "trades": 391,
+          "win_rate_pct": 24.04092071611253
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -12.57466447724368,
+          "cagr_pct": -7.3595928776098996,
+          "max_drawdown_pct": -13.922577414108716,
+          "sharpe_zero_cash": -1.5204277333349598,
+          "exposure_pct": 76.97516930022573,
+          "yearly_return_pct": {
+            "2025": -7.636264962780793,
+            "2026": -5.346686675753121
+          },
+          "turnover_units": 682.0,
+          "trades": 341,
+          "win_rate_pct": 25.513196480938415
+        }
+      },
+      "orb15_vwap_gap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": 10.841328930240923,
+          "cagr_pct": 2.0152873717657283,
+          "max_drawdown_pct": -8.354776292226429,
+          "sharpe_zero_cash": 0.35871402667959745,
+          "exposure_pct": 46.38461538461539,
+          "yearly_return_pct": {
+            "2017": -0.17948788584610798,
+            "2018": 5.2694925203706555,
+            "2019": 6.673764005896077,
+            "2020": -2.348666695764934,
+            "2021": 4.887406585130627,
+            "2022": -3.457118511917656
+          },
+          "turnover_units": 1206.0,
+          "trades": 603,
+          "win_rate_pct": 49.4195688225539
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": 4.348846653858618,
+          "cagr_pct": 2.1819111882791287,
+          "max_drawdown_pct": -5.4062691253691675,
+          "sharpe_zero_cash": 0.4961524956242456,
+          "exposure_pct": 40.24144869215292,
+          "yearly_return_pct": {
+            "2023": 5.124609085514442,
+            "2024": -0.7379456041779919
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 46.0
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": 5.051167994426442,
+          "cagr_pct": 2.842794044223429,
+          "max_drawdown_pct": -8.291701425580932,
+          "sharpe_zero_cash": 0.4155063098701109,
+          "exposure_pct": 45.146726862302486,
+          "yearly_return_pct": {
+            "2025": 8.086606712234246,
+            "2026": -2.8083393587229666
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 47.0
+        }
+      }
+    },
+    "5.0": {
+      "cash": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0,
+            "2022": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2023": 0.0,
+            "2024": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2025": 0.0,
+            "2026": 0.0
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "buy_hold": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 64.14435389988344,
+          "cagr_pct": 9.986436257290343,
+          "max_drawdown_pct": -32.04936181297212,
+          "sharpe_zero_cash": 0.5809466781129866,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.837860780984717,
+            "2019": 34.024329126611775,
+            "2020": 18.166366386783018,
+            "2021": 28.60101838267035,
+            "2022": -17.992081068384678
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 57.66775777414048,
+          "cagr_pct": 25.679763814842072,
+          "max_drawdown_pct": -9.5851280888688,
+          "sharpe_zero_cash": 1.819372168285046,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2023": 24.708128750681936,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 34.48556253352011,
+          "cagr_pct": 18.26820799510336,
+          "max_drawdown_pct": -19.765561169192758,
+          "sharpe_zero_cash": 1.0566798552647025,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2025": 17.707306101970623,
+            "2026": 14.254218354988414
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "trend_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 34.542879742503565,
+          "cagr_pct": 5.8645819561103485,
+          "max_drawdown_pct": -20.086210225030175,
+          "sharpe_zero_cash": 0.49741931063387,
+          "exposure_pct": 74.6189024390244,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.073531244891061,
+            "2019": 15.023893614081029,
+            "2020": 6.4048898724831105,
+            "2021": 28.60101838267035,
+            "2022": -13.727995100069679
+          },
+          "turnover_units": 35.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 41.302811255785365,
+          "cagr_pct": 18.95275538444132,
+          "max_drawdown_pct": -9.100025526018307,
+          "sharpe_zero_cash": 1.4451482106682327,
+          "exposure_pct": 96.61354581673307,
+          "yearly_return_pct": {
+            "2023": 11.764189633259004,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 9.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 23.230608999363,
+          "cagr_pct": 12.557185937682647,
+          "max_drawdown_pct": -11.141883102089356,
+          "sharpe_zero_cash": 1.0937004753374393,
+          "exposure_pct": 87.86516853932585,
+          "yearly_return_pct": {
+            "2025": 10.716000808839144,
+            "2026": 11.303341973244962
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "dual_50_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 32.82984671983791,
+          "cagr_pct": 5.604345807687339,
+          "max_drawdown_pct": -19.52127531907041,
+          "sharpe_zero_cash": 0.5060860156068336,
+          "exposure_pct": 68.4451219512195,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.073531244891061,
+            "2019": 13.693433288599843,
+            "2020": 1.4862877369359984,
+            "2021": 28.60101838267035,
+            "2022": -9.653413975889213
+          },
+          "turnover_units": 25.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 41.62490650863899,
+          "cagr_pct": 19.08879285807501,
+          "max_drawdown_pct": -9.100025526018317,
+          "sharpe_zero_cash": 1.480766666931992,
+          "exposure_pct": 95.0199203187251,
+          "yearly_return_pct": {
+            "2023": 12.018952539955286,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 7.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 16.106185126382865,
+          "cagr_pct": 8.824599588791514,
+          "max_drawdown_pct": -10.145147760082384,
+          "sharpe_zero_cash": 0.8235546963412659,
+          "exposure_pct": 80.67415730337079,
+          "yearly_return_pct": {
+            "2025": 4.315093390719893,
+            "2026": 11.303341973244962
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "channel_20_10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 54.90416202641137,
+          "cagr_pct": 8.769221389819881,
+          "max_drawdown_pct": -8.56211751385949,
+          "sharpe_zero_cash": 0.8273984036521294,
+          "exposure_pct": 58.00304878048781,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -0.6001343275596982,
+            "2019": 13.546829557448635,
+            "2020": 24.91686571348668,
+            "2021": 5.935169032129894,
+            "2022": -1.6821756064394178
+          },
+          "turnover_units": 45.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 24.9670561062427,
+          "cagr_pct": 11.838308344629311,
+          "max_drawdown_pct": -6.356658072665622,
+          "sharpe_zero_cash": 1.4233925395009637,
+          "exposure_pct": 60.1593625498008,
+          "yearly_return_pct": {
+            "2023": 15.995593364504245,
+            "2024": 7.734313417878269
+          },
+          "turnover_units": 20.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 16.553987807711266,
+          "cagr_pct": 9.062084612362531,
+          "max_drawdown_pct": -8.028103578920708,
+          "sharpe_zero_cash": 1.0379434356413197,
+          "exposure_pct": 60.0,
+          "yearly_return_pct": {
+            "2025": 7.307063497570554,
+            "2026": 8.617255946389712
+          },
+          "turnover_units": 17.0
+        }
+      },
+      "trend_pullback_rsi2": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": -5.232283575281061,
+          "cagr_pct": -1.0269185151467908,
+          "max_drawdown_pct": -25.91031415871011,
+          "sharpe_zero_cash": -0.07762995247751163,
+          "exposure_pct": 21.798780487804876,
+          "yearly_return_pct": {
+            "2017": 1.415583809688803,
+            "2018": -9.698351855952026,
+            "2019": -3.197156881332708,
+            "2020": -7.329502252243958,
+            "2021": 23.86362522300225,
+            "2022": -6.870633543937899
+          },
+          "turnover_units": 204.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 23.987935864178866,
+          "cagr_pct": 11.397573192491684,
+          "max_drawdown_pct": -5.613224543082584,
+          "sharpe_zero_cash": 1.4803008844825158,
+          "exposure_pct": 29.482071713147413,
+          "yearly_return_pct": {
+            "2023": 3.4000950691823073,
+            "2024": 19.91085286838652
+          },
+          "turnover_units": 115.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": -0.557469468206051,
+          "cagr_pct": -0.31607323204599913,
+          "max_drawdown_pct": -7.946459268352168,
+          "sharpe_zero_cash": -0.004170438281862815,
+          "exposure_pct": 29.213483146067414,
+          "yearly_return_pct": {
+            "2025": 3.4067571254633666,
+            "2026": -3.8336243238529466
+          },
+          "turnover_units": 96.0
+        }
+      },
+      "trend_vol10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 29.76219041095749,
+          "cagr_pct": 5.131467675172319,
+          "max_drawdown_pct": -12.619955592344267,
+          "sharpe_zero_cash": 0.5990383023423457,
+          "exposure_pct": 59.02361679456381,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -3.3579376733234634,
+            "2019": 9.501462101628967,
+            "2020": 6.625767264391813,
+            "2021": 18.54035786230217,
+            "2022": -8.034511288559598
+          },
+          "turnover_units": 34.45447838959536
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 29.447363066851693,
+          "cagr_pct": 13.833449693536837,
+          "max_drawdown_pct": -8.218468534126044,
+          "sharpe_zero_cash": 1.3508862769380627,
+          "exposure_pct": 79.40357060059172,
+          "yearly_return_pct": {
+            "2023": 8.67892966664401,
+            "2024": 19.109898730058994
+          },
+          "turnover_units": 15.29473915933119
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 16.55979206164662,
+          "cagr_pct": 9.065160205631573,
+          "max_drawdown_pct": -8.533638937504872,
+          "sharpe_zero_cash": 0.9963492974260351,
+          "exposure_pct": 72.16991221579188,
+          "yearly_return_pct": {
+            "2025": 8.798290078818582,
+            "2026": 7.133845556952556
+          },
+          "turnover_units": 11.582881678683798
+        }
+      },
+      "blend_trend_pullback": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 13.671440014168645,
+          "cagr_pct": 2.4918030836087457,
+          "max_drawdown_pct": -21.376095609847134,
+          "sharpe_zero_cash": 0.2976983574162698,
+          "exposure_pct": 48.208841463414636,
+          "yearly_return_pct": {
+            "2017": 3.437990524187451,
+            "2018": -7.786935400467687,
+            "2019": 5.599172728894275,
+            "2020": -0.4164211847195842,
+            "2021": 26.35601655236288,
+            "2022": -10.31193394026182
+          },
+          "turnover_units": 119.5
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 32.701130150448954,
+          "cagr_pct": 15.260919784788785,
+          "max_drawdown_pct": -6.44199846247322,
+          "sharpe_zero_cash": 1.6201213553609397,
+          "exposure_pct": 63.047808764940235,
+          "yearly_return_pct": {
+            "2023": 7.6258233065849,
+            "2024": 23.29859700346626
+          },
+          "turnover_units": 62.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 10.881306118433432,
+          "cagr_pct": 6.023691474922943,
+          "max_drawdown_pct": -8.688529344020123,
+          "sharpe_zero_cash": 0.7178707016343704,
+          "exposure_pct": 58.539325842696634,
+          "yearly_return_pct": {
+            "2025": 7.102833737932701,
+            "2026": 3.527892072161376
+          },
+          "turnover_units": 51.0
+        }
+      },
+      "orb15": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -51.31970126005162,
+          "cagr_pct": -13.024962025117615,
+          "max_drawdown_pct": -53.493159653396425,
+          "sharpe_zero_cash": -1.7534679477736057,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -2.9537504641391044,
+            "2018": -13.571989238439041,
+            "2019": -13.012476907226578,
+            "2020": -20.343932519123044,
+            "2021": -6.472657370962088,
+            "2022": -10.441762250127319
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 40.94827586206897
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -24.791312099342488,
+          "cagr_pct": -13.4508805016337,
+          "max_drawdown_pct": -26.75632507899707,
+          "sharpe_zero_cash": -2.544771716674595,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": -10.456517783990439,
+            "2024": -16.00875235203789
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 37.142857142857146
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -17.946004942778938,
+          "cagr_pct": -10.641527035135812,
+          "max_drawdown_pct": -26.167387439482003,
+          "sharpe_zero_cash": -1.3867894771800102,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": -4.48530099383202,
+            "2026": -14.0928088440897
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 40.0
+        }
+      },
+      "orb15_vwap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -51.31970126005162,
+          "cagr_pct": -13.024962025117615,
+          "max_drawdown_pct": -53.493159653396425,
+          "sharpe_zero_cash": -1.7534679477736057,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -2.9537504641391044,
+            "2018": -13.571989238439041,
+            "2019": -13.012476907226578,
+            "2020": -20.343932519123044,
+            "2021": -6.472657370962088,
+            "2022": -10.441762250127319
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 40.94827586206897
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -24.791312099342488,
+          "cagr_pct": -13.4508805016337,
+          "max_drawdown_pct": -26.75632507899707,
+          "sharpe_zero_cash": -2.544771716674595,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": -10.456517783990439,
+            "2024": -16.00875235203789
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 37.142857142857146
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -17.946004942778938,
+          "cagr_pct": -10.641527035135812,
+          "max_drawdown_pct": -26.167387439482003,
+          "sharpe_zero_cash": -1.3867894771800102,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": -4.48530099383202,
+            "2026": -14.0928088440897
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 40.0
+        }
+      },
+      "vwap_pullback": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -66.81757187613653,
+          "cagr_pct": -19.252350367575634,
+          "max_drawdown_pct": -66.86906627727835,
+          "sharpe_zero_cash": -3.5761266558309184,
+          "exposure_pct": 80.07692307692308,
+          "yearly_return_pct": {
+            "2017": -3.4432636191027655,
+            "2018": -13.781397057799794,
+            "2019": -17.187983670453654,
+            "2020": -24.8870673344735,
+            "2021": -15.917020708624252,
+            "2022": -23.79061911788153
+          },
+          "turnover_units": 2082.0,
+          "trades": 1041,
+          "win_rate_pct": 20.941402497598464
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -31.83238558930903,
+          "cagr_pct": -17.658824511288152,
+          "max_drawdown_pct": -32.81476294007537,
+          "sharpe_zero_cash": -4.719527240498852,
+          "exposure_pct": 78.67203219315896,
+          "yearly_return_pct": {
+            "2023": -17.234161271997305,
+            "2024": -17.63798270115594
+          },
+          "turnover_units": 782.0,
+          "trades": 391,
+          "win_rate_pct": 22.506393861892583
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -33.44790046431899,
+          "cagr_pct": -20.67578422902828,
+          "max_drawdown_pct": -33.94770625769839,
+          "sharpe_zero_cash": -4.606281372420316,
+          "exposure_pct": 76.97516930022573,
+          "yearly_return_pct": {
+            "2025": -20.406342639102203,
+            "2026": -16.385172207985164
+          },
+          "turnover_units": 682.0,
+          "trades": 341,
+          "win_rate_pct": 22.87390029325513
+        }
+      },
+      "orb15_vwap_gap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -31.57764082730411,
+          "cagr_pct": -7.091858059123268,
+          "max_drawdown_pct": -33.94500558137332,
+          "sharpe_zero_cash": -1.1772921066870425,
+          "exposure_pct": 46.38461538461539,
+          "yearly_return_pct": {
+            "2017": -1.2912403013830343,
+            "2018": -4.289917549307997,
+            "2019": -1.6851352396711206,
+            "2020": -12.345469376115926,
+            "2021": -3.8713452830491324,
+            "2022": -12.574476830197145
+          },
+          "turnover_units": 1206.0,
+          "trades": 603,
+          "win_rate_pct": 43.946932006633496
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -11.079779908273302,
+          "cagr_pct": -5.780430995019092,
+          "max_drawdown_pct": -14.476568553810365,
+          "sharpe_zero_cash": -1.278810613308563,
+          "exposure_pct": 40.24144869215292,
+          "yearly_return_pct": {
+            "2023": -3.4224424280691057,
+            "2024": -7.928692413349781
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 39.5
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -10.481301149944521,
+          "cagr_pct": -6.104192175016909,
+          "max_drawdown_pct": -18.577856068713817,
+          "sharpe_zero_cash": -0.8173398864685275,
+          "exposure_pct": 45.146726862302486,
+          "yearly_return_pct": {
+            "2025": -1.097668705631083,
+            "2026": -9.487776801119418
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 39.0
+        }
+      }
+    },
+    "10.0": {
+      "cash": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0,
+            "2022": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2023": 0.0,
+            "2024": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2025": 0.0,
+            "2026": 0.0
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "buy_hold": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 64.14435389988344,
+          "cagr_pct": 9.986436257290343,
+          "max_drawdown_pct": -32.04936181297212,
+          "sharpe_zero_cash": 0.5809466781129866,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.837860780984717,
+            "2019": 34.024329126611775,
+            "2020": 18.166366386783018,
+            "2021": 28.60101838267035,
+            "2022": -17.992081068384678
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 57.66775777414048,
+          "cagr_pct": 25.679763814842072,
+          "max_drawdown_pct": -9.5851280888688,
+          "sharpe_zero_cash": 1.819372168285046,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2023": 24.708128750681936,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 34.48556253352011,
+          "cagr_pct": 18.26820799510336,
+          "max_drawdown_pct": -19.765561169192758,
+          "sharpe_zero_cash": 1.0566798552647025,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2025": 17.707306101970623,
+            "2026": 14.254218354988414
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "trend_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 32.20494017201856,
+          "cagr_pct": 5.5087376775450725,
+          "max_drawdown_pct": -20.327490180091424,
+          "sharpe_zero_cash": 0.4718276811899601,
+          "exposure_pct": 74.6189024390244,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.495457542140615,
+            "2019": 14.73648681771149,
+            "2020": 6.083626582142054,
+            "2021": 28.60101838267035,
+            "2022": -14.372771685017916
+          },
+          "turnover_units": 35.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 40.668538250611185,
+          "cagr_pct": 18.684416881384536,
+          "max_drawdown_pct": -9.100025526018307,
+          "sharpe_zero_cash": 1.4270760812243952,
+          "exposure_pct": 96.61354581673307,
+          "yearly_return_pct": {
+            "2023": 11.262508118223646,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 9.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 22.862228655449535,
+          "cagr_pct": 12.366519849987,
+          "max_drawdown_pct": -11.319230939695702,
+          "sharpe_zero_cash": 1.0790397141154564,
+          "exposure_pct": 87.86516853932585,
+          "yearly_return_pct": {
+            "2025": 10.49502782384517,
+            "2026": 11.19254058320207
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "dual_50_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 31.177652130529943,
+          "cagr_pct": 5.35077038288192,
+          "max_drawdown_pct": -19.76469138099176,
+          "sharpe_zero_cash": 0.48640692092876503,
+          "exposure_pct": 68.4451219512195,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.495457542140615,
+            "2019": 13.522931867561304,
+            "2020": 1.179332170755254,
+            "2021": 28.60101838267035,
+            "2022": -9.96765652904924
+          },
+          "turnover_units": 25.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 41.13036946234205,
+          "cagr_pct": 18.879860829079664,
+          "max_drawdown_pct": -9.10002552601833,
+          "sharpe_zero_cash": 1.4664805323662884,
+          "exposure_pct": 95.0199203187251,
+          "yearly_return_pct": {
+            "2023": 11.627795904558047,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 7.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 15.758572802847448,
+          "cagr_pct": 8.63997493603501,
+          "max_drawdown_pct": -10.324895071034367,
+          "sharpe_zero_cash": 0.8081404213625202,
+          "exposure_pct": 80.67415730337079,
+          "yearly_return_pct": {
+            "2025": 4.106419545498707,
+            "2026": 11.19254058320207
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "channel_20_10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 51.46249808092045,
+          "cagr_pct": 8.30082755927577,
+          "max_drawdown_pct": -8.653404691607047,
+          "sharpe_zero_cash": 0.7879714994785912,
+          "exposure_pct": 58.00304878048781,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -0.9475455805378896,
+            "2019": 13.038952844533425,
+            "2020": 24.419600708484033,
+            "2021": 5.196221154253711,
+            "2022": -2.0252799263696386
+          },
+          "turnover_units": 45.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 23.724011002197564,
+          "cagr_pct": 11.278475374958985,
+          "max_drawdown_pct": -6.543662159143915,
+          "sharpe_zero_cash": 1.3612409250775552,
+          "exposure_pct": 60.1593625498008,
+          "yearly_return_pct": {
+            "2023": 15.590797203315043,
+            "2024": 7.036212220750615
+          },
+          "turnover_units": 20.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 15.567455031999721,
+          "cagr_pct": 8.538365584905684,
+          "max_drawdown_pct": -8.395560009256709,
+          "sharpe_zero_cash": 0.9825688786675114,
+          "exposure_pct": 60.0,
+          "yearly_return_pct": {
+            "2025": 6.718060255863811,
+            "2026": 8.292312243043899
+          },
+          "turnover_units": 17.0
+        }
+      },
+      "trend_pullback_rsi2": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": -14.423379782589606,
+          "cagr_pct": -2.9473863792682686,
+          "max_drawdown_pct": -29.640222380101477,
+          "sharpe_zero_cash": -0.30648569155069316,
+          "exposure_pct": 21.798780487804876,
+          "yearly_return_pct": {
+            "2017": 0.8088855805230999,
+            "2018": -11.57644105528709,
+            "2019": -5.633583326827729,
+            "2020": -8.665493110419398,
+            "2021": 20.32554967124076,
+            "2022": -7.42832562096607
+          },
+          "turnover_units": 204.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 17.06127613597277,
+          "cagr_pct": 8.228816278392959,
+          "max_drawdown_pct": -6.084510653927611,
+          "sharpe_zero_cash": 1.0937865276138128,
+          "exposure_pct": 29.482071713147413,
+          "yearly_return_pct": {
+            "2023": 0.5442859947177414,
+            "2024": 16.42757713961256
+          },
+          "turnover_units": 115.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": -5.219429161729982,
+          "cagr_pct": -2.9900380978067687,
+          "max_drawdown_pct": -10.028737393809262,
+          "sharpe_zero_cash": -0.36373589984540206,
+          "exposure_pct": 29.213483146067414,
+          "yearly_return_pct": {
+            "2025": 1.2579644669669543,
+            "2026": -6.396922615218081
+          },
+          "turnover_units": 96.0
+        }
+      },
+      "trend_vol10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 27.544631699820133,
+          "cagr_pct": 4.783975301650845,
+          "max_drawdown_pct": -12.984021330881257,
+          "sharpe_zero_cash": 0.5622630402367066,
+          "exposure_pct": 59.02361679456381,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -3.7372626104835938,
+            "2019": 9.09949785863866,
+            "2020": 6.306347824004788,
+            "2021": 18.26281871271245,
+            "2022": -8.42750934338613
+          },
+          "turnover_units": 34.45447838959536
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 28.46155165178985,
+          "cagr_pct": 13.397442887256016,
+          "max_drawdown_pct": -8.316631149816667,
+          "sharpe_zero_cash": 1.3122744891450546,
+          "exposure_pct": 79.40357060059172,
+          "yearly_return_pct": {
+            "2023": 8.129608340480043,
+            "2024": 18.80330801466361
+          },
+          "turnover_units": 15.29473915933119
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 15.88718969437446,
+          "cagr_pct": 8.708314221751156,
+          "max_drawdown_pct": -8.667345038389417,
+          "sharpe_zero_cash": 0.9605813356485432,
+          "exposure_pct": 72.16991221579188,
+          "yearly_return_pct": {
+            "2025": 8.459518159482027,
+            "2026": 6.848335361374658
+          },
+          "turnover_units": 11.582881678683798
+        }
+      },
+      "blend_trend_pullback": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 7.080462498319173,
+          "cagr_pct": 1.3226499623233634,
+          "max_drawdown_pct": -23.067704988550332,
+          "sharpe_zero_cash": 0.18217519434267726,
+          "exposure_pct": 48.208841463414636,
+          "yearly_return_pct": {
+            "2017": 3.1282150675109754,
+            "2018": -8.955663293896144,
+            "2019": 4.13280047785336,
+            "2020": -1.284854077448816,
+            "2021": 24.539921833220934,
+            "2022": -10.915966584378156
+          },
+          "turnover_units": 119.5
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 28.652504260907886,
+          "cagr_pct": 13.482027596499059,
+          "max_drawdown_pct": -6.93286540330138,
+          "sharpe_zero_cash": 1.447548622628803,
+          "exposure_pct": 63.047808764940235,
+          "yearly_return_pct": {
+            "2023": 5.890629072345699,
+            "2024": 21.495646392855928
+          },
+          "turnover_units": 62.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 8.090838159554337,
+          "cagr_pct": 4.504352685682811,
+          "max_drawdown_pct": -8.917305337237568,
+          "sharpe_zero_cash": 0.5516495180989796,
+          "exposure_pct": 58.539325842696634,
+          "yearly_return_pct": {
+            "2025": 5.879110440571256,
+            "2026": 2.0889179270398017
+          },
+          "turnover_units": 51.0
+        }
+      },
+      "orb15": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -80.7545655037735,
+          "cagr_pct": -27.34430169643891,
+          "max_drawdown_pct": -80.983682262918,
+          "sharpe_zero_cash": -4.022881790041993,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -6.197862427106282,
+            "2018": -28.02551255735134,
+            "2019": -27.341920825260136,
+            "2020": -34.061789432657754,
+            "2021": -21.40927211954693,
+            "2022": -24.291607709972496
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 32.543103448275865
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -47.00134421360199,
+          "cagr_pct": -27.524598401862576,
+          "max_drawdown_pct": -47.54389439686734,
+          "sharpe_zero_cash": -5.587340492090816,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": -24.756897325534744,
+            "2024": -29.563436510993657
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 31.142857142857146
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -39.81775796220225,
+          "cagr_pct": -25.088093135067723,
+          "max_drawdown_pct": -42.61611776255707,
+          "sharpe_zero_cash": -3.5878653363420905,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": -19.819523517711136,
+            "2026": -24.941526069514598
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 32.58064516129032
+        }
+      },
+      "orb15_vwap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -80.7545655037735,
+          "cagr_pct": -27.34430169643891,
+          "max_drawdown_pct": -80.983682262918,
+          "sharpe_zero_cash": -4.022881790041993,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -6.197862427106282,
+            "2018": -28.02551255735134,
+            "2019": -27.341920825260136,
+            "2020": -34.061789432657754,
+            "2021": -21.40927211954693,
+            "2022": -24.291607709972496
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 32.543103448275865
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -47.00134421360199,
+          "cagr_pct": -27.524598401862576,
+          "max_drawdown_pct": -47.54389439686734,
+          "sharpe_zero_cash": -5.587340492090816,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": -24.756897325534744,
+            "2024": -29.563436510993657
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 31.142857142857146
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -39.81775796220225,
+          "cagr_pct": -25.088093135067723,
+          "max_drawdown_pct": -42.61611776255707,
+          "sharpe_zero_cash": -3.5878653363420905,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": -19.819523517711136,
+            "2026": -24.941526069514598
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 32.58064516129032
+        }
+      },
+      "vwap_pullback": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -88.28324515815714,
+          "cagr_pct": -34.00790968760802,
+          "max_drawdown_pct": -88.28324515815714,
+          "sharpe_zero_cash": -6.860889007801269,
+          "exposure_pct": 80.07692307692308,
+          "yearly_return_pct": {
+            "2017": -7.414665641996132,
+            "2018": -29.127261627772917,
+            "2019": -32.46992483719199,
+            "2020": -38.7482371107034,
+            "2021": -31.08981128996877,
+            "2022": -37.354963680069666
+          },
+          "turnover_units": 2082.0,
+          "trades": 1041,
+          "win_rate_pct": 17.098943323727188
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -53.89278884436531,
+          "cagr_pct": -32.46691300394184,
+          "max_drawdown_pct": -54.25386670074415,
+          "sharpe_zero_cash": -9.222789754631481,
+          "exposure_pct": 78.67203219315896,
+          "yearly_return_pct": {
+            "2023": -31.829270442922073,
+            "2024": -32.365090625838114
+          },
+          "turnover_units": 782.0,
+          "trades": 391,
+          "win_rate_pct": 18.15856777493606
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -52.67754617854634,
+          "cagr_pct": -34.66251520319298,
+          "max_drawdown_pct": -52.84892506921719,
+          "sharpe_zero_cash": -8.243029330700569,
+          "exposure_pct": 76.97516930022573,
+          "yearly_return_pct": {
+            "2025": -33.91549513538116,
+            "2026": -28.390998890891638
+          },
+          "turnover_units": 682.0,
+          "trades": 341,
+          "win_rate_pct": 19.64809384164223
+        }
+      },
+      "orb15_vwap_gap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -62.561510436080184,
+          "cagr_pct": -17.34114268962268,
+          "max_drawdown_pct": -62.986869010446014,
+          "sharpe_zero_cash": -3.0409597572469904,
+          "exposure_pct": 46.38461538461539,
+          "yearly_return_pct": {
+            "2017": -2.6635352588758487,
+            "2018": -15.027848087193673,
+            "2019": -11.21877703558054,
+            "2020": -23.414847893451196,
+            "2021": -13.79851680310652,
+            "2022": -22.770060839471018
+          },
+          "turnover_units": 1206.0,
+          "trades": 603,
+          "win_rate_pct": 36.48424543946932
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -27.198289733979763,
+          "cagr_pct": -14.866604168183583,
+          "max_drawdown_pct": -28.73977637014582,
+          "sharpe_zero_cash": -3.3924665346055187,
+          "exposure_pct": 40.24144869215292,
+          "yearly_return_pct": {
+            "2023": -13.135769639942374,
+            "2024": -16.18908040254008
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 32.5
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -26.708296826638044,
+          "cagr_pct": -16.201431746847362,
+          "max_drawdown_pct": -30.609451000869914,
+          "sharpe_zero_cash": -2.3317317842014096,
+          "exposure_pct": 45.146726862302486,
+          "yearly_return_pct": {
+            "2025": -11.488477096378258,
+            "2026": -17.1952975510684
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 32.5
+        }
+      }
+    },
+    "25.0": {
+      "cash": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0,
+            "2022": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2023": 0.0,
+            "2024": 0.0
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 0.0,
+          "cagr_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "sharpe_zero_cash": 0.0,
+          "exposure_pct": 0.0,
+          "yearly_return_pct": {
+            "2025": 0.0,
+            "2026": 0.0
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "buy_hold": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 64.14435389988344,
+          "cagr_pct": 9.986436257290343,
+          "max_drawdown_pct": -32.04936181297212,
+          "sharpe_zero_cash": 0.5809466781129866,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -6.837860780984717,
+            "2019": 34.024329126611775,
+            "2020": 18.166366386783018,
+            "2021": 28.60101838267035,
+            "2022": -17.992081068384678
+          },
+          "turnover_units": 0.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 57.66775777414048,
+          "cagr_pct": 25.679763814842072,
+          "max_drawdown_pct": -9.5851280888688,
+          "sharpe_zero_cash": 1.819372168285046,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2023": 24.708128750681936,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 0.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 34.48556253352011,
+          "cagr_pct": 18.26820799510336,
+          "max_drawdown_pct": -19.765561169192758,
+          "sharpe_zero_cash": 1.0566798552647025,
+          "exposure_pct": 100.0,
+          "yearly_return_pct": {
+            "2025": 17.707306101970623,
+            "2026": 14.254218354988414
+          },
+          "turnover_units": 0.0
+        }
+      },
+      "trend_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 25.42545118197399,
+          "cagr_pct": 4.447307256425659,
+          "max_drawdown_pct": -21.537977451840273,
+          "sharpe_zero_cash": 0.3949411590823602,
+          "exposure_pct": 74.6189024390244,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -7.751146533544517,
+            "2019": 13.877711744441124,
+            "2020": 5.124682274719294,
+            "2021": 28.60101838267035,
+            "2022": -16.280218796016086
+          },
+          "turnover_units": 35.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 38.78087586893195,
+          "cagr_pct": 17.882228451774296,
+          "max_drawdown_pct": -9.223889872408886,
+          "sharpe_zero_cash": 1.3722931084069037,
+          "exposure_pct": 96.61354581673307,
+          "yearly_return_pct": {
+            "2023": 9.769451791073536,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 9.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 21.762589129923416,
+          "cagr_pct": 11.795889155607675,
+          "max_drawdown_pct": -11.849681902180997,
+          "sharpe_zero_cash": 1.0346204542988178,
+          "exposure_pct": 87.86516853932585,
+          "yearly_return_pct": {
+            "2025": 9.83409316484214,
+            "2026": 10.860467475411939
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "dual_50_200": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 26.338596979306693,
+          "cagr_pct": 4.592935245324092,
+          "max_drawdown_pct": -21.58537227215831,
+          "sharpe_zero_cash": 0.4272241368801369,
+          "exposure_pct": 68.4451219512195,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -7.751146533544517,
+            "2019": 13.01245054772464,
+            "2020": 0.2631034654328568,
+            "2021": 28.60101838267035,
+            "2022": -10.904769668578806
+          },
+          "turnover_units": 25.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 39.65562893195877,
+          "cagr_pct": 18.25463815401893,
+          "max_drawdown_pct": -9.223889872408852,
+          "sharpe_zero_cash": 1.4231356392254957,
+          "exposure_pct": 95.0199203187251,
+          "yearly_return_pct": {
+            "2023": 10.461342252059524,
+            "2024": 26.42941511002228
+          },
+          "turnover_units": 7.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 14.720935097361053,
+          "cagr_pct": 8.087427236614332,
+          "max_drawdown_pct": -10.862519210463617,
+          "sharpe_zero_cash": 0.7615758759015104,
+          "exposure_pct": 80.67415730337079,
+          "yearly_return_pct": {
+            "2025": 3.482276152953556,
+            "2026": 10.860467475411939
+          },
+          "turnover_units": 6.0
+        }
+      },
+      "channel_20_10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 41.58000834341102,
+          "cagr_pct": 6.90632983127335,
+          "max_drawdown_pct": -8.926992679110546,
+          "sharpe_zero_cash": 0.6687944875270561,
+          "exposure_pct": 58.00304878048781,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -1.983542002808647,
+            "2019": 11.527416022756821,
+            "2020": 22.93818246555437,
+            "2021": 3.0079953228861367,
+            "2022": -3.0484422909333952
+          },
+          "turnover_units": 45.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 20.0649682816598,
+          "cagr_pct": 9.614083007923258,
+          "max_drawdown_pct": -7.102994207794245,
+          "sharpe_zero_cash": 1.172257423927194,
+          "exposure_pct": 60.1593625498008,
+          "yearly_return_pct": {
+            "2023": 14.383665205024698,
+            "2024": 4.966883222750251
+          },
+          "turnover_units": 20.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 12.654799354604851,
+          "cagr_pct": 6.980702937543559,
+          "max_drawdown_pct": -9.490233332209087,
+          "sharpe_zero_cash": 0.8151004248595103,
+          "exposure_pct": 60.0,
+          "yearly_return_pct": {
+            "2025": 4.968641083575309,
+            "2026": 7.322337596911344
+          },
+          "turnover_units": 17.0
+        }
+      },
+      "trend_pullback_rsi2": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": -37.00498603969494,
+          "cagr_pct": -8.493467028276324,
+          "max_drawdown_pct": -41.31955124833012,
+          "sharpe_zero_cash": -0.985936963177012,
+          "exposure_pct": 21.798780487804876,
+          "yearly_return_pct": {
+            "2017": -0.9913035617307164,
+            "2018": -16.98482389374224,
+            "2019": -12.587754208160318,
+            "2020": -12.562829545174548,
+            "2021": 10.296639266649589,
+            "2022": -9.083085703697114
+          },
+          "turnover_units": 204.0
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": -1.4992003531262954,
+          "cagr_pct": -0.7554173197087843,
+          "max_drawdown_pct": -10.230101298595972,
+          "sharpe_zero_cash": -0.06206991573099861,
+          "exposure_pct": 29.482071713147413,
+          "yearly_return_pct": {
+            "2023": -7.566325278107467,
+            "2024": 6.5637603862828575
+          },
+          "turnover_units": 115.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": -17.946308367971596,
+          "cagr_pct": -10.596515905242931,
+          "max_drawdown_pct": -21.270047519236577,
+          "sharpe_zero_cash": -1.421643507677743,
+          "exposure_pct": 29.213483146067414,
+          "yearly_return_pct": {
+            "2025": -4.930190287431946,
+            "2026": -13.691116159685512
+          },
+          "turnover_units": 96.0
+        }
+      },
+      "trend_vol10": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": 21.114417684210185,
+          "cagr_pct": 3.7479895996214374,
+          "max_drawdown_pct": -14.504542652940334,
+          "sharpe_zero_cash": 0.4518793966867321,
+          "exposure_pct": 59.02361679456381,
+          "yearly_return_pct": {
+            "2017": 5.489388376466309,
+            "2018": -4.8668063535347255,
+            "2019": 7.90186880937318,
+            "2020": 5.3536245980438935,
+            "2021": 17.43403517948119,
+            "2022": -9.597058323987294
+          },
+          "turnover_units": 34.45447838959536
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 25.54813977094681,
+          "cagr_pct": 12.099060898280612,
+          "max_drawdown_pct": -8.6105903944391,
+          "sharpe_zero_cash": 1.1961226045235807,
+          "exposure_pct": 79.40357060059172,
+          "yearly_return_pct": {
+            "2023": 6.49764169153304,
+            "2024": 17.888187735267238
+          },
+          "turnover_units": 15.29473915933119
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 13.892145023245384,
+          "cagr_pct": 7.644533255131147,
+          "max_drawdown_pct": -9.067443334040027,
+          "sharpe_zero_cash": 0.8530109178764491,
+          "exposure_pct": 72.16991221579188,
+          "yearly_return_pct": {
+            "2025": 7.449295307146908,
+            "2026": 5.996176799188513
+          },
+          "turnover_units": 11.582881678683798
+        }
+      },
+      "blend_trend_pullback": {
+        "development": {
+          "intervals": 1312,
+          "return_pct": -10.49540544491755,
+          "cagr_pct": -2.107193444228095,
+          "max_drawdown_pct": -29.706056474892108,
+          "sharpe_zero_cash": -0.1645518683735001,
+          "exposure_pct": 48.208841463414636,
+          "yearly_return_pct": {
+            "2017": 2.2039838998590744,
+            "2018": -12.37559537388071,
+            "2019": -0.14743765773971296,
+            "2020": -3.846314397271433,
+            "2021": 19.24417000890084,
+            "2022": -12.70484908547962
+          },
+          "turnover_units": 119.5
+        },
+        "selection": {
+          "intervals": 502,
+          "return_pct": 17.227255877513237,
+          "cagr_pct": 8.305822942690222,
+          "max_drawdown_pct": -8.390792496995491,
+          "sharpe_zero_cash": 0.9278362829900545,
+          "exposure_pct": 63.047808764940235,
+          "yearly_return_pct": {
+            "2023": 0.8485664235504009,
+            "2024": 16.240874843152888
+          },
+          "turnover_units": 62.0
+        },
+        "evaluation": {
+          "intervals": 445,
+          "return_pct": 0.12978381310184695,
+          "cagr_pct": 0.0734748807233121,
+          "max_drawdown_pct": -9.600609505583414,
+          "sharpe_zero_cash": 0.05184746111906254,
+          "exposure_pct": 58.539325842696634,
+          "yearly_return_pct": {
+            "2025": 2.2893547041255458,
+            "2026": -2.1112371832535337
+          },
+          "turnover_units": 51.0
+        }
+      },
+      "orb15": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -98.8108190230047,
+          "cagr_pct": -57.64602083496294,
+          "max_drawdown_pct": -98.81146120938368,
+          "sharpe_zero_cash": -10.105962908012629,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -15.293925842147138,
+            "2018": -58.43286084762123,
+            "2019": -57.65870564940083,
+            "2020": -62.59829628605402,
+            "2021": -53.369630723810666,
+            "2022": -54.26392477271153
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 16.594827586206897
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -81.45383297734492,
+          "cagr_pct": -57.442712072199065,
+          "max_drawdown_pct": -81.45383297734492,
+          "sharpe_zero_cash": -12.972294042912885,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": -55.35588283984839,
+            "2024": -58.45775837357361
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 12.285714285714286
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -76.25494487532734,
+          "cagr_pct": -55.863734858659,
+          "max_drawdown_pct": -76.25494487532734,
+          "sharpe_zero_cash": -9.522907839747646,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": -52.56888994913622,
+            "2026": -49.937804324610745
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 9.67741935483871
+        }
+      },
+      "orb15_vwap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -98.8108190230047,
+          "cagr_pct": -57.64602083496294,
+          "max_drawdown_pct": -98.81146120938368,
+          "sharpe_zero_cash": -10.105962908012629,
+          "exposure_pct": 71.38461538461539,
+          "yearly_return_pct": {
+            "2017": -15.293925842147138,
+            "2018": -58.43286084762123,
+            "2019": -57.65870564940083,
+            "2020": -62.59829628605402,
+            "2021": -53.369630723810666,
+            "2022": -54.26392477271153
+          },
+          "turnover_units": 1856.0,
+          "trades": 928,
+          "win_rate_pct": 16.594827586206897
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -81.45383297734492,
+          "cagr_pct": -57.442712072199065,
+          "max_drawdown_pct": -81.45383297734492,
+          "sharpe_zero_cash": -12.972294042912885,
+          "exposure_pct": 70.4225352112676,
+          "yearly_return_pct": {
+            "2023": -55.35588283984839,
+            "2024": -58.45775837357361
+          },
+          "turnover_units": 700.0,
+          "trades": 350,
+          "win_rate_pct": 12.285714285714286
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -76.25494487532734,
+          "cagr_pct": -55.863734858659,
+          "max_drawdown_pct": -76.25494487532734,
+          "sharpe_zero_cash": -9.522907839747646,
+          "exposure_pct": 69.97742663656885,
+          "yearly_return_pct": {
+            "2025": -52.56888994913622,
+            "2026": -49.937804324610745
+          },
+          "turnover_units": 620.0,
+          "trades": 310,
+          "win_rate_pct": 9.67741935483871
+        }
+      },
+      "vwap_pullback": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -99.48417632891801,
+          "cagr_pct": -63.97722471829348,
+          "max_drawdown_pct": -99.48417632891801,
+          "sharpe_zero_cash": -15.217625501646474,
+          "exposure_pct": 80.07692307692308,
+          "yearly_return_pct": {
+            "2017": -18.375428060978717,
+            "2018": -60.634730592783484,
+            "2019": -63.38085952135939,
+            "2020": -66.78536334514746,
+            "2021": -62.067733694191794,
+            "2022": -65.20469240503786
+          },
+          "turnover_units": 2082.0,
+          "trades": 1041,
+          "win_rate_pct": 8.93371757925072
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -85.73276642486832,
+          "cagr_pct": -62.74242949758755,
+          "max_drawdown_pct": -85.73276642486832,
+          "sharpe_zero_cash": -19.045851822417223,
+          "exposure_pct": 78.67203219315896,
+          "yearly_return_pct": {
+            "2023": -61.90765299920757,
+            "2024": -62.54566941009205
+          },
+          "turnover_units": 782.0,
+          "trades": 391,
+          "win_rate_pct": 8.695652173913043
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -82.98693515979234,
+          "cagr_pct": -63.48833713290335,
+          "max_drawdown_pct": -82.99761731945361,
+          "sharpe_zero_cash": -16.69392764026132,
+          "exposure_pct": 76.97516930022573,
+          "yearly_return_pct": {
+            "2025": -62.17642875193978,
+            "2026": -55.01994053224104
+          },
+          "turnover_units": 682.0,
+          "trades": 341,
+          "win_rate_pct": 7.038123167155426
+        }
+      },
+      "orb15_vwap_gap": {
+        "development": {
+          "intervals": 1300,
+          "return_pct": -93.8669423370519,
+          "cagr_pct": -41.79023331982297,
+          "max_drawdown_pct": -93.87025433595599,
+          "sharpe_zero_cash": -7.620938519061401,
+          "exposure_pct": 46.38461538461539,
+          "yearly_return_pct": {
+            "2017": -6.667018151980342,
+            "2018": -40.53889400815277,
+            "2019": -34.62276036800789,
+            "2020": -48.91954672382058,
+            "2021": -37.841577901099,
+            "2022": -46.76127815571065
+          },
+          "turnover_units": 1206.0,
+          "trades": 603,
+          "win_rate_pct": 18.24212271973466
+        },
+        "selection": {
+          "intervals": 497,
+          "return_pct": -60.04565218982528,
+          "cagr_pct": -37.19761514157243,
+          "max_drawdown_pct": -60.155441102721,
+          "sharpe_zero_cash": -8.0348483813713,
+          "exposure_pct": 40.24144869215292,
+          "yearly_return_pct": {
+            "2023": -36.79740909670481,
+            "2024": -36.78368680912474
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 14.000000000000002
+        },
+        "evaluation": {
+          "intervals": 443,
+          "return_pct": -59.776738905056234,
+          "cagr_pct": -40.43277196121259,
+          "max_drawdown_pct": -59.776738905056234,
+          "sharpe_zero_cash": -6.298147834814664,
+          "exposure_pct": 45.146726862302486,
+          "yearly_return_pct": {
+            "2025": -36.557647204150236,
+            "2026": -36.59872416084943
+          },
+          "turnover_units": 400.0,
+          "trades": 200,
+          "win_rate_pct": 11.0
+        }
+      }
+    }
+  },
+  "spy_behavior": {
+    "intervals": 2511,
+    "return_pct": 325.70037207266057,
+    "cagr_pct": 15.647403978482032,
+    "max_drawdown_pct": -33.79388816644996,
+    "sharpe_zero_cash": 0.9110302905048707,
+    "exposure_pct": null,
+    "yearly_return_pct": {
+      "2016": 5.526373385861261,
+      "2017": 21.746344498600045,
+      "2018": -4.961669505962507,
+      "2019": 31.13600717006515,
+      "2020": 18.453336978436894,
+      "2021": 28.601102039638526,
+      "2022": -18.17529219104016,
+      "2023": 26.176833447566562,
+      "2024": 24.885383395258785,
+      "2025": 17.718699979121656,
+      "2026": 14.988176174992507
+    },
+    "up_days_pct": 55.03783353245719,
+    "worst_day_pct": -10.782757357430695,
+    "best_day_pct": 10.500450487345404,
+    "annualized_vol_pct": 17.68205301897197,
+    "overnight_mean_bps": 4.319623271308858,
+    "open_close_mean_bps": 2.053345388643605
+  },
+  "selected_vs_benchmark_interval": {
+    "paired_intervals": 445,
+    "block_days": 20,
+    "trials": 2000,
+    "seed": 20261014,
+    "annualized_mean_difference_pct": -12.044766749300596,
+    "exploratory_95pct_low": -26.601884721321774,
+    "exploratory_95pct_high": 0.8856311476139098
+  },
+  "promotion_gates": {
+    "positive_evaluation": true,
+    "positive_25bps_stress": true,
+    "beats_buy_hold_sharpe": false,
+    "drawdown_under_15pct": true,
+    "paired_return_difference_lower_bound_positive": false,
+    "live_forward_paper_verified": false,
+    "realistic_quote_fills_verified": false
+  },
+  "live_promotion_authorized": false,
+  "real_orders": 0,
+  "limitations": [
+    "fractional unlevered research exposure; current $100 whole-share bot cannot reproduce SPY exposure",
+    "daily corporate-action-adjusted total-return proxy; no option prices or profits inferred",
+    "hypothetical costs, no tax or cash interest, no tick-level fills, no early-close trades",
+    "holdout is a one-time historical evaluation, not an unseen future test",
+    "finite candidates; not every strategy or certification of best trader"
+  ]
+}
