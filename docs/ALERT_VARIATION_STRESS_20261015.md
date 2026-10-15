@@ -8,6 +8,12 @@ Added 242 offline tests through the production text alert handler with execution
 
 All 242 passed. Network connections and notifications were blocked. No trading rules, whitelist, allocations, broker settings or production execution code changed.
 
+## Follow-up repair
+
+With a complete AMD contract appended, the screenshot's retrospective “went from $6.50 a contract to $25.75 today” caption reproduced a fresh BUY dispatch. The context classifier now recognizes literal price-to-price recaps and “no valid call/put/entry/trade” reports before instruction classification. Added 48 complete-contract mutations including explicit BTO prefixes. The combined alert, context, screenshot and production replay subset passed 366 tests after the fix; the previous unchanged-production full suite passed 3,094 tests before this repair. Do not confuse those verification scopes.
+
+User benchmark: approximately $178.60 net per month on a $1,000 simulated starting account (17.86%). This is a requested comparison target, not demonstrated expectancy or an allocation change. Future monthly evaluations must include target-hit frequency, losses, drawdowns and capital feasibility, without tuning invented prices to force the target.
+
 ## What the images do and do not establish
 
 HOOD displays a 170 call, selected October 31, premium 1.68, and breakeven 171.60. These are distinct fields: the premium and displayed breakeven do not agree exactly, so do not silently recompute one as authenticated truth. A displayed buy tab is not an entry instruction. September 24, 2025 is visible on the post, but an exact original timestamp is unavailable.

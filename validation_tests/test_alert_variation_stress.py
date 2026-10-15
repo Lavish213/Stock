@@ -47,3 +47,15 @@ def test_context_cannot_become_entry(ticker, strike, constraint, separator):
 def test_visible_caption_excerpts_without_invented_contract(text):
     with offline():
         assert parse(text) is None
+
+@pytest.mark.parametrize('ticker,strike', CONTRACTS)
+@pytest.mark.parametrize('prefix', ['', 'BTO '])
+@pytest.mark.parametrize('suffix', [
+    'Our banger went from $6.50 a contract to $25.75 today.',
+    'Contracts went from $0.27 to $1.07.',
+    'There was no valid call because it immediately reversed.',
+    'There was no valid entry because the level failed.',
+])
+def test_complete_contract_cannot_convert_recap_to_fresh_buy(ticker, strike, prefix, suffix):
+    with offline():
+        assert parse(f'{prefix}{ticker} {strike} CALL exp 2026-11-20. {suffix}') is None
