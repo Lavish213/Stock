@@ -1,5 +1,7 @@
 # Fake creator alerts through production execution — October 15, 2026
 
+**Performance figures superseded:** the replay originally left the contract parser on the computer's real date. Its expiry horizon rejected later virtual-year contracts. See `OPTIONS_RISK_COMPARISON_20261015.md` for the clock correction and new paired scenarios. Earlier cash figures do not establish annual or monthly performance. Individual fault/recovery checks retain only their explicitly tested scope.
+
 This replaces the scope error in the earlier toy yearly study. The earlier
 PR22 results remain a separate model, not this bot replay.
 

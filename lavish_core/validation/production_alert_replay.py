@@ -9,6 +9,7 @@ import json
 import logging
 import io
 import random
+import math
 from contextlib import ExitStack
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -33,9 +34,14 @@ def session_clock(now):
     return dict(is_open=opened,next_close=close.isoformat())
 
 
-def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0):
+def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0,
+           fixed_fraction=None, stress_profile='baseline'):
     if type(days) is not int or not 1 <= days <= 366 or initial <= 0:
         raise ValueError('Invalid replay settings')
+    if fixed_fraction is not None and (isinstance(fixed_fraction, bool) or not math.isfinite(fixed_fraction) or not 0 < fixed_fraction <= 1):
+        raise ValueError('Simulation fraction must be finite and in (0, 1]')
+    if stress_profile not in ('baseline', 'weak_followthrough', 'gap_loss'):
+        raise ValueError('Unknown simulation stress profile')
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     clock = SimpleNamespace(now=datetime(2026, 10, 1, 15, 0, tzinfo=timezone.utc))
@@ -118,9 +124,10 @@ def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0):
         def setv(module,name,value):stack.enter_context(patch.object(module,name,value))
         for module in (th,em,rec):setv(module,'DEFAULT_DB',journal)
         setv(rec,'_watched',set())
-        for module in (th,em,pdt):
+        from lavish_core.vision import extract_signal as parser
+        for module in (th,em,pdt,parser):
             if hasattr(module,'date'):setv(module,'date',SimDate)
-        for module in (th,em,gk,rec):setv(module,'datetime',SimDatetime)
+        for module in (th,em,gk,rec,parser):setv(module,'datetime',SimDatetime)
         for module in (th,em,gk,cb):setv(module,'time',simtime)
         setv(hs,'_utcnow',lambda:clock.now)
         setv(th,'TRADE_MODE','paper')
@@ -180,6 +187,7 @@ def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0):
             reached_half |= account()['equity']>=500
             reached_tenth |= account()['equity']>=1000
             fraction=.1 if reached_tenth else .5 if reached_half else 1.
+            if fixed_fraction is not None: fraction=fixed_fraction
             # Explicit simulation-only budget argument, not a change to live allocation.
             budget=max(.01,account()['equity']*fraction)
             text=f'BTO SPY 770 CALL exp {expiry.isoformat()} target 775 stop 765'
@@ -218,7 +226,16 @@ def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0):
                 kw=monitors.pop(0)
                 state['phase']='exit'
                 state['underlying']=764 if kind=='structural_stop' else 770 if kind=='premium_stop' else 776
-                state['premium']=.04 if kind=='premium_stop' else rng.choice([.12,.14,.16])
+                if fixed_fraction is None and stress_profile=='baseline':
+                    state['premium']=.04 if kind=='premium_stop' else rng.choice([.12,.14,.16])
+                else:
+                    # A calendar-day quote is independent of entries, sizing,
+                    # worker retries and account outcome. Paired risk policies
+                    # must not consume different RNG draws after a rejection.
+                    choices=[.10,.11,.12] if stress_profile=='weak_followthrough' else [.12,.14,.16]
+                    daily_quote=random.Random(seed+i).choice(choices)
+                    loss_quote=.01 if stress_profile=='gap_loss' else .04
+                    state['premium']=loss_quote if kind=='premium_stop' else daily_quote
                 x.quote(kw['contract_symbol'],state['premium'],state['premium'],
                         liquidity=1 if kind=='partial_exit_restart' and not state['lost'] else 100)
                 try:
@@ -247,6 +264,7 @@ def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0):
             store.con.close()
             if x.positions:raise AssertionError('Open position after replay session')
     report=dict(synthetic=True,real_orders=0,seed=seed,days=days,initial=initial,final_cash=x.cash,
+        simulation_fixed_fraction=fixed_fraction,stress_profile=stress_profile,
         production_paths=['signed HTTP handler','AlertInbox.dispatch_once','handle_alert_text','execute_trade_from_post','confirm_entry',
             'resolve_and_price_contract','place_option_order','watch_and_exit','ExitState','HybridStore'],
         substitutions=['broker/data I/O','virtual time','serial worker scheduler','simulation budget and explicit fee estimate'],

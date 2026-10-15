@@ -1,5 +1,7 @@
 # Alert variation stress — October 15, 2026
 
+Replay P&L correction: earlier annual and 16 monthly ordering results are superseded by `OPTIONS_RISK_COMPARISON_20261015.md`. The replay parser used the real date while the rest of the simulation advanced virtually. Parser/dispatch mutation test results remain separate and valid for their stated scope.
+
 Added 242 offline tests through the production text alert handler with execution captured at its dispatch boundary. These are parser/dispatch tests, not broker execution or profitability simulations.
 
 * 54 positive cases: six tickers, three explicit entry verbs, three whitespace layouts. Assert exact ticker, call side, strike (including fractional MSTR strike), and expiry.
