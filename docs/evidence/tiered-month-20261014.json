@@ -1,0 +1,975 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "seed": 20261014,
+  "start": "2026-10-01",
+  "days": 32,
+  "initial_balance": 100,
+  "final_balance": 98.6,
+  "net_pnl": -1.4,
+  "trades": [
+    {
+      "entry_id": "20261014-day-1",
+      "entry_at": "2026-10-01T10:46:00-07:00",
+      "exit_at": "2026-10-01T11:55:00-07:00",
+      "reason": "stop",
+      "qty": "0.129523572",
+      "allocation": 100.0,
+      "allocation_mode": "all_available",
+      "entry_price": 771.905826934952,
+      "exit_price": 767.4686491188579,
+      "net_pnl": -0.6,
+      "fees": 0.02,
+      "balance": 99.4
+    },
+    {
+      "entry_id": "20261014-day-7",
+      "entry_at": "2026-10-07T10:37:00-07:00",
+      "exit_at": "2026-10-07T11:52:00-07:00",
+      "reason": "stop",
+      "qty": "0.125306066",
+      "allocation": 99.4,
+      "allocation_mode": "all_available",
+      "entry_price": 793.0980764609795,
+      "exit_price": 789.3505880466122,
+      "net_pnl": -0.49,
+      "fees": 0.02,
+      "balance": 98.91
+    },
+    {
+      "entry_id": "20261014-day-8",
+      "entry_at": "2026-10-08T10:48:00-07:00",
+      "exit_at": "2026-10-08T13:00:00-07:00",
+      "reason": "day_close",
+      "qty": "0.125863804",
+      "allocation": 98.91,
+      "allocation_mode": "all_available",
+      "entry_price": 785.690537164176,
+      "exit_price": 783.1907512332141,
+      "net_pnl": -0.34,
+      "fees": 0.02,
+      "balance": 98.57
+    },
+    {
+      "entry_id": "20261014-day-9",
+      "entry_at": "2026-10-09T10:44:00-07:00",
+      "exit_at": "2026-10-09T11:23:00-07:00",
+      "reason": "stop",
+      "qty": "0.125735549",
+      "allocation": 98.57,
+      "allocation_mode": "all_available",
+      "entry_price": 783.7878815098683,
+      "exit_price": 780.8059020386189,
+      "net_pnl": -0.4,
+      "fees": 0.02,
+      "balance": 98.17
+    },
+    {
+      "entry_id": "20261014-day-13",
+      "entry_at": "2026-10-13T10:48:00-07:00",
+      "exit_at": "2026-10-13T13:00:00-07:00",
+      "reason": "day_close",
+      "qty": "0.124308334",
+      "allocation": 98.17,
+      "allocation_mode": "all_available",
+      "entry_price": 789.5689382743882,
+      "exit_price": 789.7588464826625,
+      "net_pnl": 0.0,
+      "fees": 0.02,
+      "balance": 98.17
+    },
+    {
+      "entry_id": "20261014-day-14",
+      "entry_at": "2026-10-14T10:54:00-07:00",
+      "exit_at": "2026-10-14T11:09:00-07:00",
+      "reason": "stop",
+      "qty": "0.124091236",
+      "allocation": 98.17,
+      "allocation_mode": "all_available",
+      "entry_price": 790.9502956042664,
+      "exit_price": 787.7347981650242,
+      "net_pnl": -0.42,
+      "fees": 0.02,
+      "balance": 97.75
+    },
+    {
+      "entry_id": "20261014-day-15",
+      "entry_at": "2026-10-15T10:00:00-07:00",
+      "exit_at": "2026-10-15T10:57:00-07:00",
+      "reason": "stop",
+      "qty": "0.125914121",
+      "allocation": 97.75,
+      "allocation_mode": "all_available",
+      "entry_price": 776.1639339364019,
+      "exit_price": 771.8904832102688,
+      "net_pnl": -0.56,
+      "fees": 0.02,
+      "balance": 97.19
+    },
+    {
+      "entry_id": "20261014-day-16",
+      "entry_at": "2026-10-16T10:00:00-07:00",
+      "exit_at": "2026-10-16T11:21:00-07:00",
+      "reason": "target",
+      "qty": "0.125518566",
+      "allocation": 97.19,
+      "allocation_mode": "all_available",
+      "entry_price": 774.1484208462269,
+      "exit_price": 780.4996895204802,
+      "net_pnl": 0.77,
+      "fees": 0.02,
+      "balance": 97.96
+    },
+    {
+      "entry_id": "20261014-day-20",
+      "entry_at": "2026-10-20T10:01:00-07:00",
+      "exit_at": "2026-10-20T11:07:00-07:00",
+      "reason": "target",
+      "qty": "0.127718721",
+      "allocation": 97.96,
+      "allocation_mode": "all_available",
+      "entry_price": 766.8413759739858,
+      "exit_price": 769.775245863557,
+      "net_pnl": 0.35,
+      "fees": 0.02,
+      "balance": 98.31
+    },
+    {
+      "entry_id": "20261014-day-21",
+      "entry_at": "2026-10-21T10:13:00-07:00",
+      "exit_at": "2026-10-21T13:00:00-07:00",
+      "reason": "day_close",
+      "qty": "0.126786529",
+      "allocation": 98.31,
+      "allocation_mode": "all_available",
+      "entry_price": 775.2400831615568,
+      "exit_price": 777.9739435888939,
+      "net_pnl": 0.32,
+      "fees": 0.02,
+      "balance": 98.63
+    },
+    {
+      "entry_id": "20261014-day-29",
+      "entry_at": "2026-10-29T10:29:00-07:00",
+      "exit_at": "2026-10-29T11:17:00-07:00",
+      "reason": "stop",
+      "qty": "0.127251153",
+      "allocation": 98.63,
+      "allocation_mode": "all_available",
+      "entry_price": 774.9242107098548,
+      "exit_price": 771.6217870657753,
+      "net_pnl": -0.45,
+      "fees": 0.02,
+      "balance": 98.18
+    },
+    {
+      "entry_id": "20261014-day-30",
+      "entry_at": "2026-10-30T10:04:00-07:00",
+      "exit_at": "2026-10-30T13:00:00-07:00",
+      "reason": "day_close",
+      "qty": "0.126262818",
+      "allocation": 98.18,
+      "allocation_mode": "all_available",
+      "entry_price": 777.4260144162803,
+      "exit_price": 780.9108170748782,
+      "net_pnl": 0.42,
+      "fees": 0.02,
+      "balance": 98.6
+    }
+  ],
+  "alert_days": 32,
+  "duplicate_attempts": 32,
+  "reached_500": false,
+  "reached_1000": false,
+  "halted": false,
+  "relearn_request": {
+    "status": "review_required",
+    "trigger": "consecutive_net_losses",
+    "entry_id": "20261014-day-8",
+    "requested_at": "2026-10-08T13:00:00-07:00",
+    "net_loss": 0.34,
+    "day_net_loss": 0.34,
+    "loss_streak": 3,
+    "big_loss_fraction_assumption": 0.1,
+    "consecutive_limit_assumption": 3,
+    "next_simulated_session_resume": true,
+    "production_resume": false,
+    "automatic_strategy_changes": false
+  },
+  "review_requests": [
+    {
+      "status": "review_required",
+      "trigger": "consecutive_net_losses",
+      "entry_id": "20261014-day-8",
+      "requested_at": "2026-10-08T13:00:00-07:00",
+      "net_loss": 0.34,
+      "day_net_loss": 0.34,
+      "loss_streak": 3,
+      "big_loss_fraction_assumption": 0.1,
+      "consecutive_limit_assumption": 3,
+      "next_simulated_session_resume": true,
+      "production_resume": false,
+      "automatic_strategy_changes": false
+    }
+  ],
+  "final_position": 0,
+  "real_broker_orders": 0,
+  "cash_error": 0,
+  "records": [
+    {
+      "day": 1,
+      "date": "2026-10-01",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-1",
+        "created_at": "2026-10-01T10:46:00-07:00",
+        "text": "BUY SPY now target 776.17 stop 767.87",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 776.17 stop 767.87",
+        "amount_usd": null,
+        "target_hint": 776.17,
+        "stop_hint": 767.87
+      },
+      "status": "entered",
+      "exit_reason": "stop",
+      "balance": 99.4,
+      "halted": false
+    },
+    {
+      "day": 2,
+      "date": "2026-10-02",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-2",
+        "created_at": "2026-10-02T10:51:00-07:00",
+        "text": "BUY AAPL now target 771.69 stop 764.06",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 771.69 stop 764.06",
+        "amount_usd": null,
+        "target_hint": 771.69,
+        "stop_hint": 764.06
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 99.4,
+      "halted": false
+    },
+    {
+      "day": 3,
+      "date": "2026-10-03",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-3",
+        "created_at": "2026-10-03T10:22:00-07:00",
+        "text": "BUY SPY now target 772.55 stop 765.89",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 772.55 stop 765.89",
+        "amount_usd": null,
+        "target_hint": 772.55,
+        "stop_hint": 765.89
+      },
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 99.4,
+      "halted": false
+    },
+    {
+      "day": 4,
+      "date": "2026-10-04",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-4",
+        "created_at": "2026-10-04T10:59:00-07:00",
+        "text": "SPY setup: break and hold above 775.25",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 99.4,
+      "halted": false
+    },
+    {
+      "day": 5,
+      "date": "2026-10-05",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-5",
+        "created_at": "2026-10-05T10:27:00-07:00",
+        "text": "SPY setup: break and hold above 776.98",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 99.4,
+      "halted": false
+    },
+    {
+      "day": 6,
+      "date": "2026-10-06",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-6",
+        "created_at": "2026-10-06T10:45:00-07:00",
+        "text": "BUY AAPL now target 790.57 stop 783.05",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 790.57 stop 783.05",
+        "amount_usd": null,
+        "target_hint": 790.57,
+        "stop_hint": 783.05
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 99.4,
+      "halted": false
+    },
+    {
+      "day": 7,
+      "date": "2026-10-07",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-7",
+        "created_at": "2026-10-07T10:37:00-07:00",
+        "text": "BUY SPY now target 797.80 stop 789.81",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 797.80 stop 789.81",
+        "amount_usd": null,
+        "target_hint": 797.8,
+        "stop_hint": 789.81
+      },
+      "status": "entered",
+      "exit_reason": "stop",
+      "balance": 98.91,
+      "halted": false
+    },
+    {
+      "day": 8,
+      "date": "2026-10-08",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-8",
+        "created_at": "2026-10-08T10:48:00-07:00",
+        "text": "BUY SPY now target 789.55 stop 782.70",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 789.55 stop 782.70",
+        "amount_usd": null,
+        "target_hint": 789.55,
+        "stop_hint": 782.7
+      },
+      "status": "entered",
+      "exit_reason": "day_close",
+      "balance": 98.57,
+      "halted": true
+    },
+    {
+      "day": 9,
+      "date": "2026-10-09",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-9",
+        "created_at": "2026-10-09T10:44:00-07:00",
+        "text": "BUY SPY now target 787.30 stop 781.02",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 787.30 stop 781.02",
+        "amount_usd": null,
+        "target_hint": 787.3,
+        "stop_hint": 781.02
+      },
+      "status": "entered",
+      "exit_reason": "stop",
+      "balance": 98.17,
+      "halted": false
+    },
+    {
+      "day": 10,
+      "date": "2026-10-10",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-10",
+        "created_at": "2026-10-10T10:00:00-07:00",
+        "text": "BUY SPY now target 785.42 stop 777.30",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 785.42 stop 777.30",
+        "amount_usd": null,
+        "target_hint": 785.42,
+        "stop_hint": 777.3
+      },
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 98.17,
+      "halted": false
+    },
+    {
+      "day": 11,
+      "date": "2026-10-11",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-11",
+        "created_at": "2026-10-11T10:25:00-07:00",
+        "text": "SPY setup: break and hold above 778.92",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 98.17,
+      "halted": false
+    },
+    {
+      "day": 12,
+      "date": "2026-10-12",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-12",
+        "created_at": "2026-10-12T10:05:00-07:00",
+        "text": "BUY AAPL now target 776.17 stop 768.96",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 776.17 stop 768.96",
+        "amount_usd": null,
+        "target_hint": 776.17,
+        "stop_hint": 768.96
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 98.17,
+      "halted": false
+    },
+    {
+      "day": 13,
+      "date": "2026-10-13",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-13",
+        "created_at": "2026-10-13T10:48:00-07:00",
+        "text": "BUY SPY now target 795.01 stop 786.18",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 795.01 stop 786.18",
+        "amount_usd": null,
+        "target_hint": 795.01,
+        "stop_hint": 786.18
+      },
+      "status": "entered",
+      "exit_reason": "day_close",
+      "balance": 98.17,
+      "halted": false
+    },
+    {
+      "day": 14,
+      "date": "2026-10-14",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-14",
+        "created_at": "2026-10-14T10:54:00-07:00",
+        "text": "BUY SPY now target 795.90 stop 788.10",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 795.90 stop 788.10",
+        "amount_usd": null,
+        "target_hint": 795.9,
+        "stop_hint": 788.1
+      },
+      "status": "entered",
+      "exit_reason": "stop",
+      "balance": 97.75,
+      "halted": false
+    },
+    {
+      "day": 15,
+      "date": "2026-10-15",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-15",
+        "created_at": "2026-10-15T10:00:00-07:00",
+        "text": "BUY SPY now target 782.01 stop 772.47",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 782.01 stop 772.47",
+        "amount_usd": null,
+        "target_hint": 782.01,
+        "stop_hint": 772.47
+      },
+      "status": "entered",
+      "exit_reason": "stop",
+      "balance": 97.19,
+      "halted": false
+    },
+    {
+      "day": 16,
+      "date": "2026-10-16",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-16",
+        "created_at": "2026-10-16T10:00:00-07:00",
+        "text": "BUY SPY now target 780.16 stop 771.05",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 780.16 stop 771.05",
+        "amount_usd": null,
+        "target_hint": 780.16,
+        "stop_hint": 771.05
+      },
+      "status": "entered",
+      "exit_reason": "target",
+      "balance": 97.96,
+      "halted": false
+    },
+    {
+      "day": 17,
+      "date": "2026-10-17",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-17",
+        "created_at": "2026-10-17T10:23:00-07:00",
+        "text": "SPY setup: break and hold above 775.99",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 97.96,
+      "halted": false
+    },
+    {
+      "day": 18,
+      "date": "2026-10-18",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-18",
+        "created_at": "2026-10-18T10:47:00-07:00",
+        "text": "BUY SPY now target 773.28 stop 767.45",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 773.28 stop 767.45",
+        "amount_usd": null,
+        "target_hint": 773.28,
+        "stop_hint": 767.45
+      },
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 97.96,
+      "halted": false
+    },
+    {
+      "day": 19,
+      "date": "2026-10-19",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-19",
+        "created_at": "2026-10-19T10:00:00-07:00",
+        "text": "BUY AAPL now target 767.29 stop 760.95",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 767.29 stop 760.95",
+        "amount_usd": null,
+        "target_hint": 767.29,
+        "stop_hint": 760.95
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 97.96,
+      "halted": false
+    },
+    {
+      "day": 20,
+      "date": "2026-10-20",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-20",
+        "created_at": "2026-10-20T10:01:00-07:00",
+        "text": "BUY SPY now target 769.81 stop 762.47",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 769.81 stop 762.47",
+        "amount_usd": null,
+        "target_hint": 769.81,
+        "stop_hint": 762.47
+      },
+      "status": "entered",
+      "exit_reason": "target",
+      "balance": 98.31,
+      "halted": false
+    },
+    {
+      "day": 21,
+      "date": "2026-10-21",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-21",
+        "created_at": "2026-10-21T10:13:00-07:00",
+        "text": "BUY SPY now target 779.56 stop 771.15",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 779.56 stop 771.15",
+        "amount_usd": null,
+        "target_hint": 779.56,
+        "stop_hint": 771.15
+      },
+      "status": "entered",
+      "exit_reason": "day_close",
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 22,
+      "date": "2026-10-22",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-22",
+        "created_at": "2026-10-22T10:18:00-07:00",
+        "text": "BUY AAPL now target 781.30 stop 776.28",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 781.30 stop 776.28",
+        "amount_usd": null,
+        "target_hint": 781.3,
+        "stop_hint": 776.28
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 23,
+      "date": "2026-10-23",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-23",
+        "created_at": "2026-10-23T10:37:00-07:00",
+        "text": "BUY AAPL now target 777.96 stop 770.50",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 777.96 stop 770.50",
+        "amount_usd": null,
+        "target_hint": 777.96,
+        "stop_hint": 770.5
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 24,
+      "date": "2026-10-24",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-24",
+        "created_at": "2026-10-24T10:13:00-07:00",
+        "text": "BUY SPY now target 772.98 stop 765.74",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 772.98 stop 765.74",
+        "amount_usd": null,
+        "target_hint": 772.98,
+        "stop_hint": 765.74
+      },
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 25,
+      "date": "2026-10-25",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-25",
+        "created_at": "2026-10-25T10:32:00-07:00",
+        "text": "BUY SPY now target 768.42 stop 761.46",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 768.42 stop 761.46",
+        "amount_usd": null,
+        "target_hint": 768.42,
+        "stop_hint": 761.46
+      },
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 26,
+      "date": "2026-10-26",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-26",
+        "created_at": "2026-10-26T10:09:00-07:00",
+        "text": "SPY is at the second target",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 27,
+      "date": "2026-10-27",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-27",
+        "created_at": "2026-10-27T10:33:00-07:00",
+        "text": "BUY AAPL now target 767.99 stop 760.20",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 767.99 stop 760.20",
+        "amount_usd": null,
+        "target_hint": 767.99,
+        "stop_hint": 760.2
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 28,
+      "date": "2026-10-28",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-28",
+        "created_at": "2026-10-28T10:51:00-07:00",
+        "text": "BUY AAPL now target 774.80 stop 767.47",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "AAPL",
+        "confidence": 0.85,
+        "note": "BUY AAPL now target 774.80 stop 767.47",
+        "amount_usd": null,
+        "target_hint": 774.8,
+        "stop_hint": 767.47
+      },
+      "status": "not_spy_entry",
+      "exit_reason": null,
+      "balance": 98.63,
+      "halted": false
+    },
+    {
+      "day": 29,
+      "date": "2026-10-29",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-29",
+        "created_at": "2026-10-29T10:29:00-07:00",
+        "text": "BUY SPY now target 780.16 stop 771.83",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 780.16 stop 771.83",
+        "amount_usd": null,
+        "target_hint": 780.16,
+        "stop_hint": 771.83
+      },
+      "status": "entered",
+      "exit_reason": "stop",
+      "balance": 98.18,
+      "halted": false
+    },
+    {
+      "day": 30,
+      "date": "2026-10-30",
+      "market_open_assumption": true,
+      "alert": {
+        "id": "20261014-day-30",
+        "created_at": "2026-10-30T10:04:00-07:00",
+        "text": "BUY SPY now target 782.71 stop 774.01",
+        "synthetic": true
+      },
+      "parser_signal": {
+        "source": "synthetic_creator",
+        "action": "BUY",
+        "symbol": "SPY",
+        "confidence": 0.85,
+        "note": "BUY SPY now target 782.71 stop 774.01",
+        "amount_usd": null,
+        "target_hint": 782.71,
+        "stop_hint": 774.01
+      },
+      "status": "entered",
+      "exit_reason": "day_close",
+      "balance": 98.6,
+      "halted": false
+    },
+    {
+      "day": 31,
+      "date": "2026-10-31",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-31",
+        "created_at": "2026-10-31T10:23:00-07:00",
+        "text": "SPY setup: break and hold above 779.76",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 98.6,
+      "halted": false
+    },
+    {
+      "day": 32,
+      "date": "2026-11-01",
+      "market_open_assumption": false,
+      "alert": {
+        "id": "20261014-day-32",
+        "created_at": "2026-11-01T10:26:00-08:00",
+        "text": "SPY setup: break and hold above 778.75",
+        "synthetic": true
+      },
+      "parser_signal": null,
+      "status": "closed_session",
+      "exit_reason": null,
+      "balance": 98.6,
+      "halted": false
+    }
+  ],
+  "scope": "Production text parser -> isolated fractional simulation adapter; production executor is NOT exercised",
+  "assumptions": {
+    "fractional_precision": 9,
+    "commission_each_side": 0.01,
+    "full_spread_bps": 2,
+    "slippage_bps_each_side": 1,
+    "bar_log_return_mean": 0,
+    "bar_log_return_std": 0.0008,
+    "weekday_sessions_only": true,
+    "market_paths": "Uncalibrated random synthetic paths, not authentic SPY quotes",
+    "calendar": "32 calendar days October1-November1 by default; no literal32nd date",
+    "settlement": "One position per day; unsettled-cash constraints not certified",
+    "sizing": "All available until500;50% after500;10% after1000, milestones persist",
+    "loss_rule": "Big loss or repeated losses pauses until next simulated weekday; thresholds are assumptions",
+    "big_loss_fraction": "0.1",
+    "consecutive_limit": 3,
+    "paired_path_version": 2
+  }
+}

@@ -1,0 +1,1654 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "base_commit": "1246e126fce265ab86bb362566acb96a1a455ac2",
+  "paired_path_version": 2,
+  "matched_executions": 361,
+  "revised": {
+    "synthetic": true,
+    "profitability_evidence": false,
+    "trials": 200,
+    "first_seed": 20261014,
+    "policy": "tiered_next_day",
+    "paired_path_version": 2,
+    "profitable_trials": 68,
+    "halted_trials": 7,
+    "reached_500_trials": 0,
+    "reached_1000_trials": 0,
+    "median_final_balance": 99.145,
+    "worst_final_balance": 95.82,
+    "best_final_balance": 103.25,
+    "real_broker_orders": 0,
+    "unique_real_parser_inputs": 5240,
+    "automatic_production_resume": false,
+    "simulation_next_day_resume": true,
+    "total_review_requests": 172
+  },
+  "original": {
+    "synthetic": true,
+    "profitability_evidence": false,
+    "trials": 200,
+    "first_seed": 20261014,
+    "policy": "first_loss",
+    "paired_path_version": 2,
+    "profitable_trials": 55,
+    "halted_trials": 200,
+    "reached_500_trials": 0,
+    "reached_1000_trials": 0,
+    "median_final_balance": 99.695,
+    "worst_final_balance": 99.17,
+    "best_final_balance": 102.45,
+    "real_broker_orders": 0,
+    "unique_real_parser_inputs": 5240,
+    "automatic_production_resume": false,
+    "simulation_next_day_resume": false,
+    "total_review_requests": 200
+  },
+  "full_generated_trial_hashes": {
+    "revised": "6f5e3e08810d32befbee46d91b31a46a9287ccb3d635ba30cd2c3e88b60ca483",
+    "original": "b0ccf208a14e2b4fafc26793ff704d35ab9612cf09e37df7c91b078a9abd29d4"
+  },
+  "seed_outcomes": [
+    {
+      "seed": 20261014,
+      "tiered_balance": 98.6,
+      "original_balance": 99.4,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261015,
+      "tiered_balance": 99.27,
+      "original_balance": 99.98,
+      "tiered_trades": 16,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261016,
+      "tiered_balance": 100.7,
+      "original_balance": 99.88,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261017,
+      "tiered_balance": 99.18,
+      "original_balance": 99.53,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261018,
+      "tiered_balance": 96.57,
+      "original_balance": 99.53,
+      "tiered_trades": 14,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261019,
+      "tiered_balance": 100.02,
+      "original_balance": 99.87,
+      "tiered_trades": 17,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261020,
+      "tiered_balance": 99.84,
+      "original_balance": 99.43,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261021,
+      "tiered_balance": 96.78,
+      "original_balance": 99.36,
+      "tiered_trades": 16,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261022,
+      "tiered_balance": 98.12,
+      "original_balance": 99.46,
+      "tiered_trades": 15,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261023,
+      "tiered_balance": 98.32,
+      "original_balance": 99.98,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261024,
+      "tiered_balance": 99.08,
+      "original_balance": 99.36,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261025,
+      "tiered_balance": 100.64,
+      "original_balance": 99.55,
+      "tiered_trades": 9,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261026,
+      "tiered_balance": 99.82,
+      "original_balance": 99.35,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261027,
+      "tiered_balance": 99.94,
+      "original_balance": 99.51,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261028,
+      "tiered_balance": 100.61,
+      "original_balance": 99.61,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261029,
+      "tiered_balance": 97.0,
+      "original_balance": 99.91,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261030,
+      "tiered_balance": 99.81,
+      "original_balance": 99.93,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261031,
+      "tiered_balance": 103.25,
+      "original_balance": 102.45,
+      "tiered_trades": 10,
+      "original_trades": 8,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261032,
+      "tiered_balance": 100.36,
+      "original_balance": 99.84,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261033,
+      "tiered_balance": 99.0,
+      "original_balance": 99.47,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261034,
+      "tiered_balance": 98.47,
+      "original_balance": 99.38,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261035,
+      "tiered_balance": 96.4,
+      "original_balance": 99.82,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 3
+    },
+    {
+      "seed": 20261036,
+      "tiered_balance": 100.12,
+      "original_balance": 100.58,
+      "tiered_trades": 14,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261037,
+      "tiered_balance": 99.37,
+      "original_balance": 99.59,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261038,
+      "tiered_balance": 98.61,
+      "original_balance": 99.81,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261039,
+      "tiered_balance": 101.72,
+      "original_balance": 101.56,
+      "tiered_trades": 11,
+      "original_trades": 5,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261040,
+      "tiered_balance": 99.24,
+      "original_balance": 100.62,
+      "tiered_trades": 10,
+      "original_trades": 4,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261041,
+      "tiered_balance": 98.67,
+      "original_balance": 99.17,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261042,
+      "tiered_balance": 100.16,
+      "original_balance": 99.77,
+      "tiered_trades": 6,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261043,
+      "tiered_balance": 100.6,
+      "original_balance": 100.22,
+      "tiered_trades": 12,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261044,
+      "tiered_balance": 100.28,
+      "original_balance": 100.01,
+      "tiered_trades": 14,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261045,
+      "tiered_balance": 98.09,
+      "original_balance": 99.53,
+      "tiered_trades": 14,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261046,
+      "tiered_balance": 98.65,
+      "original_balance": 100.2,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261047,
+      "tiered_balance": 97.41,
+      "original_balance": 99.31,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261048,
+      "tiered_balance": 100.63,
+      "original_balance": 99.65,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261049,
+      "tiered_balance": 98.81,
+      "original_balance": 99.94,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261050,
+      "tiered_balance": 98.79,
+      "original_balance": 99.49,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261051,
+      "tiered_balance": 98.85,
+      "original_balance": 99.95,
+      "tiered_trades": 8,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261052,
+      "tiered_balance": 98.52,
+      "original_balance": 100.73,
+      "tiered_trades": 10,
+      "original_trades": 3,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261053,
+      "tiered_balance": 101.45,
+      "original_balance": 99.33,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261054,
+      "tiered_balance": 98.98,
+      "original_balance": 99.77,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261055,
+      "tiered_balance": 98.89,
+      "original_balance": 99.44,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261056,
+      "tiered_balance": 99.06,
+      "original_balance": 99.36,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261057,
+      "tiered_balance": 96.78,
+      "original_balance": 99.61,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261058,
+      "tiered_balance": 98.46,
+      "original_balance": 99.79,
+      "tiered_trades": 14,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261059,
+      "tiered_balance": 98.02,
+      "original_balance": 99.31,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261060,
+      "tiered_balance": 99.86,
+      "original_balance": 99.51,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261061,
+      "tiered_balance": 98.68,
+      "original_balance": 99.42,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261062,
+      "tiered_balance": 99.83,
+      "original_balance": 100.63,
+      "tiered_trades": 8,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261063,
+      "tiered_balance": 96.37,
+      "original_balance": 99.47,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261064,
+      "tiered_balance": 97.44,
+      "original_balance": 100.22,
+      "tiered_trades": 14,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261065,
+      "tiered_balance": 102.43,
+      "original_balance": 100.57,
+      "tiered_trades": 13,
+      "original_trades": 6,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261066,
+      "tiered_balance": 97.69,
+      "original_balance": 99.61,
+      "tiered_trades": 15,
+      "original_trades": 1,
+      "tiered_reviews": 3
+    },
+    {
+      "seed": 20261067,
+      "tiered_balance": 102.3,
+      "original_balance": 99.76,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261068,
+      "tiered_balance": 98.53,
+      "original_balance": 100.88,
+      "tiered_trades": 7,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261069,
+      "tiered_balance": 98.06,
+      "original_balance": 100.05,
+      "tiered_trades": 14,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261070,
+      "tiered_balance": 102.03,
+      "original_balance": 101.98,
+      "tiered_trades": 16,
+      "original_trades": 7,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261071,
+      "tiered_balance": 100.43,
+      "original_balance": 100.1,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261072,
+      "tiered_balance": 100.5,
+      "original_balance": 99.75,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261073,
+      "tiered_balance": 100.69,
+      "original_balance": 100.9,
+      "tiered_trades": 11,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261074,
+      "tiered_balance": 98.42,
+      "original_balance": 99.43,
+      "tiered_trades": 8,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261075,
+      "tiered_balance": 98.31,
+      "original_balance": 100.28,
+      "tiered_trades": 13,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261076,
+      "tiered_balance": 101.23,
+      "original_balance": 100.14,
+      "tiered_trades": 9,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261077,
+      "tiered_balance": 97.81,
+      "original_balance": 99.88,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261078,
+      "tiered_balance": 100.35,
+      "original_balance": 101.29,
+      "tiered_trades": 12,
+      "original_trades": 5,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261079,
+      "tiered_balance": 101.43,
+      "original_balance": 99.8,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261080,
+      "tiered_balance": 100.09,
+      "original_balance": 99.43,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261081,
+      "tiered_balance": 100.52,
+      "original_balance": 99.91,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261082,
+      "tiered_balance": 99.83,
+      "original_balance": 100.42,
+      "tiered_trades": 15,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261083,
+      "tiered_balance": 99.03,
+      "original_balance": 99.38,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261084,
+      "tiered_balance": 97.93,
+      "original_balance": 100.38,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261085,
+      "tiered_balance": 97.75,
+      "original_balance": 99.4,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261086,
+      "tiered_balance": 96.66,
+      "original_balance": 99.45,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261087,
+      "tiered_balance": 101.17,
+      "original_balance": 101.47,
+      "tiered_trades": 9,
+      "original_trades": 4,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261088,
+      "tiered_balance": 96.55,
+      "original_balance": 99.42,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261089,
+      "tiered_balance": 101.91,
+      "original_balance": 100.18,
+      "tiered_trades": 13,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261090,
+      "tiered_balance": 98.92,
+      "original_balance": 99.42,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261091,
+      "tiered_balance": 97.83,
+      "original_balance": 99.56,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261092,
+      "tiered_balance": 101.65,
+      "original_balance": 100.94,
+      "tiered_trades": 13,
+      "original_trades": 4,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261093,
+      "tiered_balance": 101.31,
+      "original_balance": 100.32,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261094,
+      "tiered_balance": 101.03,
+      "original_balance": 99.41,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261095,
+      "tiered_balance": 98.68,
+      "original_balance": 99.5,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261096,
+      "tiered_balance": 101.27,
+      "original_balance": 101.14,
+      "tiered_trades": 12,
+      "original_trades": 5,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261097,
+      "tiered_balance": 99.8,
+      "original_balance": 100.75,
+      "tiered_trades": 13,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261098,
+      "tiered_balance": 101.11,
+      "original_balance": 100.13,
+      "tiered_trades": 12,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261099,
+      "tiered_balance": 97.21,
+      "original_balance": 99.45,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261100,
+      "tiered_balance": 100.85,
+      "original_balance": 99.56,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261101,
+      "tiered_balance": 97.75,
+      "original_balance": 100.17,
+      "tiered_trades": 11,
+      "original_trades": 3,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261102,
+      "tiered_balance": 98.05,
+      "original_balance": 99.38,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261103,
+      "tiered_balance": 97.23,
+      "original_balance": 100.16,
+      "tiered_trades": 14,
+      "original_trades": 3,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261104,
+      "tiered_balance": 97.47,
+      "original_balance": 99.32,
+      "tiered_trades": 14,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261105,
+      "tiered_balance": 98.64,
+      "original_balance": 99.39,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261106,
+      "tiered_balance": 98.07,
+      "original_balance": 99.81,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261107,
+      "tiered_balance": 99.96,
+      "original_balance": 100.14,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261108,
+      "tiered_balance": 98.94,
+      "original_balance": 99.92,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261109,
+      "tiered_balance": 100.27,
+      "original_balance": 99.73,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261110,
+      "tiered_balance": 101.44,
+      "original_balance": 100.31,
+      "tiered_trades": 9,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261111,
+      "tiered_balance": 95.82,
+      "original_balance": 99.54,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 3
+    },
+    {
+      "seed": 20261112,
+      "tiered_balance": 99.57,
+      "original_balance": 99.63,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261113,
+      "tiered_balance": 101.7,
+      "original_balance": 99.61,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261114,
+      "tiered_balance": 97.63,
+      "original_balance": 99.32,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261115,
+      "tiered_balance": 101.5,
+      "original_balance": 100.5,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261116,
+      "tiered_balance": 99.14,
+      "original_balance": 99.95,
+      "tiered_trades": 14,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261117,
+      "tiered_balance": 100.62,
+      "original_balance": 99.31,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261118,
+      "tiered_balance": 100.32,
+      "original_balance": 99.57,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261119,
+      "tiered_balance": 99.97,
+      "original_balance": 99.34,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261120,
+      "tiered_balance": 99.59,
+      "original_balance": 99.48,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261121,
+      "tiered_balance": 100.02,
+      "original_balance": 100.82,
+      "tiered_trades": 9,
+      "original_trades": 4,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261122,
+      "tiered_balance": 97.48,
+      "original_balance": 99.63,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261123,
+      "tiered_balance": 98.39,
+      "original_balance": 100.08,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261124,
+      "tiered_balance": 95.91,
+      "original_balance": 99.34,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 3
+    },
+    {
+      "seed": 20261125,
+      "tiered_balance": 100.66,
+      "original_balance": 99.43,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261126,
+      "tiered_balance": 99.07,
+      "original_balance": 99.85,
+      "tiered_trades": 9,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261127,
+      "tiered_balance": 100.22,
+      "original_balance": 99.68,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261128,
+      "tiered_balance": 100.79,
+      "original_balance": 99.33,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261129,
+      "tiered_balance": 99.78,
+      "original_balance": 100.61,
+      "tiered_trades": 8,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261130,
+      "tiered_balance": 98.79,
+      "original_balance": 99.6,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261131,
+      "tiered_balance": 97.01,
+      "original_balance": 99.45,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261132,
+      "tiered_balance": 98.71,
+      "original_balance": 99.58,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261133,
+      "tiered_balance": 97.49,
+      "original_balance": 99.46,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261134,
+      "tiered_balance": 96.27,
+      "original_balance": 99.37,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261135,
+      "tiered_balance": 99.79,
+      "original_balance": 99.71,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261136,
+      "tiered_balance": 99.03,
+      "original_balance": 100.53,
+      "tiered_trades": 10,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261137,
+      "tiered_balance": 99.15,
+      "original_balance": 99.76,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261138,
+      "tiered_balance": 98.9,
+      "original_balance": 99.89,
+      "tiered_trades": 9,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261139,
+      "tiered_balance": 97.66,
+      "original_balance": 99.78,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261140,
+      "tiered_balance": 98.07,
+      "original_balance": 99.29,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261141,
+      "tiered_balance": 98.93,
+      "original_balance": 99.68,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261142,
+      "tiered_balance": 101.14,
+      "original_balance": 99.77,
+      "tiered_trades": 14,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261143,
+      "tiered_balance": 99.35,
+      "original_balance": 99.47,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261144,
+      "tiered_balance": 100.45,
+      "original_balance": 100.35,
+      "tiered_trades": 8,
+      "original_trades": 4,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261145,
+      "tiered_balance": 100.62,
+      "original_balance": 99.8,
+      "tiered_trades": 5,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261146,
+      "tiered_balance": 99.1,
+      "original_balance": 100.59,
+      "tiered_trades": 14,
+      "original_trades": 3,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261147,
+      "tiered_balance": 102.31,
+      "original_balance": 100.3,
+      "tiered_trades": 9,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261148,
+      "tiered_balance": 97.67,
+      "original_balance": 99.78,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261149,
+      "tiered_balance": 98.06,
+      "original_balance": 99.48,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261150,
+      "tiered_balance": 98.17,
+      "original_balance": 99.91,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261151,
+      "tiered_balance": 97.58,
+      "original_balance": 99.47,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261152,
+      "tiered_balance": 97.77,
+      "original_balance": 100.16,
+      "tiered_trades": 14,
+      "original_trades": 4,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261153,
+      "tiered_balance": 97.79,
+      "original_balance": 99.37,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261154,
+      "tiered_balance": 100.31,
+      "original_balance": 100.6,
+      "tiered_trades": 9,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261155,
+      "tiered_balance": 99.43,
+      "original_balance": 100.33,
+      "tiered_trades": 11,
+      "original_trades": 4,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261156,
+      "tiered_balance": 97.2,
+      "original_balance": 99.66,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261157,
+      "tiered_balance": 96.1,
+      "original_balance": 99.58,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261158,
+      "tiered_balance": 101.32,
+      "original_balance": 99.47,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261159,
+      "tiered_balance": 101.27,
+      "original_balance": 100.89,
+      "tiered_trades": 7,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261160,
+      "tiered_balance": 97.94,
+      "original_balance": 99.91,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261161,
+      "tiered_balance": 99.28,
+      "original_balance": 99.62,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261162,
+      "tiered_balance": 97.55,
+      "original_balance": 99.89,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261163,
+      "tiered_balance": 97.61,
+      "original_balance": 99.51,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261164,
+      "tiered_balance": 99.13,
+      "original_balance": 99.73,
+      "tiered_trades": 12,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261165,
+      "tiered_balance": 100.13,
+      "original_balance": 99.99,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261166,
+      "tiered_balance": 100.15,
+      "original_balance": 99.97,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261167,
+      "tiered_balance": 98.8,
+      "original_balance": 99.84,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261168,
+      "tiered_balance": 100.97,
+      "original_balance": 100.18,
+      "tiered_trades": 9,
+      "original_trades": 3,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261169,
+      "tiered_balance": 99.55,
+      "original_balance": 99.48,
+      "tiered_trades": 5,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261170,
+      "tiered_balance": 100.13,
+      "original_balance": 99.73,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261171,
+      "tiered_balance": 100.7,
+      "original_balance": 99.79,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261172,
+      "tiered_balance": 99.51,
+      "original_balance": 99.49,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261173,
+      "tiered_balance": 98.68,
+      "original_balance": 99.99,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261174,
+      "tiered_balance": 98.11,
+      "original_balance": 99.52,
+      "tiered_trades": 10,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261175,
+      "tiered_balance": 102.06,
+      "original_balance": 101.66,
+      "tiered_trades": 9,
+      "original_trades": 5,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261176,
+      "tiered_balance": 99.33,
+      "original_balance": 99.58,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261177,
+      "tiered_balance": 100.18,
+      "original_balance": 99.48,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261178,
+      "tiered_balance": 98.46,
+      "original_balance": 100.29,
+      "tiered_trades": 13,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261179,
+      "tiered_balance": 99.7,
+      "original_balance": 99.59,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261180,
+      "tiered_balance": 98.28,
+      "original_balance": 100.53,
+      "tiered_trades": 12,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261181,
+      "tiered_balance": 100.25,
+      "original_balance": 99.9,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261182,
+      "tiered_balance": 100.48,
+      "original_balance": 99.33,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261183,
+      "tiered_balance": 100.26,
+      "original_balance": 99.49,
+      "tiered_trades": 13,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261184,
+      "tiered_balance": 98.89,
+      "original_balance": 99.32,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261185,
+      "tiered_balance": 96.32,
+      "original_balance": 99.6,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261186,
+      "tiered_balance": 100.11,
+      "original_balance": 99.5,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261187,
+      "tiered_balance": 97.58,
+      "original_balance": 99.5,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261188,
+      "tiered_balance": 97.97,
+      "original_balance": 99.59,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261189,
+      "tiered_balance": 99.21,
+      "original_balance": 99.2,
+      "tiered_trades": 15,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261190,
+      "tiered_balance": 98.82,
+      "original_balance": 100.35,
+      "tiered_trades": 15,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261191,
+      "tiered_balance": 100.66,
+      "original_balance": 100.69,
+      "tiered_trades": 9,
+      "original_trades": 3,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261192,
+      "tiered_balance": 99.41,
+      "original_balance": 99.75,
+      "tiered_trades": 9,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261193,
+      "tiered_balance": 99.45,
+      "original_balance": 99.6,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261194,
+      "tiered_balance": 101.65,
+      "original_balance": 99.51,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261195,
+      "tiered_balance": 97.11,
+      "original_balance": 99.61,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261196,
+      "tiered_balance": 101.55,
+      "original_balance": 100.44,
+      "tiered_trades": 14,
+      "original_trades": 2,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261197,
+      "tiered_balance": 100.88,
+      "original_balance": 99.49,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261198,
+      "tiered_balance": 102.46,
+      "original_balance": 100.49,
+      "tiered_trades": 12,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261199,
+      "tiered_balance": 98.1,
+      "original_balance": 99.77,
+      "tiered_trades": 7,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261200,
+      "tiered_balance": 100.92,
+      "original_balance": 101.6,
+      "tiered_trades": 13,
+      "original_trades": 5,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261201,
+      "tiered_balance": 100.11,
+      "original_balance": 99.91,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261202,
+      "tiered_balance": 96.76,
+      "original_balance": 99.61,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261203,
+      "tiered_balance": 99.6,
+      "original_balance": 99.36,
+      "tiered_trades": 14,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261204,
+      "tiered_balance": 96.94,
+      "original_balance": 99.37,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261205,
+      "tiered_balance": 98.58,
+      "original_balance": 99.41,
+      "tiered_trades": 9,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261206,
+      "tiered_balance": 99.76,
+      "original_balance": 100.09,
+      "tiered_trades": 11,
+      "original_trades": 2,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261207,
+      "tiered_balance": 100.2,
+      "original_balance": 99.29,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261208,
+      "tiered_balance": 97.65,
+      "original_balance": 99.44,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261209,
+      "tiered_balance": 98.68,
+      "original_balance": 99.54,
+      "tiered_trades": 10,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    },
+    {
+      "seed": 20261210,
+      "tiered_balance": 98.68,
+      "original_balance": 99.43,
+      "tiered_trades": 11,
+      "original_trades": 1,
+      "tiered_reviews": 1
+    },
+    {
+      "seed": 20261211,
+      "tiered_balance": 97.81,
+      "original_balance": 100.12,
+      "tiered_trades": 13,
+      "original_trades": 2,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261212,
+      "tiered_balance": 96.29,
+      "original_balance": 99.45,
+      "tiered_trades": 12,
+      "original_trades": 1,
+      "tiered_reviews": 2
+    },
+    {
+      "seed": 20261213,
+      "tiered_balance": 99.79,
+      "original_balance": 99.35,
+      "tiered_trades": 8,
+      "original_trades": 1,
+      "tiered_reviews": 0
+    }
+  ]
+}
+
