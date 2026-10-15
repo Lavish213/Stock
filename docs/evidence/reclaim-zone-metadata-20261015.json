@@ -1,0 +1,114 @@
+{
+  "observed_at": "2026-10-15T06:21:07.095521+00:00",
+  "baseline": "774158413f4819c13156986f332b3aec21db66a7",
+  "actual_source_excerpts": 1,
+  "synthetic_examples": 4,
+  "cases": [
+    {
+      "id": "IMG_2884.jpeg:manual-caption",
+      "source_kind": "actual_source_manual_excerpt",
+      "text": "These setups are not automatic entries; we only enter trades based on market confirmation. NVDA220 Call expiration September4,2026. Entry trigger: reclaim the $218-$220 range and hold above this area with buyers stepping in.",
+      "source_sha256": "218020f01932efc2e2f455fd2d063581dcd98c381f97e7d59e1b66dabfe8b4eb",
+      "published_at": null,
+      "before": {
+        "kind": "conditional_setup",
+        "condition": null,
+        "execution_authorized": false
+      },
+      "after": {
+        "kind": "conditional_setup",
+        "condition": {
+          "direction": "above",
+          "level": 220.0,
+          "zone_low": 218.0,
+          "zone_high": 220.0,
+          "trigger_type": "reclaim_and_hold",
+          "hold_duration": null,
+          "buyers_confirmation_requested": true,
+          "volume_policy": null,
+          "review_required": true
+        },
+        "execution_authorized": false
+      }
+    },
+    {
+      "id": "synthetic-0",
+      "source_kind": "synthetic",
+      "text": "GOOGL break and hold above $346.",
+      "published_at": null,
+      "before": {
+        "kind": "conditional_setup",
+        "condition": {
+          "direction": "above",
+          "level": 346.0
+        },
+        "execution_authorized": false
+      },
+      "after": {
+        "kind": "conditional_setup",
+        "condition": {
+          "direction": "above",
+          "level": 346.0
+        },
+        "execution_authorized": false
+      }
+    },
+    {
+      "id": "synthetic-1",
+      "source_kind": "synthetic",
+      "text": "Break and hold above346 or break and hold below340.",
+      "published_at": null,
+      "before": {
+        "kind": "conditional_setup",
+        "condition": {
+          "direction": "above",
+          "level": 346.0
+        },
+        "execution_authorized": false
+      },
+      "after": {
+        "kind": "conditional_setup",
+        "condition": null,
+        "execution_authorized": false,
+        "condition_error": "multiple_conditions_require_review"
+      }
+    },
+    {
+      "id": "synthetic-2",
+      "source_kind": "synthetic",
+      "text": "Reclaim $220-$218 and hold above this zone.",
+      "published_at": null,
+      "before": {
+        "kind": "conditional_setup",
+        "condition": null,
+        "execution_authorized": false
+      },
+      "after": {
+        "kind": "conditional_setup",
+        "condition": null,
+        "execution_authorized": false,
+        "condition_error": "invalid_reclaim_zone"
+      }
+    },
+    {
+      "id": "synthetic-3",
+      "source_kind": "synthetic",
+      "text": "Reclaim $218-$220 and hold above $230.",
+      "published_at": null,
+      "before": {
+        "kind": "conditional_setup",
+        "condition": null,
+        "execution_authorized": false
+      },
+      "after": {
+        "kind": "conditional_setup",
+        "condition": null,
+        "execution_authorized": false,
+        "condition_error": "ambiguous_reclaim_threshold"
+      }
+    }
+  ],
+  "real_orders": 0,
+  "historical_fills_verified": false,
+  "production_execution_enabled": false
+}
