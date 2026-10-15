@@ -1,0 +1,1759 @@
+{
+  "month": "2026-09",
+  "sessions": 21,
+  "synthetic_creator": true,
+  "real_orders": 0,
+  "starting_equity": 1000,
+  "allocation_cap": 1,
+  "stock_sha256": "8f8deef3389f3984c2ccd1ad42a4a50cac3eab9207173a43a866d1dd86d6823c",
+  "option_sha256": "6508a3fa2801ab51e97c82ddf371ec2073ba186cb2b61a9afdefcea6caeca548",
+  "plan": "One 09:45 ET fake alert per session. CALL when first 15-minute close exceeds session open, otherwise PUT. Nearest whole-dollar strike, same-day expiry. Actual production candle gate; no parameter retuning after returns.",
+  "source": "Alpaca historical SPY and option trade bars; authenticated read-only GETs",
+  "alerts": [
+    {
+      "day": "2026-09-01",
+      "posted": "2026-09-01T09:45:00-04:00",
+      "text": "BTO SPY 762 PUT exp 2026-09-01 target 758.15 stop 764.25",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-01T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 762.0,
+        "expiry": "2026-09-01",
+        "entry_price_est": null,
+        "target_hint": 758.15,
+        "stop_hint": 764.25,
+        "notes_excerpt": "BTO SPY 762 PUT exp 2026-09-01 target 758.15 stop 764.25",
+        "instruction_text": "BTO SPY 762 PUT exp 2026-09-01 target 758.15 stop 764.25",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 762,
+      "expiry": "2026-09-01",
+      "target": 758.15,
+      "stop": 764.25,
+      "symbol": "SPY260901P00762000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 761.72,
+        "bar": {
+          "o": 762.035,
+          "h": 762.1699,
+          "l": 761.68,
+          "c": 761.72,
+          "v": 118426.0,
+          "t": "2026-09-01T13:46:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-01T13:47:00+00:00",
+      "close": "2026-09-01T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-02",
+      "posted": "2026-09-02T09:45:00-04:00",
+      "text": "BTO SPY 763 CALL exp 2026-09-02 target 766.61 stop 760.51",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-02T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 763.0,
+        "expiry": "2026-09-02",
+        "entry_price_est": null,
+        "target_hint": 766.61,
+        "stop_hint": 760.51,
+        "notes_excerpt": "BTO SPY 763 CALL exp 2026-09-02 target 766.61 stop 760.51",
+        "instruction_text": "BTO SPY 763 CALL exp 2026-09-02 target 766.61 stop 760.51",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 763,
+      "expiry": "2026-09-02",
+      "target": 766.61,
+      "stop": 760.51,
+      "symbol": "SPY260902C00763000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 762.33,
+        "bar": {
+          "o": 762.81,
+          "h": 762.9,
+          "l": 762.03,
+          "c": 762.33,
+          "v": 168776.0,
+          "t": "2026-09-02T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-02T13:46:00+00:00",
+      "close": "2026-09-02T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-03",
+      "posted": "2026-09-03T09:45:00-04:00",
+      "text": "BTO SPY 770 CALL exp 2026-09-03 target 773.64 stop 767.48",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-03T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 770.0,
+        "expiry": "2026-09-03",
+        "entry_price_est": null,
+        "target_hint": 773.64,
+        "stop_hint": 767.48,
+        "notes_excerpt": "BTO SPY 770 CALL exp 2026-09-03 target 773.64 stop 767.48",
+        "instruction_text": "BTO SPY 770 CALL exp 2026-09-03 target 773.64 stop 767.48",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 770,
+      "expiry": "2026-09-03",
+      "target": 773.64,
+      "stop": 767.48,
+      "symbol": "SPY260903C00770000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 769.9233,
+        "bar": {
+          "o": 769.64,
+          "h": 770.02,
+          "l": 769.61,
+          "c": 769.9233,
+          "v": 128709.0,
+          "t": "2026-09-03T13:50:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-03T13:51:00+00:00",
+      "close": "2026-09-03T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-04",
+      "posted": "2026-09-04T09:45:00-04:00",
+      "text": "BTO SPY 772 CALL exp 2026-09-04 target 776.03 stop 769.85",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-04T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 772.0,
+        "expiry": "2026-09-04",
+        "entry_price_est": null,
+        "target_hint": 776.03,
+        "stop_hint": 769.85,
+        "notes_excerpt": "BTO SPY 772 CALL exp 2026-09-04 target 776.03 stop 769.85",
+        "instruction_text": "BTO SPY 772 CALL exp 2026-09-04 target 776.03 stop 769.85",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 772,
+      "expiry": "2026-09-04",
+      "target": 776.03,
+      "stop": 769.85,
+      "symbol": "SPY260904C00772000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 772.525,
+        "bar": {
+          "o": 772.35,
+          "h": 772.62,
+          "l": 772.35,
+          "c": 772.525,
+          "v": 79845.0,
+          "t": "2026-09-04T13:48:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-04T13:49:00+00:00",
+      "close": "2026-09-04T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-08",
+      "posted": "2026-09-08T09:45:00-04:00",
+      "text": "BTO SPY 767 PUT exp 2026-09-08 target 763.45 stop 769.59",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-08T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 767.0,
+        "expiry": "2026-09-08",
+        "entry_price_est": null,
+        "target_hint": 763.45,
+        "stop_hint": 769.59,
+        "notes_excerpt": "BTO SPY 767 PUT exp 2026-09-08 target 763.45 stop 769.59",
+        "instruction_text": "BTO SPY 767 PUT exp 2026-09-08 target 763.45 stop 769.59",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 767,
+      "expiry": "2026-09-08",
+      "target": 763.45,
+      "stop": 769.59,
+      "symbol": "SPY260908P00767000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 767.625,
+        "bar": {
+          "o": 767.305,
+          "h": 767.7,
+          "l": 767.2,
+          "c": 767.625,
+          "v": 423028.0,
+          "t": "2026-09-08T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-08T13:46:00+00:00",
+      "close": "2026-09-08T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-09",
+      "posted": "2026-09-09T09:45:00-04:00",
+      "text": "BTO SPY 764 PUT exp 2026-09-09 target 759.93 stop 766.04",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-09T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 764.0,
+        "expiry": "2026-09-09",
+        "entry_price_est": null,
+        "target_hint": 759.93,
+        "stop_hint": 766.04,
+        "notes_excerpt": "BTO SPY 764 PUT exp 2026-09-09 target 759.93 stop 766.04",
+        "instruction_text": "BTO SPY 764 PUT exp 2026-09-09 target 759.93 stop 766.04",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 764,
+      "expiry": "2026-09-09",
+      "target": 759.93,
+      "stop": 766.04,
+      "symbol": "SPY260909P00764000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 763.49,
+        "bar": {
+          "o": 763.65,
+          "h": 763.77,
+          "l": 763.49,
+          "c": 763.49,
+          "v": 98005.0,
+          "t": "2026-09-09T13:51:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-09T13:52:00+00:00",
+      "close": "2026-09-09T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-10",
+      "posted": "2026-09-10T09:45:00-04:00",
+      "text": "BTO SPY 758 CALL exp 2026-09-10 target 761.93 stop 755.86",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-10T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 758.0,
+        "expiry": "2026-09-10",
+        "entry_price_est": null,
+        "target_hint": 761.93,
+        "stop_hint": 755.86,
+        "notes_excerpt": "BTO SPY 758 CALL exp 2026-09-10 target 761.93 stop 755.86",
+        "instruction_text": "BTO SPY 758 CALL exp 2026-09-10 target 761.93 stop 755.86",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 758,
+      "expiry": "2026-09-10",
+      "target": 761.93,
+      "stop": 755.86,
+      "symbol": "SPY260910C00758000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_confirmed",
+        "price": 758.77,
+        "bar": {
+          "o": 758.485,
+          "h": 758.8,
+          "l": 758.41,
+          "c": 758.77,
+          "v": 342590.0,
+          "t": "2026-09-10T13:46:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-10T13:47:00+00:00",
+      "close": "2026-09-10T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-11",
+      "posted": "2026-09-11T09:45:00-04:00",
+      "text": "BTO SPY 765 CALL exp 2026-09-11 target 769.29 stop 763.16",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-11T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 765.0,
+        "expiry": "2026-09-11",
+        "entry_price_est": null,
+        "target_hint": 769.29,
+        "stop_hint": 763.16,
+        "notes_excerpt": "BTO SPY 765 CALL exp 2026-09-11 target 769.29 stop 763.16",
+        "instruction_text": "BTO SPY 765 CALL exp 2026-09-11 target 769.29 stop 763.16",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 765,
+      "expiry": "2026-09-11",
+      "target": 769.29,
+      "stop": 763.16,
+      "symbol": "SPY260911C00765000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 764.87,
+        "bar": {
+          "o": 765.15,
+          "h": 765.285,
+          "l": 764.87,
+          "c": 764.87,
+          "v": 111568.0,
+          "t": "2026-09-11T13:48:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-11T13:49:00+00:00",
+      "close": "2026-09-11T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-14",
+      "posted": "2026-09-14T09:45:00-04:00",
+      "text": "BTO SPY 759 CALL exp 2026-09-14 target 763.21 stop 757.13",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-14T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 759.0,
+        "expiry": "2026-09-14",
+        "entry_price_est": null,
+        "target_hint": 763.21,
+        "stop_hint": 757.13,
+        "notes_excerpt": "BTO SPY 759 CALL exp 2026-09-14 target 763.21 stop 757.13",
+        "instruction_text": "BTO SPY 759 CALL exp 2026-09-14 target 763.21 stop 757.13",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 759,
+      "expiry": "2026-09-14",
+      "target": 763.21,
+      "stop": 757.13,
+      "symbol": "SPY260914C00759000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 759.59,
+        "bar": {
+          "o": 759.5,
+          "h": 759.69,
+          "l": 759.48,
+          "c": 759.59,
+          "v": 102655.0,
+          "t": "2026-09-14T13:46:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-14T13:47:00+00:00",
+      "close": "2026-09-14T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-15",
+      "posted": "2026-09-15T09:45:00-04:00",
+      "text": "BTO SPY 760 PUT exp 2026-09-15 target 756.15 stop 762.23",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-15T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 760.0,
+        "expiry": "2026-09-15",
+        "entry_price_est": null,
+        "target_hint": 756.15,
+        "stop_hint": 762.23,
+        "notes_excerpt": "BTO SPY 760 PUT exp 2026-09-15 target 756.15 stop 762.23",
+        "instruction_text": "BTO SPY 760 PUT exp 2026-09-15 target 756.15 stop 762.23",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 760,
+      "expiry": "2026-09-15",
+      "target": 756.15,
+      "stop": 762.23,
+      "symbol": "SPY260915P00760000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 759.535,
+        "bar": {
+          "o": 759.765,
+          "h": 759.795,
+          "l": 759.445,
+          "c": 759.535,
+          "v": 96183.0,
+          "t": "2026-09-15T13:47:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-15T13:48:00+00:00",
+      "close": "2026-09-15T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-16",
+      "posted": "2026-09-16T09:45:00-04:00",
+      "text": "BTO SPY 759 PUT exp 2026-09-16 target 754.98 stop 761.05",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-16T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 759.0,
+        "expiry": "2026-09-16",
+        "entry_price_est": null,
+        "target_hint": 754.98,
+        "stop_hint": 761.05,
+        "notes_excerpt": "BTO SPY 759 PUT exp 2026-09-16 target 754.98 stop 761.05",
+        "instruction_text": "BTO SPY 759 PUT exp 2026-09-16 target 754.98 stop 761.05",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 759,
+      "expiry": "2026-09-16",
+      "target": 754.98,
+      "stop": 761.05,
+      "symbol": "SPY260916P00759000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 759.39,
+        "bar": {
+          "o": 758.8,
+          "h": 759.75,
+          "l": 758.76,
+          "c": 759.39,
+          "v": 321619.0,
+          "t": "2026-09-16T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-16T13:46:00+00:00",
+      "close": "2026-09-16T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-17",
+      "posted": "2026-09-17T09:45:00-04:00",
+      "text": "BTO SPY 761 PUT exp 2026-09-17 target 757.13 stop 763.21",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-17T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 761.0,
+        "expiry": "2026-09-17",
+        "entry_price_est": null,
+        "target_hint": 757.13,
+        "stop_hint": 763.21,
+        "notes_excerpt": "BTO SPY 761 PUT exp 2026-09-17 target 757.13 stop 763.21",
+        "instruction_text": "BTO SPY 761 PUT exp 2026-09-17 target 757.13 stop 763.21",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 761,
+      "expiry": "2026-09-17",
+      "target": 757.13,
+      "stop": 763.21,
+      "symbol": "SPY260917P00761000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 761.25,
+        "bar": {
+          "o": 761.1,
+          "h": 761.48,
+          "l": 761.0021,
+          "c": 761.25,
+          "v": 440891.0,
+          "t": "2026-09-17T13:47:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-17T13:48:00+00:00",
+      "close": "2026-09-17T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-18",
+      "posted": "2026-09-18T09:45:00-04:00",
+      "text": "BTO SPY 761 PUT exp 2026-09-18 target 757.12 stop 763.20",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-18T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 761.0,
+        "expiry": "2026-09-18",
+        "entry_price_est": null,
+        "target_hint": 757.12,
+        "stop_hint": 763.2,
+        "notes_excerpt": "BTO SPY 761 PUT exp 2026-09-18 target 757.12 stop 763.20",
+        "instruction_text": "BTO SPY 761 PUT exp 2026-09-18 target 757.12 stop 763.20",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 761,
+      "expiry": "2026-09-18",
+      "target": 757.12,
+      "stop": 763.2,
+      "symbol": "SPY260918P00761000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 761.02,
+        "bar": {
+          "o": 760.92,
+          "h": 761.05,
+          "l": 760.86,
+          "c": 761.02,
+          "v": 147377.0,
+          "t": "2026-09-18T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-18T13:46:00+00:00",
+      "close": "2026-09-18T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-21",
+      "posted": "2026-09-21T09:45:00-04:00",
+      "text": "BTO SPY 767 CALL exp 2026-09-21 target 770.69 stop 764.55",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-21T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 767.0,
+        "expiry": "2026-09-21",
+        "entry_price_est": null,
+        "target_hint": 770.69,
+        "stop_hint": 764.55,
+        "notes_excerpt": "BTO SPY 767 CALL exp 2026-09-21 target 770.69 stop 764.55",
+        "instruction_text": "BTO SPY 767 CALL exp 2026-09-21 target 770.69 stop 764.55",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 767,
+      "expiry": "2026-09-21",
+      "target": 770.69,
+      "stop": 764.55,
+      "symbol": "SPY260921C00767000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 767.07,
+        "bar": {
+          "o": 766.86,
+          "h": 767.09,
+          "l": 766.82,
+          "c": 767.07,
+          "v": 153653.0,
+          "t": "2026-09-21T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-21T13:46:00+00:00",
+      "close": "2026-09-21T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-22",
+      "posted": "2026-09-22T09:45:00-04:00",
+      "text": "BTO SPY 775 CALL exp 2026-09-22 target 778.48 stop 772.29",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-22T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 775.0,
+        "expiry": "2026-09-22",
+        "entry_price_est": null,
+        "target_hint": 778.48,
+        "stop_hint": 772.29,
+        "notes_excerpt": "BTO SPY 775 CALL exp 2026-09-22 target 778.48 stop 772.29",
+        "instruction_text": "BTO SPY 775 CALL exp 2026-09-22 target 778.48 stop 772.29",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 775,
+      "expiry": "2026-09-22",
+      "target": 778.48,
+      "stop": 772.29,
+      "symbol": "SPY260922C00775000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 774.33,
+        "bar": {
+          "o": 774.6,
+          "h": 774.63,
+          "l": 774.13,
+          "c": 774.33,
+          "v": 66054.0,
+          "t": "2026-09-22T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-22T13:46:00+00:00",
+      "close": "2026-09-22T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-23",
+      "posted": "2026-09-23T09:45:00-04:00",
+      "text": "BTO SPY 772 PUT exp 2026-09-23 target 768.06 stop 774.23",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-23T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 772.0,
+        "expiry": "2026-09-23",
+        "entry_price_est": null,
+        "target_hint": 768.06,
+        "stop_hint": 774.23,
+        "notes_excerpt": "BTO SPY 772 PUT exp 2026-09-23 target 768.06 stop 774.23",
+        "instruction_text": "BTO SPY 772 PUT exp 2026-09-23 target 768.06 stop 774.23",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 772,
+      "expiry": "2026-09-23",
+      "target": 768.06,
+      "stop": 774.23,
+      "symbol": "SPY260923P00772000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 771.62,
+        "bar": {
+          "o": 771.9,
+          "h": 771.97,
+          "l": 771.57,
+          "c": 771.62,
+          "v": 81929.0,
+          "t": "2026-09-23T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-23T13:46:00+00:00",
+      "close": "2026-09-23T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-24",
+      "posted": "2026-09-24T09:45:00-04:00",
+      "text": "BTO SPY 765 CALL exp 2026-09-24 target 768.47 stop 762.36",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-24T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 765.0,
+        "expiry": "2026-09-24",
+        "entry_price_est": null,
+        "target_hint": 768.47,
+        "stop_hint": 762.36,
+        "notes_excerpt": "BTO SPY 765 CALL exp 2026-09-24 target 768.47 stop 762.36",
+        "instruction_text": "BTO SPY 765 CALL exp 2026-09-24 target 768.47 stop 762.36",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 765,
+      "expiry": "2026-09-24",
+      "target": 768.47,
+      "stop": 762.36,
+      "symbol": "SPY260924C00765000",
+      "gate": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 764.79,
+        "bar": {
+          "o": 764.66,
+          "h": 764.885,
+          "l": 764.49,
+          "c": 764.79,
+          "v": 72287.0,
+          "t": "2026-09-24T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-24T13:46:00+00:00",
+      "close": "2026-09-24T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-25",
+      "posted": "2026-09-25T09:45:00-04:00",
+      "text": "BTO SPY 769 CALL exp 2026-09-25 target 773.34 stop 767.18",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-25T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 769.0,
+        "expiry": "2026-09-25",
+        "entry_price_est": null,
+        "target_hint": 773.34,
+        "stop_hint": 767.18,
+        "notes_excerpt": "BTO SPY 769 CALL exp 2026-09-25 target 773.34 stop 767.18",
+        "instruction_text": "BTO SPY 769 CALL exp 2026-09-25 target 773.34 stop 767.18",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 769,
+      "expiry": "2026-09-25",
+      "target": 773.34,
+      "stop": 767.18,
+      "symbol": "SPY260925C00769000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 769.035,
+        "bar": {
+          "o": 769.535,
+          "h": 769.655,
+          "l": 769.0,
+          "c": 769.035,
+          "v": 112336.0,
+          "t": "2026-09-25T13:48:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-25T13:49:00+00:00",
+      "close": "2026-09-25T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-28",
+      "posted": "2026-09-28T09:45:00-04:00",
+      "text": "BTO SPY 768 PUT exp 2026-09-28 target 763.79 stop 769.93",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-28T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 768.0,
+        "expiry": "2026-09-28",
+        "entry_price_est": null,
+        "target_hint": 763.79,
+        "stop_hint": 769.93,
+        "notes_excerpt": "BTO SPY 768 PUT exp 2026-09-28 target 763.79 stop 769.93",
+        "instruction_text": "BTO SPY 768 PUT exp 2026-09-28 target 763.79 stop 769.93",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 768,
+      "expiry": "2026-09-28",
+      "target": 763.79,
+      "stop": 769.93,
+      "symbol": "SPY260928P00768000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 767.7799,
+        "bar": {
+          "o": 767.61,
+          "h": 767.79,
+          "l": 767.48,
+          "c": 767.7799,
+          "v": 112142.0,
+          "t": "2026-09-28T13:46:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-28T13:47:00+00:00",
+      "close": "2026-09-28T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-29",
+      "posted": "2026-09-29T09:45:00-04:00",
+      "text": "BTO SPY 765 PUT exp 2026-09-29 target 761.29 stop 767.41",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-29T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "PUT",
+        "strike": 765.0,
+        "expiry": "2026-09-29",
+        "entry_price_est": null,
+        "target_hint": 761.29,
+        "stop_hint": 767.41,
+        "notes_excerpt": "BTO SPY 765 PUT exp 2026-09-29 target 761.29 stop 767.41",
+        "instruction_text": "BTO SPY 765 PUT exp 2026-09-29 target 761.29 stop 767.41",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "PUT",
+      "strike": 765,
+      "expiry": "2026-09-29",
+      "target": 761.29,
+      "stop": 767.41,
+      "symbol": "SPY260929P00765000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 765.233,
+        "bar": {
+          "o": 765.115,
+          "h": 765.28,
+          "l": 765.02,
+          "c": 765.233,
+          "v": 66748.0,
+          "t": "2026-09-29T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-29T13:46:00+00:00",
+      "close": "2026-09-29T16:00:00-04:00"
+    },
+    {
+      "day": "2026-09-30",
+      "posted": "2026-09-30T09:45:00-04:00",
+      "text": "BTO SPY 767 CALL exp 2026-09-30 target 770.49 stop 764.36",
+      "parsed": {
+        "image": "synthetic-month",
+        "timestamp": "2026-09-30T09:45:00",
+        "ticker": "SPY",
+        "ticker_score": 100,
+        "side": "CALL",
+        "strike": 767.0,
+        "expiry": "2026-09-30",
+        "entry_price_est": null,
+        "target_hint": 770.49,
+        "stop_hint": 764.36,
+        "notes_excerpt": "BTO SPY 767 CALL exp 2026-09-30 target 770.49 stop 764.36",
+        "instruction_text": "BTO SPY 767 CALL exp 2026-09-30 target 770.49 stop 764.36",
+        "confidence": 0.85,
+        "field_conflicts": [],
+        "needs_human_review": false
+      },
+      "side": "CALL",
+      "strike": 767,
+      "expiry": "2026-09-30",
+      "target": 770.49,
+      "stop": 764.36,
+      "symbol": "SPY260930C00767000",
+      "gate": {
+        "confirmed": false,
+        "reason": "invalidated_wrong_direction",
+        "price": 766.24,
+        "bar": {
+          "o": 766.68,
+          "h": 767.0,
+          "l": 766.225,
+          "c": 766.24,
+          "v": 81368.0,
+          "t": "2026-09-30T13:45:00+00:00"
+        }
+      },
+      "decision_at": "2026-09-30T13:46:00+00:00",
+      "close": "2026-09-30T16:00:00-04:00"
+    }
+  ],
+  "models": [
+    {
+      "starting_equity": 1000.0,
+      "allocation_cap": 1.0,
+      "adverse_fraction_per_side": 0.01,
+      "final_equity": 207.50000000000006,
+      "net_pnl": -792.5,
+      "return_pct": -79.25,
+      "trades": 6,
+      "wins": 3,
+      "losses": 3,
+      "closed_trade_equity_drawdown_pct": 87.36,
+      "fees": 19.5,
+      "modeled_price_cost": 45.999999999999886,
+      "final_positions": 0,
+      "outcomes": [
+        {
+          "day": "2026-09-01",
+          "symbol": "SPY260901P00762000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-02",
+          "symbol": "SPY260902C00763000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-03",
+          "symbol": "SPY260903C00770000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-04",
+          "symbol": "SPY260904C00772000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-08",
+          "symbol": "SPY260908P00767000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-09",
+          "symbol": "SPY260909P00764000",
+          "side": "PUT",
+          "result": "cannot_afford_one_contract",
+          "cash": 126.40000000000005,
+          "entry_proxy": 1.45
+        },
+        {
+          "day": "2026-09-10",
+          "symbol": "SPY260910C00758000",
+          "side": "CALL",
+          "result": "cannot_afford_one_contract",
+          "cash": 126.40000000000005,
+          "entry_proxy": 1.89
+        },
+        {
+          "day": "2026-09-11",
+          "symbol": "SPY260911C00765000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-14",
+          "symbol": "SPY260914C00759000",
+          "side": "CALL",
+          "result": "cannot_afford_one_contract",
+          "cash": 126.40000000000005,
+          "entry_proxy": 1.58
+        },
+        {
+          "day": "2026-09-15",
+          "symbol": "SPY260915P00760000",
+          "side": "PUT",
+          "result": "cannot_afford_one_contract",
+          "cash": 126.40000000000005,
+          "entry_proxy": 1.47
+        },
+        {
+          "day": "2026-09-16",
+          "symbol": "SPY260916P00759000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-17",
+          "symbol": "SPY260917P00761000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-18",
+          "symbol": "SPY260918P00761000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-21",
+          "symbol": "SPY260921C00767000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-22",
+          "symbol": "SPY260922C00775000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-23",
+          "symbol": "SPY260923P00772000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-24",
+          "symbol": "SPY260924C00765000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-25",
+          "symbol": "SPY260925C00769000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-28",
+          "symbol": "SPY260928P00768000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-29",
+          "symbol": "SPY260929P00765000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-30",
+          "symbol": "SPY260930C00767000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        }
+      ],
+      "ledger": [
+        {
+          "day": "2026-09-01",
+          "symbol": "SPY260901P00762000",
+          "side": "PUT",
+          "entry_at": "2026-09-01T13:47:00+00:00",
+          "exit_at": "2026-09-01T14:15:00+00:00",
+          "qty": 7,
+          "starting_equity": 1000.0,
+          "premium_spent": 977.5500000000001,
+          "entry_price": 1.39,
+          "exit_price": 0.63,
+          "reason": "premium_stop_50pct",
+          "fees": 9.1,
+          "modeled_price_cost": 20.999999999999865,
+          "net_pnl": -541.0999999999999,
+          "ending_equity": 458.9000000000001
+        },
+        {
+          "day": "2026-09-03",
+          "symbol": "SPY260903C00770000",
+          "side": "CALL",
+          "entry_at": "2026-09-03T13:51:00+00:00",
+          "exit_at": "2026-09-03T14:02:00+00:00",
+          "qty": 4,
+          "starting_equity": 458.9000000000001,
+          "premium_spent": 450.6000000000001,
+          "entry_price": 1.12,
+          "exit_price": 0.5,
+          "reason": "premium_stop_50pct",
+          "fees": 5.2,
+          "modeled_price_cost": 12.00000000000001,
+          "net_pnl": -253.20000000000005,
+          "ending_equity": 205.70000000000005
+        },
+        {
+          "day": "2026-09-04",
+          "symbol": "SPY260904C00772000",
+          "side": "CALL",
+          "entry_at": "2026-09-04T13:49:00+00:00",
+          "exit_at": "2026-09-04T14:12:00+00:00",
+          "qty": 1,
+          "starting_equity": 205.70000000000005,
+          "premium_spent": 153.65,
+          "entry_price": 1.53,
+          "exit_price": 0.75,
+          "reason": "premium_stop_50pct",
+          "fees": 1.3,
+          "modeled_price_cost": 3.0000000000000027,
+          "net_pnl": -79.3,
+          "ending_equity": 126.40000000000005
+        },
+        {
+          "day": "2026-09-21",
+          "symbol": "SPY260921C00767000",
+          "side": "CALL",
+          "entry_at": "2026-09-21T13:46:00+00:00",
+          "exit_at": "2026-09-21T14:06:00+00:00",
+          "qty": 1,
+          "starting_equity": 126.40000000000006,
+          "premium_spent": 88.65,
+          "entry_price": 0.88,
+          "exit_price": 0.94,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 2.0000000000000018,
+          "net_pnl": 4.699999999999995,
+          "ending_equity": 131.10000000000005
+        },
+        {
+          "day": "2026-09-23",
+          "symbol": "SPY260923P00772000",
+          "side": "PUT",
+          "entry_at": "2026-09-23T13:46:00+00:00",
+          "exit_at": "2026-09-23T14:01:00+00:00",
+          "qty": 1,
+          "starting_equity": 131.10000000000005,
+          "premium_spent": 118.65,
+          "entry_price": 1.18,
+          "exit_price": 1.54,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 4.0000000000000036,
+          "net_pnl": 34.70000000000001,
+          "ending_equity": 165.80000000000007
+        },
+        {
+          "day": "2026-09-24",
+          "symbol": "SPY260924C00765000",
+          "side": "CALL",
+          "entry_at": "2026-09-24T13:46:00+00:00",
+          "exit_at": "2026-09-24T14:12:00+00:00",
+          "qty": 1,
+          "starting_equity": 165.80000000000007,
+          "premium_spent": 131.65,
+          "entry_price": 1.31,
+          "exit_price": 1.74,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 4.0000000000000036,
+          "net_pnl": 41.699999999999996,
+          "ending_equity": 207.50000000000006
+        }
+      ]
+    },
+    {
+      "starting_equity": 1000.0,
+      "allocation_cap": 1.0,
+      "adverse_fraction_per_side": 0.03,
+      "final_equity": 105.80000000000014,
+      "net_pnl": -894.1999999999998,
+      "return_pct": -89.41999999999999,
+      "trades": 6,
+      "wins": 2,
+      "losses": 4,
+      "closed_trade_equity_drawdown_pct": 89.49,
+      "fees": 18.200000000000003,
+      "modeled_price_cost": 104.99999999999977,
+      "final_positions": 0,
+      "outcomes": [
+        {
+          "day": "2026-09-01",
+          "symbol": "SPY260901P00762000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-02",
+          "symbol": "SPY260902C00763000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-03",
+          "symbol": "SPY260903C00770000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-04",
+          "symbol": "SPY260904C00772000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-08",
+          "symbol": "SPY260908P00767000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-09",
+          "symbol": "SPY260909P00764000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-10",
+          "symbol": "SPY260910C00758000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-11",
+          "symbol": "SPY260911C00765000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-14",
+          "symbol": "SPY260914C00759000",
+          "side": "CALL",
+          "result": "cannot_afford_one_contract",
+          "cash": 105.10000000000014,
+          "entry_proxy": 1.61
+        },
+        {
+          "day": "2026-09-15",
+          "symbol": "SPY260915P00760000",
+          "side": "PUT",
+          "result": "cannot_afford_one_contract",
+          "cash": 105.10000000000014,
+          "entry_proxy": 1.5
+        },
+        {
+          "day": "2026-09-16",
+          "symbol": "SPY260916P00759000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-17",
+          "symbol": "SPY260917P00761000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-18",
+          "symbol": "SPY260918P00761000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-21",
+          "symbol": "SPY260921C00767000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-22",
+          "symbol": "SPY260922C00775000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-23",
+          "symbol": "SPY260923P00772000",
+          "side": "PUT",
+          "result": "cannot_afford_one_contract",
+          "cash": 105.80000000000014,
+          "entry_proxy": 1.2
+        },
+        {
+          "day": "2026-09-24",
+          "symbol": "SPY260924C00765000",
+          "side": "CALL",
+          "result": "cannot_afford_one_contract",
+          "cash": 105.80000000000014,
+          "entry_proxy": 1.33
+        },
+        {
+          "day": "2026-09-25",
+          "symbol": "SPY260925C00769000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-28",
+          "symbol": "SPY260928P00768000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-29",
+          "symbol": "SPY260929P00765000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-30",
+          "symbol": "SPY260930C00767000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        }
+      ],
+      "ledger": [
+        {
+          "day": "2026-09-01",
+          "symbol": "SPY260901P00762000",
+          "side": "PUT",
+          "entry_at": "2026-09-01T13:47:00+00:00",
+          "exit_at": "2026-09-01T14:10:00+00:00",
+          "qty": 6,
+          "starting_equity": 1000.0,
+          "premium_spent": 855.9000000000001,
+          "entry_price": 1.42,
+          "exit_price": 0.66,
+          "reason": "premium_stop_50pct",
+          "fees": 7.800000000000001,
+          "modeled_price_cost": 47.999999999999844,
+          "net_pnl": -463.79999999999995,
+          "ending_equity": 536.2
+        },
+        {
+          "day": "2026-09-03",
+          "symbol": "SPY260903C00770000",
+          "side": "CALL",
+          "entry_at": "2026-09-03T13:51:00+00:00",
+          "exit_at": "2026-09-03T14:01:00+00:00",
+          "qty": 4,
+          "starting_equity": 536.2,
+          "premium_spent": 458.59999999999997,
+          "entry_price": 1.14,
+          "exit_price": 0.54,
+          "reason": "premium_stop_50pct",
+          "fees": 5.2,
+          "modeled_price_cost": 23.999999999999932,
+          "net_pnl": -245.19999999999993,
+          "ending_equity": 291.0000000000001
+        },
+        {
+          "day": "2026-09-04",
+          "symbol": "SPY260904C00772000",
+          "side": "CALL",
+          "entry_at": "2026-09-04T13:49:00+00:00",
+          "exit_at": "2026-09-04T14:11:00+00:00",
+          "qty": 1,
+          "starting_equity": 291.0000000000001,
+          "premium_spent": 156.65,
+          "entry_price": 1.56,
+          "exit_price": 0.73,
+          "reason": "premium_stop_50pct",
+          "fees": 1.3,
+          "modeled_price_cost": 8.000000000000007,
+          "net_pnl": -84.3,
+          "ending_equity": 206.7000000000001
+        },
+        {
+          "day": "2026-09-09",
+          "symbol": "SPY260909P00764000",
+          "side": "PUT",
+          "entry_at": "2026-09-09T13:52:00+00:00",
+          "exit_at": "2026-09-09T14:26:00+00:00",
+          "qty": 1,
+          "starting_equity": 206.7000000000001,
+          "premium_spent": 148.65,
+          "entry_price": 1.48,
+          "exit_price": 1.52,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 10.000000000000009,
+          "net_pnl": 2.7000000000000037,
+          "ending_equity": 209.40000000000012
+        },
+        {
+          "day": "2026-09-10",
+          "symbol": "SPY260910C00758000",
+          "side": "CALL",
+          "entry_at": "2026-09-10T13:47:00+00:00",
+          "exit_at": "2026-09-10T13:59:00+00:00",
+          "qty": 1,
+          "starting_equity": 209.40000000000012,
+          "premium_spent": 193.65,
+          "entry_price": 1.93,
+          "exit_price": 0.9,
+          "reason": "premium_stop_50pct",
+          "fees": 1.3,
+          "modeled_price_cost": 8.999999999999986,
+          "net_pnl": -104.29999999999998,
+          "ending_equity": 105.10000000000014
+        },
+        {
+          "day": "2026-09-21",
+          "symbol": "SPY260921C00767000",
+          "side": "CALL",
+          "entry_at": "2026-09-21T13:46:00+00:00",
+          "exit_at": "2026-09-21T14:06:00+00:00",
+          "qty": 1,
+          "starting_equity": 105.10000000000014,
+          "premium_spent": 90.65,
+          "entry_price": 0.9,
+          "exit_price": 0.92,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 5.999999999999995,
+          "net_pnl": 0.7000000000000017,
+          "ending_equity": 105.80000000000014
+        }
+      ]
+    },
+    {
+      "starting_equity": 1000.0,
+      "allocation_cap": 1.0,
+      "adverse_fraction_per_side": 0.05,
+      "final_equity": 376.00000000000006,
+      "net_pnl": -624.0,
+      "return_pct": -62.39999999999999,
+      "trades": 9,
+      "wins": 4,
+      "losses": 5,
+      "closed_trade_equity_drawdown_pct": 83.05999999999999,
+      "fees": 26.0,
+      "modeled_price_cost": 249.9999999999999,
+      "final_positions": 0,
+      "outcomes": [
+        {
+          "day": "2026-09-01",
+          "symbol": "SPY260901P00762000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-02",
+          "symbol": "SPY260902C00763000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-03",
+          "symbol": "SPY260903C00770000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-04",
+          "symbol": "SPY260904C00772000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_stop_50pct"
+        },
+        {
+          "day": "2026-09-08",
+          "symbol": "SPY260908P00767000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-09",
+          "symbol": "SPY260909P00764000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-10",
+          "symbol": "SPY260910C00758000",
+          "side": "CALL",
+          "result": "cannot_afford_one_contract",
+          "cash": 169.4000000000001,
+          "entry_proxy": 1.97
+        },
+        {
+          "day": "2026-09-11",
+          "symbol": "SPY260911C00765000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-14",
+          "symbol": "SPY260914C00759000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-15",
+          "symbol": "SPY260915P00760000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-16",
+          "symbol": "SPY260916P00759000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-17",
+          "symbol": "SPY260917P00761000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-18",
+          "symbol": "SPY260918P00761000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-21",
+          "symbol": "SPY260921C00767000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-22",
+          "symbol": "SPY260922C00775000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-23",
+          "symbol": "SPY260923P00772000",
+          "side": "PUT",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-24",
+          "symbol": "SPY260924C00765000",
+          "side": "CALL",
+          "result": "closed",
+          "reason": "premium_trailing_stop"
+        },
+        {
+          "day": "2026-09-25",
+          "symbol": "SPY260925C00769000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-28",
+          "symbol": "SPY260928P00768000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-29",
+          "symbol": "SPY260929P00765000",
+          "side": "PUT",
+          "result": "gate_invalidated_wrong_direction"
+        },
+        {
+          "day": "2026-09-30",
+          "symbol": "SPY260930C00767000",
+          "side": "CALL",
+          "result": "gate_invalidated_wrong_direction"
+        }
+      ],
+      "ledger": [
+        {
+          "day": "2026-09-01",
+          "symbol": "SPY260901P00762000",
+          "side": "PUT",
+          "entry_at": "2026-09-01T13:47:00+00:00",
+          "exit_at": "2026-09-01T14:10:00+00:00",
+          "qty": 6,
+          "starting_equity": 1000.0,
+          "premium_spent": 867.9000000000001,
+          "entry_price": 1.44,
+          "exit_price": 0.65,
+          "reason": "premium_stop_50pct",
+          "fees": 7.800000000000001,
+          "modeled_price_cost": 65.99999999999986,
+          "net_pnl": -481.79999999999995,
+          "ending_equity": 518.2
+        },
+        {
+          "day": "2026-09-03",
+          "symbol": "SPY260903C00770000",
+          "side": "CALL",
+          "entry_at": "2026-09-03T13:51:00+00:00",
+          "exit_at": "2026-09-03T14:01:00+00:00",
+          "qty": 4,
+          "starting_equity": 518.2,
+          "premium_spent": 466.59999999999997,
+          "entry_price": 1.16,
+          "exit_price": 0.53,
+          "reason": "premium_stop_50pct",
+          "fees": 5.2,
+          "modeled_price_cost": 35.99999999999994,
+          "net_pnl": -257.19999999999993,
+          "ending_equity": 261.0000000000001
+        },
+        {
+          "day": "2026-09-04",
+          "symbol": "SPY260904C00772000",
+          "side": "CALL",
+          "entry_at": "2026-09-04T13:49:00+00:00",
+          "exit_at": "2026-09-04T14:11:00+00:00",
+          "qty": 1,
+          "starting_equity": 261.0000000000001,
+          "premium_spent": 159.65,
+          "entry_price": 1.59,
+          "exit_price": 0.72,
+          "reason": "premium_stop_50pct",
+          "fees": 1.3,
+          "modeled_price_cost": 12.00000000000001,
+          "net_pnl": -88.30000000000001,
+          "ending_equity": 172.7000000000001
+        },
+        {
+          "day": "2026-09-09",
+          "symbol": "SPY260909P00764000",
+          "side": "PUT",
+          "entry_at": "2026-09-09T13:52:00+00:00",
+          "exit_at": "2026-09-09T14:26:00+00:00",
+          "qty": 1,
+          "starting_equity": 172.7000000000001,
+          "premium_spent": 151.65,
+          "entry_price": 1.51,
+          "exit_price": 1.49,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 16.000000000000014,
+          "net_pnl": -3.3000000000000016,
+          "ending_equity": 169.4000000000001
+        },
+        {
+          "day": "2026-09-14",
+          "symbol": "SPY260914C00759000",
+          "side": "CALL",
+          "entry_at": "2026-09-14T13:47:00+00:00",
+          "exit_at": "2026-09-14T13:56:00+00:00",
+          "qty": 1,
+          "starting_equity": 169.4000000000001,
+          "premium_spent": 164.65,
+          "entry_price": 1.64,
+          "exit_price": 1.72,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 17.999999999999993,
+          "net_pnl": 6.700000000000007,
+          "ending_equity": 176.1000000000001
+        },
+        {
+          "day": "2026-09-15",
+          "symbol": "SPY260915P00760000",
+          "side": "PUT",
+          "entry_at": "2026-09-15T13:48:00+00:00",
+          "exit_at": "2026-09-15T14:25:00+00:00",
+          "qty": 1,
+          "starting_equity": 176.10000000000014,
+          "premium_spent": 153.65,
+          "entry_price": 1.53,
+          "exit_price": 2.52,
+          "reason": "premium_trailing_stop",
+          "fees": 1.3,
+          "modeled_price_cost": 22.00000000000002,
+          "net_pnl": 97.7,
+          "ending_equity": 273.8000000000001
+        },
+        {
+          "day": "2026-09-21",
+          "symbol": "SPY260921C00767000",
+          "side": "CALL",
+          "entry_at": "2026-09-21T13:46:00+00:00",
+          "exit_at": "2026-09-21T14:06:00+00:00",
+          "qty": 2,
+          "starting_equity": 273.8000000000001,
+          "premium_spent": 185.3,
+          "entry_price": 0.92,
+          "exit_price": 0.9,
+          "reason": "premium_trailing_stop",
+          "fees": 2.6,
+          "modeled_price_cost": 19.999999999999996,
+          "net_pnl": -6.600000000000003,
+          "ending_equity": 267.2000000000001
+        },
+        {
+          "day": "2026-09-23",
+          "symbol": "SPY260923P00772000",
+          "side": "PUT",
+          "entry_at": "2026-09-23T13:46:00+00:00",
+          "exit_at": "2026-09-23T14:01:00+00:00",
+          "qty": 2,
+          "starting_equity": 267.2000000000001,
+          "premium_spent": 245.3,
+          "entry_price": 1.22,
+          "exit_price": 1.48,
+          "reason": "premium_trailing_stop",
+          "fees": 2.6,
+          "modeled_price_cost": 28.000000000000025,
+          "net_pnl": 49.4,
+          "ending_equity": 316.6000000000001
+        },
+        {
+          "day": "2026-09-24",
+          "symbol": "SPY260924C00765000",
+          "side": "CALL",
+          "entry_at": "2026-09-24T13:46:00+00:00",
+          "exit_at": "2026-09-24T14:12:00+00:00",
+          "qty": 2,
+          "starting_equity": 316.6000000000001,
+          "premium_spent": 273.3,
+          "entry_price": 1.36,
+          "exit_price": 1.67,
+          "reason": "premium_trailing_stop",
+          "fees": 2.6,
+          "modeled_price_cost": 32.00000000000003,
+          "net_pnl": 59.39999999999996,
+          "ending_equity": 376.00000000000006
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Independent option execution/exit research model, not production entry/exit monitor or broker fills.",
+    "Real trade OHLC, not historical bid/ask. Entry/exit open prints are proxy fills with assumed adverse costs, no queue/slippage validation.",
+    "Closed-minute signals and premium marks, not live five-second monitor resolution.",
+    "Assumed $0.65 per contract per side, not authenticated fee schedule.",
+    "No broker account/PDT/settled-cash eligibility enforcement. No live configuration changed.",
+    "All-in refers to cash reserved for whole-contract premium and roundtrip fees; unspendable residual remains cash.",
+    "Synthetic creator trend rule, not Stock Alley skill, a prospective holdout, or a profit forecast."
+  ]
+}
