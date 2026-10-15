@@ -423,5 +423,1025 @@
   "real_orders": 0,
   "historical_fills_verified": false,
   "source_authentication_verified": false,
-  "production_conditional_or_scaling_wiring": false
+  "production_conditional_or_scaling_wiring": false,
+  "synthetic_phrase_matrix": {
+    "synthetic": true,
+    "cases": 144,
+    "positive_cases": 32,
+    "positive_errors": 0,
+    "negative_cases": 112,
+    "unsafe_entry_dispatches": 0,
+    "incorrect": 0,
+    "results": [
+      {
+        "case": "synthetic-NVDA-BTO ",
+        "text": "BTO NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-BUY ",
+        "text": "BUY NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-buying ",
+        "text": "buying NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-BTO $",
+        "text": "BTO $NVDA 220 CALL exp 2026-11-20 target 225 stop 218",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-wait",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-waiting",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-not_automatic",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-plural_not_automatic",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-requires",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-needs",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-only_confirmed",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-reclaim",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-whale",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-trim",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-recap",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-cancel",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-negation",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-NVDA-exit",
+        "text": "NVDA 220 CALL exp 2026-11-20 target 225 stop 218. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-BTO ",
+        "text": "BTO OPEN 7 CALL exp 2026-11-20 target 12 stop 5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-BUY ",
+        "text": "BUY OPEN 7 CALL exp 2026-11-20 target 12 stop 5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-buying ",
+        "text": "buying OPEN 7 CALL exp 2026-11-20 target 12 stop 5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-BTO $",
+        "text": "BTO $OPEN 7 CALL exp 2026-11-20 target 12 stop 5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-wait",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-waiting",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-not_automatic",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-plural_not_automatic",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-requires",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-needs",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-only_confirmed",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-reclaim",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-whale",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-trim",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-recap",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-cancel",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-negation",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-OPEN-exit",
+        "text": "OPEN 7 CALL exp 2026-11-20 target 12 stop 5. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-BTO ",
+        "text": "BTO AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-BUY ",
+        "text": "BUY AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-buying ",
+        "text": "buying AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-BTO $",
+        "text": "BTO $AMD 285 CALL exp 2026-11-20 target 290 stop 283",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-wait",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-waiting",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-not_automatic",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-plural_not_automatic",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-requires",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-needs",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-only_confirmed",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-reclaim",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-whale",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-trim",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-recap",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-cancel",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-negation",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-AMD-exit",
+        "text": "AMD 285 CALL exp 2026-11-20 target 290 stop 283. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-BTO ",
+        "text": "BTO MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-BUY ",
+        "text": "BUY MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-buying ",
+        "text": "buying MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-BTO $",
+        "text": "BTO $MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-wait",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-waiting",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-not_automatic",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-plural_not_automatic",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-requires",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-needs",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-only_confirmed",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-reclaim",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-whale",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-trim",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-recap",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-cancel",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-negation",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-MSTR-exit",
+        "text": "MSTR 347.5 CALL exp 2026-11-20 target 352.5 stop 345.5. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-BTO ",
+        "text": "BTO HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-BUY ",
+        "text": "BUY HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-buying ",
+        "text": "buying HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-BTO $",
+        "text": "BTO $HOOD 170 CALL exp 2026-11-20 target 175 stop 168",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-wait",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-waiting",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-not_automatic",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-plural_not_automatic",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-requires",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-needs",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-only_confirmed",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-reclaim",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-whale",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-trim",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-recap",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-cancel",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-negation",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-HOOD-exit",
+        "text": "HOOD 170 CALL exp 2026-11-20 target 175 stop 168. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-BTO ",
+        "text": "BTO INTC 40 CALL exp 2026-11-20 target 45 stop 38",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-BUY ",
+        "text": "BUY INTC 40 CALL exp 2026-11-20 target 45 stop 38",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-buying ",
+        "text": "buying INTC 40 CALL exp 2026-11-20 target 45 stop 38",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-BTO $",
+        "text": "BTO $INTC 40 CALL exp 2026-11-20 target 45 stop 38",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-wait",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-waiting",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-not_automatic",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-plural_not_automatic",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-requires",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-needs",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-only_confirmed",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-reclaim",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-whale",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-trim",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-recap",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-cancel",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-negation",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-INTC-exit",
+        "text": "INTC 40 CALL exp 2026-11-20 target 45 stop 38. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-BTO ",
+        "text": "BTO SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-BUY ",
+        "text": "BUY SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-buying ",
+        "text": "buying SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-BTO $",
+        "text": "BTO $SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-wait",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-waiting",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-not_automatic",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-plural_not_automatic",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-requires",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-needs",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-only_confirmed",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-reclaim",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-whale",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-trim",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-recap",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-cancel",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-negation",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-SNDK-exit",
+        "text": "SNDK 1600 CALL exp 2026-11-20 target 1605 stop 1598. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-BTO ",
+        "text": "BTO GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-BUY ",
+        "text": "BUY GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-buying ",
+        "text": "buying GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-BTO $",
+        "text": "BTO $GOOGL 305 CALL exp 2026-11-20 target 310 stop 303",
+        "expected_dispatches": 1,
+        "observed_dispatches": 1,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-wait",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Wait for confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-waiting",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Waiting for market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-not_automatic",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. This is not an automatic entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-plural_not_automatic",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. These setups are not automatic entries.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-requires",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Entry requires market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-needs",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. This setup needs confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-only_confirmed",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. We only enter trades based on market confirmation.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-reclaim",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Reclaim and hold above the zone before entry.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-whale",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Whales are still in and still buying.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-trim",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Take 80% profits and ride the rest.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-recap",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. This trade is at the second target.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-cancel",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Cancel this setup.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-negation",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. Do not buy this contract.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      },
+      {
+        "case": "synthetic-GOOGL-exit",
+        "text": "GOOGL 305 CALL exp 2026-11-20 target 310 stop 303. STC this contract now.",
+        "expected_dispatches": 0,
+        "observed_dispatches": 0,
+        "correct": true
+      }
+    ],
+    "real_orders": 0
+  }
 }

@@ -66,8 +66,47 @@ def study(corpus):
         synthetic_scaling=scaling,source_OPEN_100_dollar_feasibility=dict(premium_visible=1.43,minimum_debit_before_fees=143,can_afford_one=False),
         real_orders=0,historical_fills_verified=False,source_authentication_verified=False,production_conditional_or_scaling_wiring=False)
 
+
+
+def phrase_matrix():
+    """144 synthetic phrase mutations; not144 authentic source samples."""
+    rows=[]
+    negatives=[
+        ('wait','Wait for confirmation.'),
+        ('waiting','Waiting for market confirmation.'),
+        ('not_automatic','This is not an automatic entry.'),
+        ('plural_not_automatic','These setups are not automatic entries.'),
+        ('requires','Entry requires market confirmation.'),
+        ('needs','This setup needs confirmation.'),
+        ('only_confirmed','We only enter trades based on market confirmation.'),
+        ('reclaim','Reclaim and hold above the zone before entry.'),
+        ('whale','Whales are still in and still buying.'),
+        ('trim','Take 80% profits and ride the rest.'),
+        ('recap','This trade is at the second target.'),
+        ('cancel','Cancel this setup.'),
+        ('negation','Do not buy this contract.'),
+        ('exit','STC this contract now.'),
+    ]
+    from lavish_core.vision import extract_signal
+    with offline(),patch.object(extract_signal,'KNOWN_TICKERS',set(extract_signal.KNOWN_TICKERS)|{'OPEN','INTC','SNDK'}):
+        for event in fake_alerts():
+            base=event['text'].removeprefix('BTO ')
+            for prefix in ('BTO ','BUY ','buying ','BTO $'):
+                text=prefix+base
+                signal=parse(text)
+                correct=bool(signal and signal['ticker']==event['id'].removeprefix('synthetic-') and signal['side']=='CALL')
+                rows.append(dict(case=event['id']+'-'+prefix,text=text,expected_dispatches=1,observed_dispatches=int(signal is not None),correct=correct))
+            for label,suffix in negatives:
+                text=base+'. '+suffix
+                signal=parse(text)
+                rows.append(dict(case=event['id']+'-'+label,text=text,expected_dispatches=0,observed_dispatches=int(signal is not None),correct=signal is None))
+    positive=[r for r in rows if r['expected_dispatches']==1];negative=[r for r in rows if not r['expected_dispatches']]
+    return dict(synthetic=True,cases=len(rows),positive_cases=len(positive),positive_errors=sum(not r['correct'] for r in positive),negative_cases=len(negative),unsafe_entry_dispatches=sum(r['observed_dispatches'] for r in negative),incorrect=sum(not r['correct'] for r in rows),results=rows,real_orders=0)
+
+
 if __name__=='__main__':
     cli=argparse.ArgumentParser();cli.add_argument('--corpus',default='docs/evidence/screenshot-trigger-corpus-20261015.json');cli.add_argument('--output',required=True);a=cli.parse_args()
     result=study(a.corpus)
+    result['synthetic_phrase_matrix']=phrase_matrix()
     with Path(a.output).open('x') as f:json.dump(result,f,indent=2)
     print(json.dumps({k:{key:value for key,value in v.items() if key!='results'} for k,v in result.items() if k in ('actual_source_captions','synthetic_alerts')}))

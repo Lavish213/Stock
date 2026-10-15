@@ -53,3 +53,15 @@ python -m pytest validation_tests/test_screenshot_trigger_study.py validation_te
 ```
 
 174 focused tests passed, followed by2791/2791 passing tests across the complete validation suite in92.36seconds. Changed-source Bandit reported zero medium/high findings; whitespace checks passed. Source records and detailed results are under `docs/evidence/screenshot-trigger-*-20261015.json`. All delivery is local with production parser dispatch intercepted and external network blocked. No Discord/Patreon messages, broker orders, live activation, allocation changes or automatic learning occurred. Authentication, original chronology, real fills and profitability remain unverified.
+
+## Expanded follow-up: explicit confirmation constraints
+
+A new reproducer found that complete option details plus each of these four instructions could still dispatch an entry: "Wait for confirmation", "This is not an automatic entry", "These setups are not automatic entries", and "Entry requires market confirmation". The original richer screenshot was blocked by its reclaim/hold/entry-trigger language, masking this shorter-phrase defect. This was parser dispatch in an isolated harness, not proof a broker order would pass later safety gates.
+
+A literal confirmation-constraint recognizer now classifies those phrases and related waiting/needs/only-confirmed wording as conditional context before direct BTO classification. The existing router's pre-parse and post-image checks consequently retain them for review. A caption with a complete BTO cannot override a confirmation requirement extracted from its synthetic image text. It does not infer that a later bare price update removes a requirement.
+
+The synthetic phrase matrix contains144 cases across8 tickers:32 positive entry phrasings and112 negative mutations. All32 positive cases dispatch with the expected ticker/side and all112 negative cases produce no new entry dispatch. The selected matrix's error counts are0/32 positive and0/112 negative; these are not observed real-world rates. The same scoped offline recognition-catalog extension described above is used; production whitelist is unchanged. Actual-source sample count remains10 screenshots, not154 sources.
+
+A separate durable exit test starts with5 option contracts, partially fills2 of a requested4-contract trim, then reconstructs ExitState after restart. It adopts the existing close rather than submitting another order, confirms the remaining2 trim contracts, preserves1 runner, then closes the runner. Five total sell contracts and3.25 total closing fees are recorded once. This tests existing journal/recovery mechanics with a manually specified trim plan; automatic creation of that plan from a source phrase is still not wired into the production monitor.
+
+162 focused parser/context/recovery tests passed after this extension. The full-suite result for this follow-up is recorded in the PR validation update. No historical source fields, model returns or risk settings were altered to improve the result.

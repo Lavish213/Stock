@@ -55,3 +55,54 @@ def test_all_ten_sources_and_positive_synthetic_fixtures():
     assert scale['runner_exit_contracts']==1 and scale['positions']=={}
     assert scale['duplicate_order_same_identity'] and scale['final_cash']==158.5
     assert result['real_orders']==0 and not result['production_conditional_or_scaling_wiring']
+
+
+@pytest.mark.parametrize('suffix',[
+ 'Wait for confirmation.','Waiting for market confirmation.',
+ 'This is not an automatic entry.','These setups are not automatic entries.',
+ 'Entry requires market confirmation.','This setup needs confirmation.',
+ 'We only enter trades based on market confirmation.',
+])
+@pytest.mark.parametrize('prefix',['','BTO '])
+def test_complete_contract_never_overrides_confirmation_constraint(suffix,prefix):
+    text=prefix+'NVDA 220 CALL exp 2026-11-20 target 225 stop 218. '+suffix
+    assert classify(text)['kind']=='conditional_setup'
+    with offline():assert parse(text) is None
+
+
+def test_confirmation_requirement_in_image_also_blocks_caption_bto(monkeypatch):
+    from lavish_core.vision import extract_signal as es
+    from lavish_core.trading import alert_handler as ah
+    monkeypatch.setattr(es,'parse_image',lambda *a:es.parse_text('NVDA 220 CALL exp 2026-11-20. Wait for confirmation.'))
+    dispatch=Mock();monkeypatch.setattr(ah,'execute_trade_from_post',dispatch)
+    ah.handle_alert_text('BTO NVDA 220 CALL exp 2026-11-20',image_path='synthetic.png')
+    dispatch.assert_not_called()
+
+
+def test_144_phrase_matrix_keeps_positive_entries():
+    from lavish_core.validation.screenshot_trigger_study import phrase_matrix
+    r=phrase_matrix()
+    assert r['cases']==144 and r['positive_cases']==32 and r['negative_cases']==112
+    assert r['positive_errors']==r['unsafe_entry_dispatches']==r['incorrect']==0
+
+
+def test_trim_partial_restart_then_runner_never_oversells(store):
+    from lavish_core.trade.exit_state import ExitState
+    symbol='OPEN261120C00007000'
+    entry=store.submit_order(symbol,'buy',5)
+    store.log_fill(entry,symbol,'buy',5,.15,fee=3.25)
+    state=ExitState(4,db_path=store.db_path,symbol=symbol)
+    submit=Mock(return_value={'id':'trim','status':'partially_filled','filled_qty':2,'filled_avg_price':.3,'filled_fee':1.3})
+    def attempt(s,post,lookup,get):return s.attempt(post,lookup,get,lambda *a:True,1,lambda:None)
+    assert attempt(state,submit,lambda *a:None,lambda *a:{'status':'partially_filled','filled_qty':2,'filled_avg_price':.3,'filled_fee':1.3}) is None
+    assert store.get_position(symbol)['qty']==3
+    restarted=ExitState(2,db_path=store.db_path,symbol=symbol)
+    no_post=Mock(side_effect=AssertionError('Existing trim must be adopted'))
+    assert attempt(restarted,no_post,lambda *a:None,lambda *a:None) is None
+    result=attempt(restarted,no_post,lambda *a:{'id':'trim','status':'filled','filled_qty':4,'filled_avg_price':.31,'filled_fee':2.6},lambda *a:None)
+    assert result['status']=='exited' and store.get_position(symbol)['qty']==1
+    no_post.assert_not_called()
+    runner=ExitState(1,db_path=store.db_path,symbol=symbol)
+    result=attempt(runner,lambda *a:{'id':'runner','status':'filled','filled_qty':1,'filled_avg_price':.2,'filled_fee':.65},lambda *a:None,lambda *a:None)
+    assert result['status']=='exited' and store.get_position(symbol) is None
+    assert store.fetchall("SELECT sum(qty),sum(fee) FROM fills WHERE side='sell'")[0]==(5,3.25)
