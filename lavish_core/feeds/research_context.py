@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import sqlite3
 from datetime import datetime, timezone
@@ -33,6 +34,47 @@ def requires_confirmation(text: str) -> bool:
         r'|\bonly\s+enter\s+(?:trades?\s+)?(?:based\s+on|with)\s+(?:market\s+)?confirmation\b', text, re.I))
 
 
+def condition_metadata(text: str) -> tuple[dict | None, str | None]:
+    """Retain literal trigger levels for review; never choose a hold policy.
+
+    A quoted zone and a measurable confirmation policy are different facts.
+    Unknown duration/volume rules stay unknown, and contradictory conditions
+    cannot silently collapse into the first level mentioned.
+    """
+    number = r'[-+]?(?:\d+(?:\.\d+)?|\.\d+)'
+    candidates = []
+    for match in re.finditer(
+            rf'\bbreak\s+and\s+hold\s+(above|below)\s*\$?({number})(?!\w|\.\d)', text, re.I):
+        value = float(match[2])
+        if not math.isfinite(value) or value <= 0:
+            return None, 'invalid_condition_level'
+        candidates.append({'direction': match[1].lower(), 'level': value})
+    pattern = (
+        rf'\breclaim\s+(?:the\s+)?\$?(?P<low>{number})\s*(?:[-–—]|to)\s*'
+        rf'\$?(?P<high>{number})(?!\w|\.\d)\s*(?:(?:range|zone|area)\s*)?'
+        rf'(?:(?:and|then)\s+)?hold\s+above\b(?:\s+\$?(?P<hold>{number})(?!\w|\.\d))?'
+    )
+    for match in re.finditer(pattern, text, re.I):
+        low, high = float(match['low']), float(match['high'])
+        if not all(math.isfinite(x) for x in (low, high)) or not 0 < low < high:
+            return None, 'invalid_reclaim_zone'
+        if match['hold'] is not None and float(match['hold']) != high:
+            return None, 'ambiguous_reclaim_threshold'
+        if match['hold'] is None:
+            tail = text[match.end():].lstrip()
+            if tail and not re.match(
+                    r'^(?:[.;,]|(?:this|the)\s+(?:area|range|zone)\b|(?:with|and|for)\b)', tail, re.I):
+                return None, 'unresolved_reclaim_threshold'
+        candidates.append(dict(direction='above', level=high, zone_low=low,
+            zone_high=high, trigger_type='reclaim_and_hold', hold_duration=None,
+            buyers_confirmation_requested=bool(re.search(r'\bbuyers?\s+stepping\s+in\b', text, re.I)),
+            volume_policy=None, review_required=True))
+    unique = {json.dumps(candidate, sort_keys=True): candidate for candidate in candidates}
+    if len(unique) > 1:
+        return None, 'multiple_conditions_require_review'
+    return next(iter(unique.values()), None), None
+
+
 def classify(text: str) -> dict:
     """Return a review tag, never an execution decision."""
     normalized = ' '.join(text.lower().split())
@@ -54,9 +96,11 @@ def classify(text: str) -> dict:
         kind = 'instruction_candidate'
     else:
         kind = 'research_note'
-    condition = re.search(r'break\s+and\s+hold\s+(above|below)\s*\$?(\d+(?:\.\d+)?)', normalized)
-    return {'kind': kind, 'condition': {'direction': condition[1], 'level': float(condition[2])} if condition else None,
-            'execution_authorized': False}
+    condition, error = condition_metadata(normalized)
+    result = {'kind': kind, 'condition': condition, 'execution_authorized': False}
+    if error:
+        result['condition_error'] = error
+    return result
 
 
 class ResearchJournal:
