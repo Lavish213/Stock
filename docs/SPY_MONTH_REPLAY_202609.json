@@ -1,0 +1,3035 @@
+{
+  "month": "2026-09",
+  "initial_equity": 1000,
+  "allocation_fraction": 0.1,
+  "real_orders": 0,
+  "synthetic_creator": true,
+  "source": "Alpaca historical SIP",
+  "source_sha256": "8f8deef3389f3984c2ccd1ad42a4a50cac3eab9207173a43a866d1dd86d6823c",
+  "regular_session_bars": 8190,
+  "sessions": 21,
+  "plan": "Three synthetic BUY SPY alerts per session at 09:45, 10:45, 13:45 ET. Target +0.5%, stop -0.3% from last closed minute. 15-minute production candle gate. No retrospective tuning.",
+  "production": {
+    "starting_cash": 1000.0,
+    "final_cash": 1000.0,
+    "net_pnl": 0.0,
+    "return_pct": 0.0,
+    "alerts": 63,
+    "duplicate_deliveries": 63,
+    "fills": 0,
+    "trades": 0,
+    "final_positions": 0,
+    "gate_outcomes": {
+      "invalidated_wrong_direction": 31,
+      "wick_breakout_volume_confirmed": 8,
+      "wick_breakout_volume_unavailable": 23,
+      "reference_range_too_small": 1
+    },
+    "outcomes": {
+      "gate_skip": 32,
+      "whole_share_budget_skip": 31
+    },
+    "receipts": [
+      {
+        "id": "fake-SPY-2026-09-01-09:45",
+        "posted": "2026-09-01T09:45:00-04:00",
+        "text": "BUY SPY now target 765.77 stop 759.67",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 761.72,
+          "bar": {
+            "o": 762.035,
+            "h": 762.1699,
+            "l": 761.68,
+            "c": 761.72,
+            "v": 118426.0,
+            "t": "2026-09-01T13:46:00+00:00"
+          },
+          "decision_at": "2026-09-01T13:47:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-01-10:45",
+        "posted": "2026-09-01T10:45:00-04:00",
+        "text": "BUY SPY now target 767.98 stop 761.87",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 764.25,
+          "bar": {
+            "o": 764.1,
+            "h": 764.28,
+            "l": 764.03,
+            "c": 764.25,
+            "v": 164558.0,
+            "t": "2026-09-01T14:47:00+00:00"
+          },
+          "decision_at": "2026-09-01T14:48:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-01-13:45",
+        "posted": "2026-09-01T13:45:00-04:00",
+        "text": "BUY SPY now target 765.88 stop 759.78",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 761.74,
+          "bar": {
+            "o": 762.0198,
+            "h": 762.03,
+            "l": 761.68,
+            "c": 761.74,
+            "v": 54072.0,
+            "t": "2026-09-01T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-01T17:47:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-02-09:45",
+        "posted": "2026-09-02T09:45:00-04:00",
+        "text": "BUY SPY now target 766.61 stop 760.51",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 762.33,
+          "bar": {
+            "o": 762.81,
+            "h": 762.9,
+            "l": 762.03,
+            "c": 762.33,
+            "v": 168776.0,
+            "t": "2026-09-02T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-02T13:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-02-10:45",
+        "posted": "2026-09-02T10:45:00-04:00",
+        "text": "BUY SPY now target 770.13 stop 764.00",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 766.0,
+          "bar": {
+            "o": 766.29,
+            "h": 766.31,
+            "l": 766.0,
+            "c": 766.0,
+            "v": 71891.0,
+            "t": "2026-09-02T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-02T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-02-13:45",
+        "posted": "2026-09-02T13:45:00-04:00",
+        "text": "BUY SPY now target 768.72 stop 762.61",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 765.16,
+          "bar": {
+            "o": 764.91,
+            "h": 765.23,
+            "l": 764.9,
+            "c": 765.16,
+            "v": 53483.0,
+            "t": "2026-09-02T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-02T17:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-03-09:45",
+        "posted": "2026-09-03T09:45:00-04:00",
+        "text": "BUY SPY now target 773.64 stop 767.48",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 769.9233,
+          "bar": {
+            "o": 769.64,
+            "h": 770.02,
+            "l": 769.61,
+            "c": 769.9233,
+            "v": 128709.0,
+            "t": "2026-09-03T13:50:00+00:00"
+          },
+          "decision_at": "2026-09-03T13:51:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-03-10:45",
+        "posted": "2026-09-03T10:45:00-04:00",
+        "text": "BUY SPY now target 772.04 stop 765.90",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 768.38,
+          "bar": {
+            "o": 768.17,
+            "h": 768.39,
+            "l": 768.03,
+            "c": 768.38,
+            "v": 48791.0,
+            "t": "2026-09-03T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-03T14:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-03-13:45",
+        "posted": "2026-09-03T13:45:00-04:00",
+        "text": "BUY SPY now target 776.93 stop 770.74",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 773.13,
+          "bar": {
+            "o": 773.06,
+            "h": 773.19,
+            "l": 773.05,
+            "c": 773.13,
+            "v": 51967.0,
+            "t": "2026-09-03T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-03T17:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-04-09:45",
+        "posted": "2026-09-04T09:45:00-04:00",
+        "text": "BUY SPY now target 776.03 stop 769.85",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 772.525,
+          "bar": {
+            "o": 772.35,
+            "h": 772.62,
+            "l": 772.35,
+            "c": 772.525,
+            "v": 79845.0,
+            "t": "2026-09-04T13:48:00+00:00"
+          },
+          "decision_at": "2026-09-04T13:49:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-04-10:45",
+        "posted": "2026-09-04T10:45:00-04:00",
+        "text": "BUY SPY now target 774.15 stop 767.99",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 770.16,
+          "bar": {
+            "o": 770.33,
+            "h": 770.34,
+            "l": 770.05,
+            "c": 770.16,
+            "v": 77988.0,
+            "t": "2026-09-04T14:47:00+00:00"
+          },
+          "decision_at": "2026-09-04T14:48:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-04-13:45",
+        "posted": "2026-09-04T13:45:00-04:00",
+        "text": "BUY SPY now target 773.17 stop 767.01",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 769.185,
+          "bar": {
+            "o": 769.32,
+            "h": 769.3699,
+            "l": 769.135,
+            "c": 769.185,
+            "v": 61320.0,
+            "t": "2026-09-04T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-04T17:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-08-09:45",
+        "posted": "2026-09-08T09:45:00-04:00",
+        "text": "BUY SPY now target 771.13 stop 764.99",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 767.625,
+          "bar": {
+            "o": 767.305,
+            "h": 767.7,
+            "l": 767.2,
+            "c": 767.625,
+            "v": 423028.0,
+            "t": "2026-09-08T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-08T13:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-08-10:45",
+        "posted": "2026-09-08T10:45:00-04:00",
+        "text": "BUY SPY now target 770.96 stop 764.82",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 766.89,
+          "bar": {
+            "o": 767.14,
+            "h": 767.14,
+            "l": 766.67,
+            "c": 766.89,
+            "v": 84431.0,
+            "t": "2026-09-08T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-08T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-08-13:45",
+        "posted": "2026-09-08T13:45:00-04:00",
+        "text": "BUY SPY now target 771.18 stop 765.04",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 767.46,
+          "bar": {
+            "o": 767.3899,
+            "h": 767.49,
+            "l": 767.34,
+            "c": 767.46,
+            "v": 17356.0,
+            "t": "2026-09-08T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-08T17:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-09-09:45",
+        "posted": "2026-09-09T09:45:00-04:00",
+        "text": "BUY SPY now target 767.57 stop 761.46",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 763.49,
+          "bar": {
+            "o": 763.65,
+            "h": 763.77,
+            "l": 763.49,
+            "c": 763.49,
+            "v": 98005.0,
+            "t": "2026-09-09T13:51:00+00:00"
+          },
+          "decision_at": "2026-09-09T13:52:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-09-10:45",
+        "posted": "2026-09-09T10:45:00-04:00",
+        "text": "BUY SPY now target 767.59 stop 761.48",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 763.59,
+          "bar": {
+            "o": 763.63,
+            "h": 763.66,
+            "l": 763.46,
+            "c": 763.59,
+            "v": 15282.0,
+            "t": "2026-09-09T14:47:00+00:00"
+          },
+          "decision_at": "2026-09-09T14:48:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-09-13:45",
+        "posted": "2026-09-09T13:45:00-04:00",
+        "text": "BUY SPY now target 766.71 stop 760.61",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 763.075,
+          "bar": {
+            "o": 762.92,
+            "h": 763.084,
+            "l": 762.88,
+            "c": 763.075,
+            "v": 34847.0,
+            "t": "2026-09-09T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-09T17:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-10-09:45",
+        "posted": "2026-09-10T09:45:00-04:00",
+        "text": "BUY SPY now target 761.93 stop 755.86",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 758.77,
+          "bar": {
+            "o": 758.485,
+            "h": 758.8,
+            "l": 758.41,
+            "c": 758.77,
+            "v": 342590.0,
+            "t": "2026-09-10T13:46:00+00:00"
+          },
+          "decision_at": "2026-09-10T13:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-10-10:45",
+        "posted": "2026-09-10T10:45:00-04:00",
+        "text": "BUY SPY now target 762.64 stop 756.57",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 758.66,
+          "bar": {
+            "o": 758.83,
+            "h": 758.83,
+            "l": 758.6,
+            "c": 758.66,
+            "v": 170389.0,
+            "t": "2026-09-10T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-10T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-10-13:45",
+        "posted": "2026-09-10T13:45:00-04:00",
+        "text": "BUY SPY now target 762.24 stop 756.17",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 758.23,
+          "bar": {
+            "o": 758.3799,
+            "h": 758.4,
+            "l": 758.19,
+            "c": 758.23,
+            "v": 18822.0,
+            "t": "2026-09-10T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-10T17:47:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-11-09:45",
+        "posted": "2026-09-11T09:45:00-04:00",
+        "text": "BUY SPY now target 769.29 stop 763.16",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 764.87,
+          "bar": {
+            "o": 765.15,
+            "h": 765.285,
+            "l": 764.87,
+            "c": 764.87,
+            "v": 111568.0,
+            "t": "2026-09-11T13:48:00+00:00"
+          },
+          "decision_at": "2026-09-11T13:49:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-11-10:45",
+        "posted": "2026-09-11T10:45:00-04:00",
+        "text": "BUY SPY now target 767.87 stop 761.76",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 764.17,
+          "bar": {
+            "o": 764.04,
+            "h": 764.17,
+            "l": 763.8822,
+            "c": 764.17,
+            "v": 88372.0,
+            "t": "2026-09-11T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-11T14:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-11-13:45",
+        "posted": "2026-09-11T13:45:00-04:00",
+        "text": "BUY SPY now target 769.69 stop 763.56",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 765.795,
+          "bar": {
+            "o": 765.8355,
+            "h": 765.86,
+            "l": 765.77,
+            "c": 765.795,
+            "v": 31269.0,
+            "t": "2026-09-11T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-11T17:47:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-14-09:45",
+        "posted": "2026-09-14T09:45:00-04:00",
+        "text": "BUY SPY now target 763.21 stop 757.13",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 759.59,
+          "bar": {
+            "o": 759.5,
+            "h": 759.69,
+            "l": 759.48,
+            "c": 759.59,
+            "v": 102655.0,
+            "t": "2026-09-14T13:46:00+00:00"
+          },
+          "decision_at": "2026-09-14T13:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-14-10:45",
+        "posted": "2026-09-14T10:45:00-04:00",
+        "text": "BUY SPY now target 762.47 stop 756.40",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 758.9,
+          "bar": {
+            "o": 758.68,
+            "h": 758.92,
+            "l": 758.5702,
+            "c": 758.9,
+            "v": 90785.0,
+            "t": "2026-09-14T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-14T14:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-14-13:45",
+        "posted": "2026-09-14T13:45:00-04:00",
+        "text": "BUY SPY now target 766.41 stop 760.31",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 762.76,
+          "bar": {
+            "o": 762.61,
+            "h": 762.78,
+            "l": 762.61,
+            "c": 762.76,
+            "v": 22461.0,
+            "t": "2026-09-14T17:47:00+00:00"
+          },
+          "decision_at": "2026-09-14T17:48:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-15-09:45",
+        "posted": "2026-09-15T09:45:00-04:00",
+        "text": "BUY SPY now target 763.75 stop 757.67",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 759.535,
+          "bar": {
+            "o": 759.765,
+            "h": 759.795,
+            "l": 759.445,
+            "c": 759.535,
+            "v": 96183.0,
+            "t": "2026-09-15T13:47:00+00:00"
+          },
+          "decision_at": "2026-09-15T13:48:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-15-10:45",
+        "posted": "2026-09-15T10:45:00-04:00",
+        "text": "BUY SPY now target 760.99 stop 754.93",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 757.25,
+          "bar": {
+            "o": 757.19,
+            "h": 757.38,
+            "l": 757.18,
+            "c": 757.25,
+            "v": 125693.0,
+            "t": "2026-09-15T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-15T14:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-15-13:45",
+        "posted": "2026-09-15T13:45:00-04:00",
+        "text": "BUY SPY now target 760.92 stop 754.86",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 757.1,
+          "bar": {
+            "o": 757.22,
+            "h": 757.27,
+            "l": 757.07,
+            "c": 757.1,
+            "v": 27689.0,
+            "t": "2026-09-15T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-15T17:47:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-16-09:45",
+        "posted": "2026-09-16T09:45:00-04:00",
+        "text": "BUY SPY now target 762.56 stop 756.49",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 759.39,
+          "bar": {
+            "o": 758.8,
+            "h": 759.75,
+            "l": 758.76,
+            "c": 759.39,
+            "v": 321619.0,
+            "t": "2026-09-16T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-16T13:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-16-10:45",
+        "posted": "2026-09-16T10:45:00-04:00",
+        "text": "BUY SPY now target 763.64 stop 757.56",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 759.62,
+          "bar": {
+            "o": 759.775,
+            "h": 759.775,
+            "l": 759.6,
+            "c": 759.62,
+            "v": 448889.0,
+            "t": "2026-09-16T14:49:00+00:00"
+          },
+          "decision_at": "2026-09-16T14:50:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-16-13:45",
+        "posted": "2026-09-16T13:45:00-04:00",
+        "text": "BUY SPY now target 763.14 stop 757.06",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "reference_range_too_small",
+          "price": null,
+          "bar": {
+            "o": 759.3345,
+            "h": 759.36,
+            "l": 759.31,
+            "c": 759.34,
+            "v": 15806.0,
+            "t": "2026-09-16T17:44:00+00:00"
+          },
+          "decision_at": "2026-09-16T17:45:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-17-09:45",
+        "posted": "2026-09-17T09:45:00-04:00",
+        "text": "BUY SPY now target 764.73 stop 758.65",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_confirmed",
+          "price": 761.25,
+          "bar": {
+            "o": 761.1,
+            "h": 761.48,
+            "l": 761.0021,
+            "c": 761.25,
+            "v": 440891.0,
+            "t": "2026-09-17T13:47:00+00:00"
+          },
+          "decision_at": "2026-09-17T13:48:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-17-10:45",
+        "posted": "2026-09-17T10:45:00-04:00",
+        "text": "BUY SPY now target 765.70 stop 759.60",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 761.71,
+          "bar": {
+            "o": 761.89,
+            "h": 761.93,
+            "l": 761.69,
+            "c": 761.71,
+            "v": 64891.0,
+            "t": "2026-09-17T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-17T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-17-13:45",
+        "posted": "2026-09-17T13:45:00-04:00",
+        "text": "BUY SPY now target 766.24 stop 760.14",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 762.465,
+          "bar": {
+            "o": 762.43,
+            "h": 762.47,
+            "l": 762.38,
+            "c": 762.465,
+            "v": 24144.0,
+            "t": "2026-09-17T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-17T17:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-18-09:45",
+        "posted": "2026-09-18T09:45:00-04:00",
+        "text": "BUY SPY now target 764.72 stop 758.64",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 761.02,
+          "bar": {
+            "o": 760.92,
+            "h": 761.05,
+            "l": 760.86,
+            "c": 761.02,
+            "v": 147377.0,
+            "t": "2026-09-18T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-18T13:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-18-10:45",
+        "posted": "2026-09-18T10:45:00-04:00",
+        "text": "BUY SPY now target 762.78 stop 756.71",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 759.22,
+          "bar": {
+            "o": 758.96,
+            "h": 759.35,
+            "l": 758.95,
+            "c": 759.22,
+            "v": 99659.0,
+            "t": "2026-09-18T14:46:00+00:00"
+          },
+          "decision_at": "2026-09-18T14:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-18-13:45",
+        "posted": "2026-09-18T13:45:00-04:00",
+        "text": "BUY SPY now target 763.56 stop 757.48",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 759.795,
+          "bar": {
+            "o": 759.75,
+            "h": 759.8,
+            "l": 759.74,
+            "c": 759.795,
+            "v": 48749.0,
+            "t": "2026-09-18T17:51:00+00:00"
+          },
+          "decision_at": "2026-09-18T17:52:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-21-09:45",
+        "posted": "2026-09-21T09:45:00-04:00",
+        "text": "BUY SPY now target 770.69 stop 764.55",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 767.07,
+          "bar": {
+            "o": 766.86,
+            "h": 767.09,
+            "l": 766.82,
+            "c": 767.07,
+            "v": 153653.0,
+            "t": "2026-09-21T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-21T13:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-21-10:45",
+        "posted": "2026-09-21T10:45:00-04:00",
+        "text": "BUY SPY now target 772.83 stop 766.68",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 768.7645,
+          "bar": {
+            "o": 768.99,
+            "h": 769.0,
+            "l": 768.73,
+            "c": 768.7645,
+            "v": 84947.0,
+            "t": "2026-09-21T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-21T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-21-13:45",
+        "posted": "2026-09-21T13:45:00-04:00",
+        "text": "BUY SPY now target 776.73 stop 770.55",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 773.06,
+          "bar": {
+            "o": 772.88,
+            "h": 773.11,
+            "l": 772.85,
+            "c": 773.06,
+            "v": 90646.0,
+            "t": "2026-09-21T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-21T17:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-22-09:45",
+        "posted": "2026-09-22T09:45:00-04:00",
+        "text": "BUY SPY now target 778.48 stop 772.29",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 774.33,
+          "bar": {
+            "o": 774.6,
+            "h": 774.63,
+            "l": 774.13,
+            "c": 774.33,
+            "v": 66054.0,
+            "t": "2026-09-22T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-22T13:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-22-10:45",
+        "posted": "2026-09-22T10:45:00-04:00",
+        "text": "BUY SPY now target 777.14 stop 770.95",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 773.165,
+          "bar": {
+            "o": 773.27,
+            "h": 773.28,
+            "l": 773.08,
+            "c": 773.165,
+            "v": 72183.0,
+            "t": "2026-09-22T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-22T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-22-13:45",
+        "posted": "2026-09-22T13:45:00-04:00",
+        "text": "BUY SPY now target 777.36 stop 771.17",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 773.57,
+          "bar": {
+            "o": 773.5,
+            "h": 773.59,
+            "l": 773.4801,
+            "c": 773.57,
+            "v": 18313.0,
+            "t": "2026-09-22T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-22T17:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-23-09:45",
+        "posted": "2026-09-23T09:45:00-04:00",
+        "text": "BUY SPY now target 775.77 stop 769.60",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 771.62,
+          "bar": {
+            "o": 771.9,
+            "h": 771.97,
+            "l": 771.57,
+            "c": 771.62,
+            "v": 81929.0,
+            "t": "2026-09-23T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-23T13:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-23-10:45",
+        "posted": "2026-09-23T10:45:00-04:00",
+        "text": "BUY SPY now target 773.04 stop 766.88",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 769.09,
+          "bar": {
+            "o": 769.26,
+            "h": 769.29,
+            "l": 769.09,
+            "c": 769.09,
+            "v": 61674.0,
+            "t": "2026-09-23T14:47:00+00:00"
+          },
+          "decision_at": "2026-09-23T14:48:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-23-13:45",
+        "posted": "2026-09-23T13:45:00-04:00",
+        "text": "BUY SPY now target 772.33 stop 766.18",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 768.63,
+          "bar": {
+            "o": 768.48,
+            "h": 768.67,
+            "l": 768.44,
+            "c": 768.63,
+            "v": 97891.0,
+            "t": "2026-09-23T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-23T17:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-24-09:45",
+        "posted": "2026-09-24T09:45:00-04:00",
+        "text": "BUY SPY now target 768.47 stop 762.36",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 764.79,
+          "bar": {
+            "o": 764.66,
+            "h": 764.885,
+            "l": 764.49,
+            "c": 764.79,
+            "v": 72287.0,
+            "t": "2026-09-24T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-24T13:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-24-10:45",
+        "posted": "2026-09-24T10:45:00-04:00",
+        "text": "BUY SPY now target 769.12 stop 762.99",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 765.08,
+          "bar": {
+            "o": 765.26,
+            "h": 765.26,
+            "l": 765.025,
+            "c": 765.08,
+            "v": 52574.0,
+            "t": "2026-09-24T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-24T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-24-13:45",
+        "posted": "2026-09-24T13:45:00-04:00",
+        "text": "BUY SPY now target 770.05 stop 763.92",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 766.4501,
+          "bar": {
+            "o": 766.29,
+            "h": 766.57,
+            "l": 766.27,
+            "c": 766.4501,
+            "v": 62350.0,
+            "t": "2026-09-24T17:46:00+00:00"
+          },
+          "decision_at": "2026-09-24T17:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-25-09:45",
+        "posted": "2026-09-25T09:45:00-04:00",
+        "text": "BUY SPY now target 773.34 stop 767.18",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 769.035,
+          "bar": {
+            "o": 769.535,
+            "h": 769.655,
+            "l": 769.0,
+            "c": 769.035,
+            "v": 112336.0,
+            "t": "2026-09-25T13:48:00+00:00"
+          },
+          "decision_at": "2026-09-25T13:49:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-25-10:45",
+        "posted": "2026-09-25T10:45:00-04:00",
+        "text": "BUY SPY now target 771.78 stop 765.64",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 767.9701,
+          "bar": {
+            "o": 767.92,
+            "h": 768.0188,
+            "l": 767.6,
+            "c": 767.9701,
+            "v": 53828.0,
+            "t": "2026-09-25T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-25T14:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-25-13:45",
+        "posted": "2026-09-25T13:45:00-04:00",
+        "text": "BUY SPY now target 774.79 stop 768.63",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 770.86,
+          "bar": {
+            "o": 770.94,
+            "h": 770.97,
+            "l": 770.86,
+            "c": 770.86,
+            "v": 13400.0,
+            "t": "2026-09-25T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-25T17:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-28-09:45",
+        "posted": "2026-09-28T09:45:00-04:00",
+        "text": "BUY SPY now target 771.47 stop 765.33",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 767.7799,
+          "bar": {
+            "o": 767.61,
+            "h": 767.79,
+            "l": 767.48,
+            "c": 767.7799,
+            "v": 112142.0,
+            "t": "2026-09-28T13:46:00+00:00"
+          },
+          "decision_at": "2026-09-28T13:47:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-28-10:45",
+        "posted": "2026-09-28T10:45:00-04:00",
+        "text": "BUY SPY now target 769.09 stop 762.96",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 764.82,
+          "bar": {
+            "o": 765.265,
+            "h": 765.34,
+            "l": 764.7,
+            "c": 764.82,
+            "v": 121407.0,
+            "t": "2026-09-28T14:45:00+00:00"
+          },
+          "decision_at": "2026-09-28T14:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-28-13:45",
+        "posted": "2026-09-28T13:45:00-04:00",
+        "text": "BUY SPY now target 771.01 stop 764.87",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 767.05,
+          "bar": {
+            "o": 767.22,
+            "h": 767.23,
+            "l": 767.05,
+            "c": 767.05,
+            "v": 29253.0,
+            "t": "2026-09-28T17:47:00+00:00"
+          },
+          "decision_at": "2026-09-28T17:48:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-29-09:45",
+        "posted": "2026-09-29T09:45:00-04:00",
+        "text": "BUY SPY now target 768.94 stop 762.82",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 765.233,
+          "bar": {
+            "o": 765.115,
+            "h": 765.28,
+            "l": 765.02,
+            "c": 765.233,
+            "v": 66748.0,
+            "t": "2026-09-29T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-29T13:46:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-29-10:45",
+        "posted": "2026-09-29T10:45:00-04:00",
+        "text": "BUY SPY now target 768.91 stop 762.78",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 764.83,
+          "bar": {
+            "o": 765.0895,
+            "h": 765.27,
+            "l": 764.81,
+            "c": 764.83,
+            "v": 50479.0,
+            "t": "2026-09-29T14:48:00+00:00"
+          },
+          "decision_at": "2026-09-29T14:49:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-29-13:45",
+        "posted": "2026-09-29T13:45:00-04:00",
+        "text": "BUY SPY now target 767.09 stop 760.98",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 762.985,
+          "bar": {
+            "o": 763.055,
+            "h": 763.07,
+            "l": 762.96,
+            "c": 762.985,
+            "v": 20716.0,
+            "t": "2026-09-29T17:51:00+00:00"
+          },
+          "decision_at": "2026-09-29T17:52:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-30-09:45",
+        "posted": "2026-09-30T09:45:00-04:00",
+        "text": "BUY SPY now target 770.49 stop 764.36",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 766.24,
+          "bar": {
+            "o": 766.68,
+            "h": 767.0,
+            "l": 766.225,
+            "c": 766.24,
+            "v": 81368.0,
+            "t": "2026-09-30T13:45:00+00:00"
+          },
+          "decision_at": "2026-09-30T13:46:00+00:00"
+        },
+        "result": "gate_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-30-10:45",
+        "posted": "2026-09-30T10:45:00-04:00",
+        "text": "BUY SPY now target 771.49 stop 765.35",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": true,
+          "reason": "wick_breakout_volume_unavailable",
+          "price": 768.29,
+          "bar": {
+            "o": 767.98,
+            "h": 768.34,
+            "l": 767.98,
+            "c": 768.29,
+            "v": 44963.0,
+            "t": "2026-09-30T14:47:00+00:00"
+          },
+          "decision_at": "2026-09-30T14:48:00+00:00"
+        },
+        "result": "whole_share_budget_skip"
+      },
+      {
+        "id": "fake-SPY-2026-09-30-13:45",
+        "posted": "2026-09-30T13:45:00-04:00",
+        "text": "BUY SPY now target 771.32 stop 765.18",
+        "budget": 100.0,
+        "http_status": 202,
+        "duplicate_http_status": 200,
+        "gate": {
+          "confirmed": false,
+          "reason": "invalidated_wrong_direction",
+          "price": 767.295,
+          "bar": {
+            "o": 767.5,
+            "h": 767.52,
+            "l": 767.265,
+            "c": 767.295,
+            "v": 27344.0,
+            "t": "2026-09-30T17:45:00+00:00"
+          },
+          "decision_at": "2026-09-30T17:46:00+00:00"
+        },
+        "result": "gate_skip"
+      }
+    ],
+    "scope": "Production signed HTTP handler, inbox, parser, claims, candle gate and whole-share sizing; inline worker and historical clock. No orders submitted, so fills/exits are not exercised."
+  },
+  "fractional_comparisons": [
+    {
+      "hypothetical_fractional": true,
+      "live_bot_support": false,
+      "cost_bps_per_side": 1,
+      "starting_cash": 1000.0,
+      "final_cash": 998.5012042650858,
+      "net_pnl": -1.4987957349142107,
+      "return_pct": -0.14987957349141823,
+      "trades": 26,
+      "wins": 8,
+      "losses": 18,
+      "estimated_cost": 0.5192584838481465,
+      "conservative_drawdown_pct": 0.20024843252814434,
+      "skips": {
+        "gate_skip": 19,
+        "existing_position": 18
+      },
+      "final_positions": 0,
+      "ledger": [
+        {
+          "id": "fake-SPY-2026-09-01-10:45",
+          "entry_at": "2026-09-01T10:48:00-04:00",
+          "exit_at": "2026-09-01T12:32:00-04:00",
+          "budget": 100.0,
+          "qty": 0.13083757,
+          "entry_price": 764.306423,
+          "exit_price": 761.793813,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0199671215577,
+          "net_pnl": -0.32874378675769933,
+          "cash_after": 999.6712562132423
+        },
+        {
+          "id": "fake-SPY-2026-09-02-13:45",
+          "entry_at": "2026-09-02T13:46:00-04:00",
+          "exit_at": "2026-09-02T16:00:00-04:00",
+          "budget": 99.96712562132423,
+          "qty": 0.13063559,
+          "entry_price": 765.2365159999999,
+          "exit_price": 765.063486,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0199911643377,
+          "net_pnl": -0.022603876137690344,
+          "cash_after": 999.6486523371045
+        },
+        {
+          "id": "fake-SPY-2026-09-03-09:45",
+          "entry_at": "2026-09-03T09:51:00-04:00",
+          "exit_at": "2026-09-03T10:57:00-04:00",
+          "budget": 99.96486523371046,
+          "qty": 0.12982669,
+          "entry_price": 769.986991,
+          "exit_price": 767.4032520000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019959425493910003,
+          "net_pnl": -0.33543828219390004,
+          "cash_after": 999.3132140549106
+        },
+        {
+          "id": "fake-SPY-2026-09-03-13:45",
+          "entry_at": "2026-09-03T13:46:00-04:00",
+          "exit_at": "2026-09-03T16:00:00-04:00",
+          "budget": 99.93132140549108,
+          "qty": 0.12924259,
+          "entry_price": 773.207313,
+          "exit_price": 773.082684,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.01998465244911,
+          "net_pnl": -0.01610737474911351,
+          "cash_after": 999.2971066801615
+        },
+        {
+          "id": "fake-SPY-2026-09-04-09:45",
+          "entry_at": "2026-09-04T09:49:00-04:00",
+          "exit_at": "2026-09-04T10:50:00-04:00",
+          "budget": 99.92971066801616,
+          "qty": 0.12934423,
+          "entry_price": 772.587251,
+          "exit_price": 769.773015,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019949536658280004,
+          "net_pnl": -0.3640051884582866,
+          "cash_after": 998.9331014917033
+        },
+        {
+          "id": "fake-SPY-2026-09-08-09:45",
+          "entry_at": "2026-09-08T09:46:00-04:00",
+          "exit_at": "2026-09-08T16:00:00-04:00",
+          "budget": 99.89331014917033,
+          "qty": 0.13012418,
+          "entry_price": 767.6767600000001,
+          "exit_price": 765.863406,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019955063499720004,
+          "net_pnl": -0.2359612022997205,
+          "cash_after": 998.6971402894036
+        },
+        {
+          "id": "fake-SPY-2026-09-09-13:45",
+          "entry_at": "2026-09-09T13:47:00-04:00",
+          "exit_at": "2026-09-09T16:00:00-04:00",
+          "budget": 99.86971402894036,
+          "qty": 0.13086489,
+          "entry_price": 763.1513075,
+          "exit_price": 762.263766,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019962326617935004,
+          "net_pnl": -0.11614802076793469,
+          "cash_after": 998.5809922686357
+        },
+        {
+          "id": "fake-SPY-2026-09-10-09:45",
+          "entry_at": "2026-09-10T09:47:00-04:00",
+          "exit_at": "2026-09-10T16:00:00-04:00",
+          "budget": 99.85809922686357,
+          "qty": 0.13159727,
+          "entry_price": 758.815874,
+          "exit_price": 757.754217,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019957647176390002,
+          "net_pnl": -0.13971116287638582,
+          "cash_after": 998.4412811057592
+        },
+        {
+          "id": "fake-SPY-2026-09-11-10:45",
+          "entry_at": "2026-09-11T10:46:00-04:00",
+          "exit_at": "2026-09-11T16:00:00-04:00",
+          "budget": 99.84412811057592,
+          "qty": 0.13064474,
+          "entry_price": 764.2414164999999,
+          "exit_price": 764.1185805,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019967219482640006,
+          "net_pnl": -0.01604787728262601,
+          "cash_after": 998.4252332284766
+        },
+        {
+          "id": "fake-SPY-2026-09-14-09:45",
+          "entry_at": "2026-09-14T09:47:00-04:00",
+          "exit_at": "2026-09-14T12:49:00-04:00",
+          "budget": 99.84252332284767,
+          "qty": 0.1314295,
+          "entry_price": 759.665959,
+          "exit_price": 763.133679,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.020014084260000006,
+          "net_pnl": 0.45576070573999816,
+          "cash_after": 998.8809939342166
+        },
+        {
+          "id": "fake-SPY-2026-09-14-13:45",
+          "entry_at": "2026-09-14T13:48:00-04:00",
+          "exit_at": "2026-09-14T16:00:00-04:00",
+          "budget": 99.88809939342167,
+          "qty": 0.13094132,
+          "entry_price": 762.846277,
+          "exit_price": 760.703922,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019949564808600002,
+          "net_pnl": -0.2805227916085937,
+          "cash_after": 998.600471142608
+        },
+        {
+          "id": "fake-SPY-2026-09-15-10:45",
+          "entry_at": "2026-09-15T10:46:00-04:00",
+          "exit_at": "2026-09-15T16:00:00-04:00",
+          "budget": 99.8600471142608,
+          "qty": 0.13185878,
+          "entry_price": 757.325725,
+          "exit_price": 757.304262,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019971726395140003,
+          "net_pnl": -0.0028300849951452423,
+          "cash_after": 998.5976410576128
+        },
+        {
+          "id": "fake-SPY-2026-09-16-09:45",
+          "entry_at": "2026-09-16T09:46:00-04:00",
+          "exit_at": "2026-09-16T14:37:00-04:00",
+          "budget": 99.85976410576129,
+          "qty": 0.13148682,
+          "entry_price": 759.4659389999999,
+          "exit_price": 756.414351,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.01993182407016,
+          "net_pnl": -0.40124360207015003,
+          "cash_after": 998.1963974555426
+        },
+        {
+          "id": "fake-SPY-2026-09-17-09:45",
+          "entry_at": "2026-09-17T09:48:00-04:00",
+          "exit_at": "2026-09-17T16:00:00-04:00",
+          "budget": 99.81963974555427,
+          "qty": 0.13111285,
+          "entry_price": 761.326125,
+          "exit_price": 762.553737,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0199800249858,
+          "net_pnl": 0.16095570801418796,
+          "cash_after": 998.3573531635568
+        },
+        {
+          "id": "fake-SPY-2026-09-18-09:45",
+          "entry_at": "2026-09-18T09:46:00-04:00",
+          "exit_at": "2026-09-18T12:24:00-04:00",
+          "budget": 99.83573531635568,
+          "qty": 0.13117362,
+          "entry_price": 761.096102,
+          "exit_price": 758.564136,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019933930336919998,
+          "net_pnl": -0.33212714593692144,
+          "cash_after": 998.0252260176198
+        },
+        {
+          "id": "fake-SPY-2026-09-18-13:45",
+          "entry_at": "2026-09-18T13:52:00-04:00",
+          "exit_at": "2026-09-18T16:00:00-04:00",
+          "budget": 99.80252260176199,
+          "qty": 0.1313414,
+          "entry_price": 759.8709795,
+          "exit_price": 761.563836,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019982740290899997,
+          "net_pnl": 0.2223421427091081,
+          "cash_after": 998.2475681603289
+        },
+        {
+          "id": "fake-SPY-2026-09-21-09:45",
+          "entry_at": "2026-09-21T09:46:00-04:00",
+          "exit_at": "2026-09-21T11:45:00-04:00",
+          "budget": 99.8247568160329,
+          "qty": 0.13012642,
+          "entry_price": 767.1367059999999,
+          "exit_price": 770.6129310000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0200101902355,
+          "net_pnl": 0.4523487143645295,
+          "cash_after": 998.6999168746935
+        },
+        {
+          "id": "fake-SPY-2026-09-21-13:45",
+          "entry_at": "2026-09-21T13:46:00-04:00",
+          "exit_at": "2026-09-21T16:00:00-04:00",
+          "budget": 99.86999168746935,
+          "qty": 0.12917413,
+          "entry_price": 773.1423065,
+          "exit_price": 773.442648,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019977877184605003,
+          "net_pnl": 0.038796351965387894,
+          "cash_after": 998.7387132266589
+        },
+        {
+          "id": "fake-SPY-2026-09-22-13:45",
+          "entry_at": "2026-09-22T13:46:00-04:00",
+          "exit_at": "2026-09-22T16:00:00-04:00",
+          "budget": 99.87387132266589,
+          "qty": 0.12909315,
+          "entry_price": 773.657358,
+          "exit_price": 773.2826640000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0199699357461,
+          "net_pnl": -0.048370428746097,
+          "cash_after": 998.6903427979128
+        },
+        {
+          "id": "fake-SPY-2026-09-23-13:45",
+          "entry_at": "2026-09-23T13:46:00-04:00",
+          "exit_at": "2026-09-23T16:00:00-04:00",
+          "budget": 99.86903427979128,
+          "qty": 0.12991991,
+          "entry_price": 768.696862,
+          "exit_price": 767.673225,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019960505212670003,
+          "net_pnl": -0.13299082691267103,
+          "cash_after": 998.5573519710001
+        },
+        {
+          "id": "fake-SPY-2026-09-24-09:45",
+          "entry_at": "2026-09-24T09:46:00-04:00",
+          "exit_at": "2026-09-24T12:42:00-04:00",
+          "budget": 99.85573519710002,
+          "qty": 0.13054547,
+          "entry_price": 764.9114835,
+          "exit_price": 768.393153,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.020016602187835006,
+          "net_pnl": 0.4545161812621588,
+          "cash_after": 999.0118681522623
+        },
+        {
+          "id": "fake-SPY-2026-09-24-13:45",
+          "entry_at": "2026-09-24T13:47:00-04:00",
+          "exit_at": "2026-09-24T16:00:00-04:00",
+          "budget": 99.90118681522624,
+          "qty": 0.13032799,
+          "entry_price": 766.536646,
+          "exit_price": 767.173275,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019988534154290003,
+          "net_pnl": 0.0829705779457062,
+          "cash_after": 999.094838730208
+        },
+        {
+          "id": "fake-SPY-2026-09-25-10:45",
+          "entry_at": "2026-09-25T10:46:00-04:00",
+          "exit_at": "2026-09-25T12:11:00-04:00",
+          "budget": 99.9094838730208,
+          "qty": 0.13008254,
+          "entry_price": 768.046797,
+          "exit_price": 771.702822,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0200294590965,
+          "net_pnl": 0.4755850183034999,
+          "cash_after": 999.5704237485115
+        },
+        {
+          "id": "fake-SPY-2026-09-28-09:45",
+          "entry_at": "2026-09-28T09:47:00-04:00",
+          "exit_at": "2026-09-28T10:44:00-04:00",
+          "budget": 99.95704237485116,
+          "qty": 0.130186,
+          "entry_price": 767.8017725,
+          "exit_price": 765.253467,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019958229823000002,
+          "net_pnl": -0.331753699822996,
+          "cash_after": 999.2386700486885
+        },
+        {
+          "id": "fake-SPY-2026-09-29-09:45",
+          "entry_at": "2026-09-29T09:46:00-04:00",
+          "exit_at": "2026-09-29T11:24:00-04:00",
+          "budget": 99.92386700486885,
+          "qty": 0.13056704,
+          "entry_price": 765.30692304,
+          "exit_price": 762.7437180000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0199513017698816,
+          "net_pnl": -0.33467009498587597,
+          "cash_after": 998.9039999537026
+        },
+        {
+          "id": "fake-SPY-2026-09-30-10:45",
+          "entry_at": "2026-09-30T10:48:00-04:00",
+          "exit_at": "2026-09-30T15:49:00-04:00",
+          "budget": 99.89039999537027,
+          "qty": 0.13000268,
+          "entry_price": 768.3718295,
+          "exit_price": 765.273465,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.019937796016860004,
+          "net_pnl": -0.4027956886168603,
+          "cash_after": 998.5012042650858
+        }
+      ]
+    },
+    {
+      "hypothetical_fractional": true,
+      "live_bot_support": false,
+      "cost_bps_per_side": 5,
+      "starting_cash": 1000.0,
+      "final_cash": 996.4283025682244,
+      "net_pnl": -3.5716974317756467,
+      "return_pct": -0.35716974317756556,
+      "trades": 26,
+      "wins": 7,
+      "losses": 19,
+      "estimated_cost": 2.5926638020618564,
+      "conservative_drawdown_pct": 0.35716974317756467,
+      "skips": {
+        "gate_skip": 19,
+        "existing_position": 18
+      },
+      "final_positions": 0,
+      "ledger": [
+        {
+          "id": "fake-SPY-2026-09-01-10:45",
+          "entry_at": "2026-09-01T10:48:00-04:00",
+          "exit_at": "2026-09-01T12:32:00-04:00",
+          "budget": 100.0,
+          "qty": 0.13078526,
+          "entry_price": 764.612115,
+          "exit_price": 761.4890650000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09979569264299999,
+          "net_pnl": -0.40844890624298963,
+          "cash_after": 999.5915510937571
+        },
+        {
+          "id": "fake-SPY-2026-09-02-13:45",
+          "entry_at": "2026-09-02T13:46:00-04:00",
+          "exit_at": "2026-09-02T16:00:00-04:00",
+          "budget": 99.95915510937571,
+          "qty": 0.13057295,
+          "entry_price": 765.5425799999999,
+          "exit_price": 764.75743,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0999078926925,
+          "net_pnl": -0.10251935169249092,
+          "cash_after": 999.4890317420645
+        },
+        {
+          "id": "fake-SPY-2026-09-03-09:45",
+          "entry_at": "2026-09-03T09:51:00-04:00",
+          "exit_at": "2026-09-03T10:57:00-04:00",
+          "budget": 99.94890317420646,
+          "qty": 0.12975406,
+          "entry_price": 770.294955,
+          "exit_price": 767.09626,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0997412971517,
+          "net_pnl": -0.4150436629516909,
+          "cash_after": 999.0739880791128
+        },
+        {
+          "id": "fake-SPY-2026-09-03-13:45",
+          "entry_at": "2026-09-03T13:46:00-04:00",
+          "exit_at": "2026-09-03T16:00:00-04:00",
+          "budget": 99.90739880791129,
+          "qty": 0.12915999,
+          "entry_price": 773.5165649999999,
+          "exit_price": 772.77342,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09985940046854999,
+          "net_pnl": -0.09598460076853878,
+          "cash_after": 998.9780034783442
+        },
+        {
+          "id": "fake-SPY-2026-09-04-09:45",
+          "entry_at": "2026-09-04T09:49:00-04:00",
+          "exit_at": "2026-09-04T10:50:00-04:00",
+          "budget": 99.89780034783443,
+          "qty": 0.12925124,
+          "entry_price": 772.896255,
+          "exit_price": 769.4650750000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09967597126319999,
+          "net_pnl": -0.4434842696631905,
+          "cash_after": 998.5345192086811
+        },
+        {
+          "id": "fake-SPY-2026-09-08-09:45",
+          "entry_at": "2026-09-08T09:46:00-04:00",
+          "exit_at": "2026-09-08T16:00:00-04:00",
+          "budget": 99.85345192086811,
+          "qty": 0.13002025,
+          "entry_price": 767.9838,
+          "exit_price": 765.55703,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09969562709250002,
+          "net_pnl": -0.31552924209248956,
+          "cash_after": 998.2189899665887
+        },
+        {
+          "id": "fake-SPY-2026-09-09-13:45",
+          "entry_at": "2026-09-09T13:47:00-04:00",
+          "exit_at": "2026-09-09T16:00:00-04:00",
+          "budget": 99.82189899665887,
+          "qty": 0.13074994,
+          "entry_price": 763.4565375,
+          "exit_price": 761.95883,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09972395986255002,
+          "net_pnl": -0.19582516576254128,
+          "cash_after": 998.0231648008261
+        },
+        {
+          "id": "fake-SPY-2026-09-10-09:45",
+          "entry_at": "2026-09-10T09:47:00-04:00",
+          "exit_at": "2026-09-10T16:00:00-04:00",
+          "budget": 99.80231648008261,
+          "qty": 0.13147117,
+          "entry_price": 759.11937,
+          "exit_price": 757.451085,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09969261614345,
+          "net_pnl": -0.21933138084344592,
+          "cash_after": 997.8038334199827
+        },
+        {
+          "id": "fake-SPY-2026-09-11-10:45",
+          "entry_at": "2026-09-11T10:46:00-04:00",
+          "exit_at": "2026-09-11T16:00:00-04:00",
+          "budget": 99.78038334199827,
+          "qty": 0.13050914,
+          "entry_price": 764.5470824999999,
+          "exit_price": 763.8129025000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0997324746052,
+          "net_pnl": -0.09581720040517523,
+          "cash_after": 997.7080162195775
+        },
+        {
+          "id": "fake-SPY-2026-09-14-09:45",
+          "entry_at": "2026-09-14T09:47:00-04:00",
+          "exit_at": "2026-09-14T12:49:00-04:00",
+          "budget": 99.77080162195776,
+          "qty": 0.13128258,
+          "entry_price": 759.969795,
+          "exit_price": 762.8283950000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09995855641200002,
+          "net_pnl": 0.3752843831880181,
+          "cash_after": 998.0833006027656
+        },
+        {
+          "id": "fake-SPY-2026-09-14-13:45",
+          "entry_at": "2026-09-14T13:48:00-04:00",
+          "exit_at": "2026-09-14T16:00:00-04:00",
+          "budget": 99.80833006027656,
+          "qty": 0.13078444,
+          "entry_price": 763.1513849999999,
+          "exit_price": 760.39961,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.099628316781,
+          "net_pnl": -0.3598893523809789,
+          "cash_after": 997.7234112503846
+        },
+        {
+          "id": "fake-SPY-2026-09-15-10:45",
+          "entry_at": "2026-09-15T10:46:00-04:00",
+          "exit_at": "2026-09-15T16:00:00-04:00",
+          "budget": 99.77234112503847,
+          "qty": 0.1316903,
+          "entry_price": 757.6286249999999,
+          "exit_price": 757.00131,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09973103954450001,
+          "net_pnl": -0.08261130054449385,
+          "cash_after": 997.6407999498401
+        },
+        {
+          "id": "fake-SPY-2026-09-16-09:45",
+          "entry_at": "2026-09-16T09:46:00-04:00",
+          "exit_at": "2026-09-16T14:37:00-04:00",
+          "budget": 99.76407999498402,
+          "qty": 0.13130831,
+          "entry_price": 759.769695,
+          "exit_price": 756.111755,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09952382048140002,
+          "net_pnl": -0.48031791948139213,
+          "cash_after": 997.1604820303587
+        },
+        {
+          "id": "fake-SPY-2026-09-17-09:45",
+          "entry_at": "2026-09-17T09:48:00-04:00",
+          "exit_at": "2026-09-17T16:00:00-04:00",
+          "budget": 99.71604820303588,
+          "qty": 0.13092442,
+          "entry_price": 761.630625,
+          "exit_price": 762.248685,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09975655257480001,
+          "net_pnl": 0.08091914702520185,
+          "cash_after": 997.2414011773839
+        },
+        {
+          "id": "fake-SPY-2026-09-18-09:45",
+          "entry_at": "2026-09-18T09:46:00-04:00",
+          "exit_at": "2026-09-18T12:24:00-04:00",
+          "budget": 99.72414011773839,
+          "qty": 0.13097461,
+          "entry_price": 761.4005099999999,
+          "exit_price": 758.26068,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0995184379163,
+          "net_pnl": -0.4112380097162948,
+          "cash_after": 996.8301631676676
+        },
+        {
+          "id": "fake-SPY-2026-09-18-13:45",
+          "entry_at": "2026-09-18T13:52:00-04:00",
+          "exit_at": "2026-09-18T16:00:00-04:00",
+          "budget": 99.68301631676677,
+          "qty": 0.13113168,
+          "entry_price": 760.1748974999999,
+          "exit_price": 761.25918,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09975416378039999,
+          "net_pnl": 0.14218378581961125,
+          "cash_after": 996.9723469534872
+        },
+        {
+          "id": "fake-SPY-2026-09-21-09:45",
+          "entry_at": "2026-09-21T09:46:00-04:00",
+          "exit_at": "2026-09-21T11:45:00-04:00",
+          "budget": 99.69723469534873,
+          "qty": 0.12990823,
+          "entry_price": 767.4435299999999,
+          "exit_price": 770.3046550000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09988319034125001,
+          "net_pnl": 0.3716836845587816,
+          "cash_after": 997.344030638046
+        },
+        {
+          "id": "fake-SPY-2026-09-21-13:45",
+          "entry_at": "2026-09-21T13:46:00-04:00",
+          "exit_at": "2026-09-21T16:00:00-04:00",
+          "budget": 99.7344030638046,
+          "qty": 0.12894719,
+          "entry_price": 773.4515325,
+          "exit_price": 773.13324,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.099713894923075,
+          "net_pnl": -0.041042923473072944,
+          "cash_after": 997.3029877145729
+        },
+        {
+          "id": "fake-SPY-2026-09-22-13:45",
+          "entry_at": "2026-09-22T13:46:00-04:00",
+          "exit_at": "2026-09-22T16:00:00-04:00",
+          "budget": 99.73029877145729,
+          "qty": 0.12885604,
+          "entry_price": 773.96679,
+          "exit_price": 772.9733200000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09966628125880002,
+          "net_pnl": -0.12801461005878562,
+          "cash_after": 997.174973104514
+        },
+        {
+          "id": "fake-SPY-2026-09-23-13:45",
+          "entry_at": "2026-09-23T13:46:00-04:00",
+          "exit_at": "2026-09-23T16:00:00-04:00",
+          "budget": 99.7174973104514,
+          "qty": 0.12967092,
+          "entry_price": 769.0043099999999,
+          "exit_price": 767.366125,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0996112556802,
+          "net_pnl": -0.21242495608018802,
+          "cash_after": 996.9625481484338
+        },
+        {
+          "id": "fake-SPY-2026-09-24-09:45",
+          "entry_at": "2026-09-24T09:46:00-04:00",
+          "exit_at": "2026-09-24T12:42:00-04:00",
+          "budget": 99.69625481484339,
+          "qty": 0.13028487,
+          "entry_price": 765.2174175,
+          "exit_price": 768.085765,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.099883221297675,
+          "net_pnl": 0.3737022811523285,
+          "cash_after": 997.3362504295861
+        },
+        {
+          "id": "fake-SPY-2026-09-24-13:45",
+          "entry_at": "2026-09-24T13:47:00-04:00",
+          "exit_at": "2026-09-24T16:00:00-04:00",
+          "budget": 99.73362504295862,
+          "qty": 0.13005738,
+          "entry_price": 766.84323,
+          "exit_price": 766.8663750000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.0997351521399,
+          "net_pnl": 0.0030101780601147245,
+          "cash_after": 997.3392606076462
+        },
+        {
+          "id": "fake-SPY-2026-09-25-10:45",
+          "entry_at": "2026-09-25T10:46:00-04:00",
+          "exit_at": "2026-09-25T12:11:00-04:00",
+          "budget": 99.73392606076463,
+          "qty": 0.12980205,
+          "entry_price": 768.353985,
+          "exit_price": 771.3941100000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09993135324375,
+          "net_pnl": 0.3946144572562634,
+          "cash_after": 997.7338750649025
+        },
+        {
+          "id": "fake-SPY-2026-09-28-09:45",
+          "entry_at": "2026-09-28T09:47:00-04:00",
+          "exit_at": "2026-09-28T10:44:00-04:00",
+          "budget": 99.77338750649025,
+          "qty": 0.12989485,
+          "entry_price": 768.1088625,
+          "exit_price": 764.9473350000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09956797463337501,
+          "net_pnl": -0.41066614038336463,
+          "cash_after": 997.3232089245191
+        },
+        {
+          "id": "fake-SPY-2026-09-29-09:45",
+          "entry_at": "2026-09-29T09:46:00-04:00",
+          "exit_at": "2026-09-29T11:24:00-04:00",
+          "budget": 99.73232089245192,
+          "qty": 0.13026466,
+          "entry_price": 765.6130152,
+          "exit_price": 762.4385900000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09952548290943201,
+          "net_pnl": -0.41351541937341374,
+          "cash_after": 996.9096935051457
+        },
+        {
+          "id": "fake-SPY-2026-09-30-10:45",
+          "entry_at": "2026-09-30T10:48:00-04:00",
+          "exit_at": "2026-09-30T15:49:00-04:00",
+          "budget": 99.69096935051458,
+          "qty": 0.12969126,
+          "entry_price": 768.6791474999999,
+          "exit_price": 764.9673250000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.09945017622135,
+          "net_pnl": -0.4813909369213256,
+          "cash_after": 996.4283025682244
+        }
+      ]
+    },
+    {
+      "hypothetical_fractional": true,
+      "live_bot_support": false,
+      "cost_bps_per_side": 10,
+      "starting_cash": 1000.0,
+      "final_cash": 993.8453153295342,
+      "net_pnl": -6.1546846704658265,
+      "return_pct": -0.6154684670465871,
+      "trades": 26,
+      "wins": 5,
+      "losses": 21,
+      "estimated_cost": 5.176279245140326,
+      "conservative_drawdown_pct": 0.6154684670465826,
+      "skips": {
+        "gate_skip": 19,
+        "existing_position": 18
+      },
+      "final_positions": 0,
+      "ledger": [
+        {
+          "id": "fake-SPY-2026-09-01-10:45",
+          "entry_at": "2026-09-01T10:48:00-04:00",
+          "exit_at": "2026-09-01T12:32:00-04:00",
+          "budget": 100.0,
+          "qty": 0.13071994,
+          "entry_price": 764.9942299999999,
+          "exit_price": 761.10813,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19949170043400002,
+          "net_pnl": -0.5079907588339925,
+          "cash_after": 999.492009241166
+        },
+        {
+          "id": "fake-SPY-2026-09-02-13:45",
+          "entry_at": "2026-09-02T13:46:00-04:00",
+          "exit_at": "2026-09-02T16:00:00-04:00",
+          "budget": 99.94920092411661,
+          "qty": 0.13049473,
+          "entry_price": 765.9251599999999,
+          "exit_price": 764.37486,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19969608531900002,
+          "net_pnl": -0.20230597991898425,
+          "cash_after": 999.289703261247
+        },
+        {
+          "id": "fake-SPY-2026-09-03-09:45",
+          "entry_at": "2026-09-03T09:51:00-04:00",
+          "exit_at": "2026-09-03T10:57:00-04:00",
+          "budget": 99.92897032612471,
+          "qty": 0.12966339,
+          "entry_price": 770.6799099999998,
+          "exit_price": 766.71252,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.1993431991521,
+          "net_pnl": -0.5144252368520734,
+          "cash_after": 998.775278024395
+        },
+        {
+          "id": "fake-SPY-2026-09-03-13:45",
+          "entry_at": "2026-09-03T13:46:00-04:00",
+          "exit_at": "2026-09-03T16:00:00-04:00",
+          "budget": 99.8775278024395,
+          "qty": 0.12905688,
+          "entry_price": 773.9031299999999,
+          "exit_price": 772.38684,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19955936297520002,
+          "net_pnl": -0.19568765657518875,
+          "cash_after": 998.5795903678198
+        },
+        {
+          "id": "fake-SPY-2026-09-04-09:45",
+          "entry_at": "2026-09-04T09:49:00-04:00",
+          "exit_at": "2026-09-04T10:50:00-04:00",
+          "budget": 99.85795903678199,
+          "qty": 0.12913515,
+          "entry_price": 773.2825099999999,
+          "exit_price": 769.08015,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.199172889954,
+          "net_pnl": -0.5426723889539852,
+          "cash_after": 998.0369179788659
+        },
+        {
+          "id": "fake-SPY-2026-09-08-09:45",
+          "entry_at": "2026-09-08T09:46:00-04:00",
+          "exit_at": "2026-09-08T16:00:00-04:00",
+          "budget": 99.80369179788659,
+          "qty": 0.12989055,
+          "entry_price": 768.3675999999999,
+          "exit_price": 765.17406,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.199192354047,
+          "net_pnl": -0.4148106670469832,
+          "cash_after": 997.6221073118189
+        },
+        {
+          "id": "fake-SPY-2026-09-09-13:45",
+          "entry_at": "2026-09-09T13:47:00-04:00",
+          "exit_at": "2026-09-09T16:00:00-04:00",
+          "budget": 99.7622107311819,
+          "qty": 0.13060649,
+          "entry_price": 763.838075,
+          "exit_price": 761.57766,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19922909894335,
+          "net_pnl": -0.29522486909334555,
+          "cash_after": 997.3268824427256
+        },
+        {
+          "id": "fake-SPY-2026-09-10-09:45",
+          "entry_at": "2026-09-10T09:47:00-04:00",
+          "exit_at": "2026-09-10T16:00:00-04:00",
+          "budget": 99.73268824427257,
+          "qty": 0.13131382,
+          "entry_price": 759.4987399999999,
+          "exit_price": 757.07217,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.1991465999974,
+          "net_pnl": -0.3186421761973811,
+          "cash_after": 997.0082402665282
+        },
+        {
+          "id": "fake-SPY-2026-09-11-10:45",
+          "entry_at": "2026-09-11T10:46:00-04:00",
+          "exit_at": "2026-09-11T16:00:00-04:00",
+          "budget": 99.70082402665282,
+          "qty": 0.13033994,
+          "entry_price": 764.9291649999999,
+          "exit_price": 763.4308050000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.1992063506984,
+          "net_pnl": -0.1952961524983766,
+          "cash_after": 996.8129441140298
+        },
+        {
+          "id": "fake-SPY-2026-09-14-09:45",
+          "entry_at": "2026-09-14T09:47:00-04:00",
+          "exit_at": "2026-09-14T12:49:00-04:00",
+          "budget": 99.68129441140299,
+          "qty": 0.13109929,
+          "entry_price": 760.3495899999999,
+          "exit_price": 762.4467900000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19963799881200003,
+          "net_pnl": 0.2749414309880206,
+          "cash_after": 997.0878855450179
+        },
+        {
+          "id": "fake-SPY-2026-09-14-13:45",
+          "entry_at": "2026-09-14T13:48:00-04:00",
+          "exit_at": "2026-09-14T16:00:00-04:00",
+          "budget": 99.7087885545018,
+          "qty": 0.13058874,
+          "entry_price": 763.5327699999999,
+          "exit_price": 760.01922,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19895847482700002,
+          "net_pnl": -0.4588300674269864,
+          "cash_after": 996.6290554775909
+        },
+        {
+          "id": "fake-SPY-2026-09-15-10:45",
+          "entry_at": "2026-09-15T10:46:00-04:00",
+          "exit_at": "2026-09-15T16:00:00-04:00",
+          "budget": 99.6629055477591,
+          "qty": 0.13148014,
+          "entry_price": 758.0072499999999,
+          "exit_price": 756.62262,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19914376444819998,
+          "net_pnl": -0.18205134624818708,
+          "cash_after": 996.4470041313427
+        },
+        {
+          "id": "fake-SPY-2026-09-16-09:45",
+          "entry_at": "2026-09-16T09:46:00-04:00",
+          "exit_at": "2026-09-16T14:37:00-04:00",
+          "budget": 99.64470041313427,
+          "qty": 0.13108568,
+          "entry_price": 760.1493899999999,
+          "exit_price": 755.73351,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19871016059840002,
+          "net_pnl": -0.5788586325983872,
+          "cash_after": 995.8681454987443
+        },
+        {
+          "id": "fake-SPY-2026-09-17-09:45",
+          "entry_at": "2026-09-17T09:48:00-04:00",
+          "exit_at": "2026-09-17T16:00:00-04:00",
+          "budget": 99.58681454987443,
+          "qty": 0.13068942,
+          "entry_price": 762.0112499999999,
+          "exit_price": 761.86737,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19915499334960002,
+          "net_pnl": -0.018803593749580877,
+          "cash_after": 995.8493419049947
+        },
+        {
+          "id": "fake-SPY-2026-09-18-09:45",
+          "entry_at": "2026-09-18T09:46:00-04:00",
+          "exit_at": "2026-09-18T12:24:00-04:00",
+          "budget": 99.58493419049948,
+          "qty": 0.13072645,
+          "entry_price": 761.7810199999999,
+          "exit_price": 757.88136,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.198659757007,
+          "net_pnl": -0.5097887080069903,
+          "cash_after": 995.3395531969877
+        },
+        {
+          "id": "fake-SPY-2026-09-18-13:45",
+          "entry_at": "2026-09-18T13:52:00-04:00",
+          "exit_at": "2026-09-18T16:00:00-04:00",
+          "budget": 99.53395531969878,
+          "qty": 0.13087019,
+          "entry_price": 760.5547949999999,
+          "exit_price": 760.8783599999999,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19911048752264998,
+          "net_pnl": 0.042345013027353995,
+          "cash_after": 995.381898210015
+        },
+        {
+          "id": "fake-SPY-2026-09-21-09:45",
+          "entry_at": "2026-09-21T09:46:00-04:00",
+          "exit_at": "2026-09-21T11:45:00-04:00",
+          "budget": 99.53818982100151,
+          "qty": 0.1296362,
+          "entry_price": 767.8270599999998,
+          "exit_price": 769.9193100000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19934806655,
+          "net_pnl": 0.2712313394500341,
+          "cash_after": 995.6531295494651
+        },
+        {
+          "id": "fake-SPY-2026-09-21-13:45",
+          "entry_at": "2026-09-21T13:46:00-04:00",
+          "exit_at": "2026-09-21T16:00:00-04:00",
+          "budget": 99.56531295494652,
+          "qty": 0.12866427,
+          "entry_price": 773.8380649999999,
+          "exit_price": 772.74648,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19899023001795002,
+          "net_pnl": -0.14044798716793655,
+          "cash_after": 995.5126815622972
+        },
+        {
+          "id": "fake-SPY-2026-09-22-13:45",
+          "entry_at": "2026-09-22T13:46:00-04:00",
+          "exit_at": "2026-09-22T16:00:00-04:00",
+          "budget": 99.55126815622972,
+          "qty": 0.12856048,
+          "entry_price": 774.35358,
+          "exit_price": 772.58664,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19887534893120004,
+          "net_pnl": -0.22715865453119705,
+          "cash_after": 995.285522907766
+        },
+        {
+          "id": "fake-SPY-2026-09-23-13:45",
+          "entry_at": "2026-09-23T13:46:00-04:00",
+          "exit_at": "2026-09-23T16:00:00-04:00",
+          "budget": 99.5285522907766,
+          "qty": 0.12936057,
+          "entry_price": 769.38862,
+          "exit_price": 766.98225,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19874569893090002,
+          "net_pnl": -0.31128939483089024,
+          "cash_after": 994.9742335129351
+        },
+        {
+          "id": "fake-SPY-2026-09-24-09:45",
+          "entry_at": "2026-09-24T09:46:00-04:00",
+          "exit_at": "2026-09-24T12:42:00-04:00",
+          "budget": 99.49742335129352,
+          "qty": 0.12996008,
+          "entry_price": 765.599835,
+          "exit_price": 767.70153,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19926844046440004,
+          "net_pnl": 0.27313645033560824,
+          "cash_after": 995.2473699632708
+        },
+        {
+          "id": "fake-SPY-2026-09-24-13:45",
+          "entry_at": "2026-09-24T13:47:00-04:00",
+          "exit_at": "2026-09-24T16:00:00-04:00",
+          "budget": 99.52473699632708,
+          "qty": 0.12972015,
+          "entry_price": 767.22646,
+          "exit_price": 766.48275,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19895309125650001,
+          "net_pnl": -0.0964741727564954,
+          "cash_after": 995.1508957905143
+        },
+        {
+          "id": "fake-SPY-2026-09-25-10:45",
+          "entry_at": "2026-09-25T10:46:00-04:00",
+          "exit_at": "2026-09-25T12:11:00-04:00",
+          "budget": 99.51508957905143,
+          "qty": 0.12945254,
+          "entry_price": 768.7379699999999,
+          "exit_price": 771.0082199999999,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19932454846500003,
+          "net_pnl": 0.29388962893500425,
+          "cash_after": 995.4447854194492
+        },
+        {
+          "id": "fake-SPY-2026-09-28-09:45",
+          "entry_at": "2026-09-28T09:47:00-04:00",
+          "exit_at": "2026-09-28T10:44:00-04:00",
+          "budget": 99.54447854194493,
+          "qty": 0.1295321,
+          "entry_price": 768.492725,
+          "exit_price": 764.5646700000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19857983356550002,
+          "net_pnl": -0.5088092130654817,
+          "cash_after": 994.9359762063838
+        },
+        {
+          "id": "fake-SPY-2026-09-29-09:45",
+          "entry_at": "2026-09-29T09:46:00-04:00",
+          "exit_at": "2026-09-29T11:24:00-04:00",
+          "budget": 99.49359762063838,
+          "qty": 0.12988794,
+          "entry_price": 765.9956304,
+          "exit_price": 762.05718,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19847531867217602,
+          "net_pnl": -0.5115572092481715,
+          "cash_after": 994.4244189971356
+        },
+        {
+          "id": "fake-SPY-2026-09-30-10:45",
+          "entry_at": "2026-09-30T10:48:00-04:00",
+          "exit_at": "2026-09-30T15:49:00-04:00",
+          "budget": 99.44244189971357,
+          "qty": 0.12930332,
+          "entry_price": 769.0632949999999,
+          "exit_price": 764.58465,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.19830539020139998,
+          "net_pnl": -0.579103667601389,
+          "cash_after": 993.8453153295342
+        }
+      ]
+    },
+    {
+      "hypothetical_fractional": true,
+      "live_bot_support": false,
+      "cost_bps_per_side": 25,
+      "starting_cash": 1000.0,
+      "final_cash": 986.1502502782623,
+      "net_pnl": -13.84974972173768,
+      "return_pct": -1.3849749721737692,
+      "trades": 26,
+      "wins": 0,
+      "losses": 26,
+      "estimated_cost": 12.873221134824036,
+      "conservative_drawdown_pct": 1.384974972173768,
+      "skips": {
+        "gate_skip": 19,
+        "existing_position": 18
+      },
+      "final_positions": 0,
+      "ledger": [
+        {
+          "id": "fake-SPY-2026-09-01-10:45",
+          "entry_at": "2026-09-01T10:48:00-04:00",
+          "exit_at": "2026-09-01T12:32:00-04:00",
+          "budget": 100.0,
+          "qty": 0.13052434,
+          "entry_price": 766.140575,
+          "exit_price": 759.965325,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.497982988185,
+          "net_pnl": -0.8060204305850006,
+          "cash_after": 999.193979569415
+        },
+        {
+          "id": "fake-SPY-2026-09-02-13:45",
+          "entry_at": "2026-09-02T13:46:00-04:00",
+          "exit_at": "2026-09-02T16:00:00-04:00",
+          "budget": 99.91939795694151,
+          "qty": 0.13026062,
+          "entry_price": 767.0728999999999,
+          "exit_price": 763.22715,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.498344566965,
+          "net_pnl": -0.500949779364979,
+          "cash_after": 998.69302979005
+        },
+        {
+          "id": "fake-SPY-2026-09-03-09:45",
+          "entry_at": "2026-09-03T09:51:00-04:00",
+          "exit_at": "2026-09-03T10:57:00-04:00",
+          "budget": 99.869302979005,
+          "qty": 0.12939207,
+          "entry_price": 771.8347749999999,
+          "exit_price": 765.5613000000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49731518624324994,
+          "net_pnl": -0.8117379163432303,
+          "cash_after": 997.8812918737068
+        },
+        {
+          "id": "fake-SPY-2026-09-03-13:45",
+          "entry_at": "2026-09-03T13:46:00-04:00",
+          "exit_at": "2026-09-03T16:00:00-04:00",
+          "budget": 99.78812918737069,
+          "qty": 0.12874843,
+          "entry_price": 775.062825,
+          "exit_price": 771.2271000000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49770602456175,
+          "net_pnl": -0.49384357166173853,
+          "cash_after": 997.3874483020451
+        },
+        {
+          "id": "fake-SPY-2026-09-04-09:45",
+          "entry_at": "2026-09-04T09:49:00-04:00",
+          "exit_at": "2026-09-04T10:50:00-04:00",
+          "budget": 99.73874483020451,
+          "qty": 0.128788,
+          "entry_price": 774.4412749999999,
+          "exit_price": 767.925375,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49659364920000004,
+          "net_pnl": -0.8391697291999839,
+          "cash_after": 996.5482785728451
+        },
+        {
+          "id": "fake-SPY-2026-09-08-09:45",
+          "entry_at": "2026-09-08T09:46:00-04:00",
+          "exit_at": "2026-09-08T16:00:00-04:00",
+          "budget": 99.65482785728452,
+          "qty": 0.12950275,
+          "entry_price": 769.519,
+          "exit_price": 764.02515,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.4964941180875,
+          "net_pnl": -0.7114686830874938,
+          "cash_after": 995.8368098897577
+        },
+        {
+          "id": "fake-SPY-2026-09-09-13:45",
+          "entry_at": "2026-09-09T13:47:00-04:00",
+          "exit_at": "2026-09-09T16:00:00-04:00",
+          "budget": 99.58368098897577,
+          "qty": 0.13017769,
+          "entry_price": 764.9826875,
+          "exit_price": 760.43415,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.4964375024783751,
+          "net_pnl": -0.5921181046283688,
+          "cash_after": 995.2446917851292
+        },
+        {
+          "id": "fake-SPY-2026-09-10-09:45",
+          "entry_at": "2026-09-10T09:47:00-04:00",
+          "exit_at": "2026-09-10T16:00:00-04:00",
+          "budget": 99.52446917851293,
+          "qty": 0.1308436,
+          "entry_price": 760.63685,
+          "exit_price": 755.9354250000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49608369613000003,
+          "net_pnl": -0.6151513721299815,
+          "cash_after": 994.6295404129993
+        },
+        {
+          "id": "fake-SPY-2026-09-11-10:45",
+          "entry_at": "2026-09-11T10:46:00-04:00",
+          "exit_at": "2026-09-11T16:00:00-04:00",
+          "budget": 99.46295404129994,
+          "qty": 0.12983441,
+          "entry_price": 766.0754125,
+          "exit_price": 762.2845125000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49608429716900004,
+          "net_pnl": -0.49218926486898074,
+          "cash_after": 994.1373511481303
+        },
+        {
+          "id": "fake-SPY-2026-09-14-09:45",
+          "entry_at": "2026-09-14T09:47:00-04:00",
+          "exit_at": "2026-09-14T12:49:00-04:00",
+          "budget": 99.41373511481304,
+          "qty": 0.13055177,
+          "entry_price": 761.488975,
+          "exit_price": 761.3019750000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.4970105883900001,
+          "net_pnl": -0.024413180989986703,
+          "cash_after": 994.1129379671403
+        },
+        {
+          "id": "fake-SPY-2026-09-14-13:45",
+          "entry_at": "2026-09-14T13:48:00-04:00",
+          "exit_at": "2026-09-14T16:00:00-04:00",
+          "budget": 99.41129379671403,
+          "qty": 0.1300043,
+          "entry_price": 764.676925,
+          "exit_price": 758.87805,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49517012816249995,
+          "net_pnl": -0.7538786851624938,
+          "cash_after": 993.3590592819778
+        },
+        {
+          "id": "fake-SPY-2026-09-15-10:45",
+          "entry_at": "2026-09-15T10:46:00-04:00",
+          "exit_at": "2026-09-15T16:00:00-04:00",
+          "budget": 99.33590592819779,
+          "qty": 0.13085267,
+          "entry_price": 759.1431249999999,
+          "exit_price": 755.4865500000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49548344890525003,
+          "net_pnl": -0.4784726018052319,
+          "cash_after": 992.8805866801725
+        },
+        {
+          "id": "fake-SPY-2026-09-16-09:45",
+          "entry_at": "2026-09-16T09:46:00-04:00",
+          "exit_at": "2026-09-16T14:37:00-04:00",
+          "budget": 99.28805866801726,
+          "qty": 0.13042107,
+          "entry_price": 761.288475,
+          "exit_price": 754.598775,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49425672897899997,
+          "net_pnl": -0.8724778319789873,
+          "cash_after": 992.0081088481935
+        },
+        {
+          "id": "fake-SPY-2026-09-17-09:45",
+          "entry_at": "2026-09-17T09:48:00-04:00",
+          "exit_at": "2026-09-17T16:00:00-04:00",
+          "budget": 99.20081088481936,
+          "qty": 0.12998808,
+          "entry_price": 763.1531249999999,
+          "exit_price": 760.723425,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49521558837600005,
+          "net_pnl": -0.3158320379759885,
+          "cash_after": 991.6922768102175
+        },
+        {
+          "id": "fake-SPY-2026-09-18-09:45",
+          "entry_at": "2026-09-18T09:46:00-04:00",
+          "exit_at": "2026-09-18T12:24:00-04:00",
+          "budget": 99.16922768102177,
+          "qty": 0.12998596,
+          "entry_price": 762.9225499999999,
+          "exit_price": 756.7434000000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49383615993400004,
+          "net_pnl": -0.803202744733977,
+          "cash_after": 990.8890740654836
+        },
+        {
+          "id": "fake-SPY-2026-09-18-13:45",
+          "entry_at": "2026-09-18T13:52:00-04:00",
+          "exit_at": "2026-09-18T16:00:00-04:00",
+          "budget": 99.08890740654836,
+          "qty": 0.13009009,
+          "entry_price": 761.6944874999999,
+          "exit_price": 759.7359,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49480904019787497,
+          "net_pnl": -0.254792824147863,
+          "cash_after": 990.6342812413357
+        },
+        {
+          "id": "fake-SPY-2026-09-21-09:45",
+          "entry_at": "2026-09-21T09:46:00-04:00",
+          "exit_at": "2026-09-21T11:45:00-04:00",
+          "budget": 99.06342812413357,
+          "qty": 0.12882484,
+          "entry_price": 768.9776499999999,
+          "exit_price": 768.7632750000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.495250994275,
+          "net_pnl": -0.02761682507497305,
+          "cash_after": 990.6066644162606
+        },
+        {
+          "id": "fake-SPY-2026-09-21-13:45",
+          "entry_at": "2026-09-21T13:46:00-04:00",
+          "exit_at": "2026-09-21T16:00:00-04:00",
+          "budget": 99.06066644162607,
+          "qty": 0.1278206,
+          "entry_price": 774.9976625,
+          "exit_price": 771.5862000000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.4942135566275,
+          "net_pnl": -0.43605518362749623,
+          "cash_after": 990.1706092326332
+        },
+        {
+          "id": "fake-SPY-2026-09-22-13:45",
+          "entry_at": "2026-09-22T13:46:00-04:00",
+          "exit_at": "2026-09-22T16:00:00-04:00",
+          "budget": 99.01706092326333,
+          "qty": 0.12767927,
+          "entry_price": 775.51395,
+          "exit_price": 771.4266,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.4937804248345001,
+          "net_pnl": -0.521869864234502,
+          "cash_after": 989.6487393683987
+        },
+        {
+          "id": "fake-SPY-2026-09-23-13:45",
+          "entry_at": "2026-09-23T13:46:00-04:00",
+          "exit_at": "2026-09-23T16:00:00-04:00",
+          "budget": 98.96487393683987,
+          "qty": 0.12843548,
+          "entry_price": 770.5415499999999,
+          "exit_price": 765.830625,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.493311046019,
+          "net_pnl": -0.6050499136189821,
+          "cash_after": 989.0436894547797
+        },
+        {
+          "id": "fake-SPY-2026-09-24-09:45",
+          "entry_at": "2026-09-24T09:46:00-04:00",
+          "exit_at": "2026-09-24T12:42:00-04:00",
+          "budget": 98.90436894547798,
+          "qty": 0.12899216,
+          "entry_price": 766.7470875,
+          "exit_price": 766.5488250000001,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49446080972199996,
+          "net_pnl": -0.02557430812199247,
+          "cash_after": 989.0181151466577
+        },
+        {
+          "id": "fake-SPY-2026-09-24-13:45",
+          "entry_at": "2026-09-24T13:47:00-04:00",
+          "exit_at": "2026-09-24T16:00:00-04:00",
+          "budget": 98.90181151466578,
+          "qty": 0.12871535,
+          "entry_price": 768.37615,
+          "exit_price": 765.3318750000001,
+          "reason": "session_close",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49353004862125,
+          "net_pnl": -0.3918449221212462,
+          "cash_after": 988.6262702245365
+        },
+        {
+          "id": "fake-SPY-2026-09-25-10:45",
+          "entry_at": "2026-09-25T10:46:00-04:00",
+          "exit_at": "2026-09-25T12:11:00-04:00",
+          "budget": 98.86262702245365,
+          "qty": 0.12841137,
+          "entry_price": 769.889925,
+          "exit_price": 769.85055,
+          "reason": "target",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49430351739375,
+          "net_pnl": -0.005056197693743577,
+          "cash_after": 988.6212140268427
+        },
+        {
+          "id": "fake-SPY-2026-09-28-09:45",
+          "entry_at": "2026-09-28T09:47:00-04:00",
+          "exit_at": "2026-09-28T10:44:00-04:00",
+          "budget": 98.86212140268428,
+          "qty": 0.1284517,
+          "entry_price": 769.6443125,
+          "exit_price": 763.416675,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.4923088023587501,
+          "net_pnl": -0.7999506238587373,
+          "cash_after": 987.821263402984
+        },
+        {
+          "id": "fake-SPY-2026-09-29-09:45",
+          "entry_at": "2026-09-29T09:46:00-04:00",
+          "exit_at": "2026-09-29T11:24:00-04:00",
+          "budget": 98.7821263402984,
+          "qty": 0.12876616,
+          "entry_price": 767.143476,
+          "exit_price": 760.9129500000001,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.49190295573616,
+          "net_pnl": -0.8022809078001377,
+          "cash_after": 987.0189824951839
+        },
+        {
+          "id": "fake-SPY-2026-09-30-10:45",
+          "entry_at": "2026-09-30T10:48:00-04:00",
+          "exit_at": "2026-09-30T15:49:00-04:00",
+          "budget": 98.7018982495184,
+          "qty": 0.12814837,
+          "entry_price": 770.2157374999999,
+          "exit_price": 763.436625,
+          "reason": "stop",
+          "ambiguous_bar_stop_first": false,
+          "cost": 0.491335267271625,
+          "net_pnl": -0.8687322169216101,
+          "cash_after": 986.1502502782623
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Synthetic creator skill, not Stock Alley performance or a prediction.",
+    "Fractional comparison is separate research logic, unsupported by current bot sizing/brackets.",
+    "Fractional model does not enforce broker account/PDT/settlement eligibility.",
+    "No authentic option chain, premium, spread or Greek history: no option return inferred.",
+    "Minute OHLC cannot resolve intraminute ordering; ambiguous bars use stop first.",
+    "Inline scheduling does not prove thread/crash reliability or real network latency."
+  ]
+}
