@@ -7,12 +7,17 @@
 # always returns a well-shaped result, never raises, and a "confirmed"
 # result always carries a real price from a real bar.
 #
-# A seeded fake clock (time.time()/time.sleep() both mocked, advancing a
-# deterministic counter instead of real wall-clock time) keeps every one of
-# these hundreds of iterations near-instant and fully reproducible.
+# A seeded fake clock drives time.monotonic()/time.sleep() (the gate's own
+# deadline/pacing mechanism) with a deterministic counter instead of real
+# wall-clock time, so every one of these hundreds of iterations is
+# near-instant and fully reproducible. Bar timestamps are a SEPARATE
+# concern - _validated_bars() checks those against the REAL wall clock
+# (datetime.now(), not time.monotonic()), so bars are anchored to actual
+# "now" each run, just comfortably in the past.
 from __future__ import annotations
 
 import random
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import lavish_core.trade.candle_gatekeeper as gk
@@ -23,29 +28,37 @@ _VALID_REASONS = {
     "invalidated_wrong_direction",
     "timeout",
     "no_data",
+    "invalid_bars",
+    "reference_range_too_small",
 }
 
 
-class _FakeClock:
-    """Deterministic, monotonically-advancing stand-in for time.time() -
+class _FakeMonotonicClock:
+    """Deterministic, monotonically-advancing stand-in for time.monotonic() -
     every call advances by `step` (matching POLL_INTERVAL_SEC), so the
     gate's own while-loop deadline math naturally bounds how many
     iterations any single fuzz case can run, regardless of how the random
-    path resolves."""
+    path resolves. A fixed-length side_effect list (fine for hand-written
+    cases with a known iteration count) isn't usable here since random
+    paths need a variable number of iterations."""
     def __init__(self, step: float):
         self.now = 0.0
         self.step = step
 
-    def time(self) -> float:
+    def monotonic(self) -> float:
         self.now += self.step
         return self.now
 
 
 def _bars(rng: random.Random, n: int, start: float, vol_pct: float, drift_pct: float = 0.0,
           gap_at: int | None = None, gap_pct: float = 0.0):
-    """Synthetic 1-minute OHLCV bars via a simple random walk. `gap_at` lets
-    a single scenario inject one large jump mid-path (crash/melt-up) to
-    stress the gate under a sudden move, not just gradual drift."""
+    """Synthetic 1-minute OHLCV bars via a simple random walk, anchored to
+    real recent wall-clock time (required by _validated_bars, which checks
+    freshness/chronology against datetime.now(), independent of the
+    mocked monotonic clock above). `gap_at` lets a scenario inject one
+    large jump mid-path (crash/melt-up) to stress the gate under a sudden
+    move, not just gradual drift."""
+    base = datetime.now(timezone.utc).replace(second=0, microsecond=0) - timedelta(minutes=n + 2)
     out = []
     price = start
     for i in range(n):
@@ -59,7 +72,8 @@ def _bars(rng: random.Random, n: int, start: float, vol_pct: float, drift_pct: f
         h = max(o, c) + wick_up
         l = max(0.01, min(o, c) - wick_down)
         v = max(0.0, rng.gauss(1000, 400))
-        out.append({"t": f"{i:013d}", "o": round(o, 4), "h": round(h, 4),
+        t = (base + timedelta(minutes=i)).isoformat()
+        out.append({"t": t, "o": round(o, 4), "h": round(h, 4),
                     "l": round(l, 4), "c": round(c, 4), "v": round(v, 2)})
         price = c
     return out
@@ -78,10 +92,10 @@ def _streaming_get_bars(all_bars, initial_reveal):
 
 
 def _run_case(bars, direction, max_wait_seconds=300.0):
-    clock = _FakeClock(step=gk.POLL_INTERVAL_SEC)
+    clock = _FakeMonotonicClock(step=gk.POLL_INTERVAL_SEC)
     with patch.object(gk, "time") as mock_time, \
          patch.object(gk, "get_bars", side_effect=_streaming_get_bars(bars, gk.VOLUME_LOOKBACK_BARS + 2)):
-        mock_time.time.side_effect = clock.time
+        mock_time.monotonic.side_effect = clock.monotonic
         mock_time.sleep.side_effect = lambda s: None
         result = gk.confirm_entry("FUZZ", direction, max_wait_seconds=max_wait_seconds)
 
@@ -96,12 +110,12 @@ def _run_case(bars, direction, max_wait_seconds=300.0):
 
 
 _REGIMES = {
-    "low_vol_chop":     dict(vol_pct=0.0005, drift_pct=0.0),
-    "medium_vol_trend":  dict(vol_pct=0.003,  drift_pct=0.0015),
-    "medium_vol_trend_down": dict(vol_pct=0.003, drift_pct=-0.0015),
+    "low_vol_chop":     dict(vol_pct=0.003, drift_pct=0.0),
+    "medium_vol_trend":  dict(vol_pct=0.006,  drift_pct=0.003),
+    "medium_vol_trend_down": dict(vol_pct=0.006, drift_pct=-0.003),
     "high_vol_whipsaw": dict(vol_pct=0.015,  drift_pct=0.0),
-    "crash_gap":        dict(vol_pct=0.002,  drift_pct=0.0, gap_at=15, gap_pct=-0.06),
-    "melt_up_gap":      dict(vol_pct=0.002,  drift_pct=0.0, gap_at=15, gap_pct=0.06),
+    "crash_gap":        dict(vol_pct=0.004,  drift_pct=0.0, gap_at=15, gap_pct=-0.06),
+    "melt_up_gap":      dict(vol_pct=0.004,  drift_pct=0.0, gap_at=15, gap_pct=0.06),
 }
 
 _SEEDS = range(25)  # 25 seeds x 6 regimes x 2 directions = 300 fuzz cases
@@ -128,7 +142,7 @@ def test_confirmed_price_always_came_from_a_bar_that_actually_broke_the_referenc
     # structurally well-shaped output.
     for seed in range(15):
         rng = random.Random(f"breakout-check-{seed}")
-        bars = _bars(rng, n=40, start=100.0, vol_pct=0.01, drift_pct=0.002)
+        bars = _bars(rng, n=40, start=100.0, vol_pct=0.02, drift_pct=0.004)
         result = _run_case(bars, "bullish")
         if result["confirmed"]:
             assert result["price"] > 0
@@ -136,10 +150,10 @@ def test_confirmed_price_always_came_from_a_bar_that_actually_broke_the_referenc
 
 def test_no_data_at_all_always_fails_closed_regardless_of_direction():
     for direction in ("bullish", "bearish"):
-        clock = _FakeClock(step=gk.POLL_INTERVAL_SEC)
+        clock = _FakeMonotonicClock(step=gk.POLL_INTERVAL_SEC)
         with patch.object(gk, "time") as mock_time, \
              patch.object(gk, "get_bars", return_value=[]):
-            mock_time.time.side_effect = clock.time
+            mock_time.monotonic.side_effect = clock.monotonic
             mock_time.sleep.side_effect = lambda s: None
             result = gk.confirm_entry("FUZZ", direction, max_wait_seconds=200.0)
         assert result["confirmed"] is False

@@ -227,9 +227,16 @@ def _normalize_order(o: Dict[str, Any]) -> Dict[str, Any]:
     """Alpaca-shaped order dict from Tradier's order fields (status,
     avg_fill_price, exec_quantity, remaining_quantity) - field names
     confirmed from Tradier's official order response reference."""
+    raw_status = o.get('status')
+    # A real Tradier response always sends status as a string, but a
+    # malformed/corrupted one (found via randomized fuzz testing,
+    # test_broker_response_fuzz.py) could hand back a dict/list instead -
+    # dict.get() raises TypeError on an unhashable lookup key, which would
+    # otherwise crash order normalization over a single bad field.
+    status_key = raw_status if isinstance(raw_status, (str, int, float, bool, type(None))) else None
     result = {
         "id": str(o.get("id") or ""),
-        "status": {'pending':'pending_new','open':'new','ok':'pending_new'}.get(o.get('status'), o.get('status')),
+        "status": {'pending':'pending_new','open':'new','ok':'pending_new'}.get(status_key, raw_status),
         "filled_qty": o.get("exec_quantity"),
         "filled_avg_price": o.get("avg_fill_price"),
         "legs": [],  # Tradier has no native bracket/OCO equivalent surfaced here - see equity_exit_monitor.py's active monitor

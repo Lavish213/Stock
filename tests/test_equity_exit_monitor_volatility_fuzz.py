@@ -66,26 +66,27 @@ def _real_store(tmp_path, monkeypatch):
     monkeypatch.setattr(eem, "MAX_MONITOR_HOURS", 0.05)  # 3 minutes
 
 
-def _run_case(prices, entry_price, take_profit, stop_loss):
+def _run_case(prices, entry_price, take_profit, stop_loss, symbol="FUZZ"):
     clock = _FakeClock(step=eem.POLL_INTERVAL_SEC)
 
-    def fake_place_order(symbol, side, qty, type_="market", time_in_force="day"):
+    def fake_place_order(symbol, side, qty, type_="market", time_in_force="day", client_order_id=None):
         # Confirm-fills immediately at "the current price" - approximated
         # here as the most recent price the monitor has already observed,
         # close enough for this test's purpose (P&L consistency, not exact
         # fill-price modeling).
-        return {"id": "o1", "status": "filled", "filled_avg_price": str(prices[-1]), "filled_qty": "10"}
+        return {"id": f"o-{symbol}", "status": "filled", "filled_avg_price": str(prices[-1]), "filled_qty": "10"}
 
     with patch.object(eem, "time") as mock_time, \
          patch.object(eem, "latest_quote", side_effect=_streaming_quote(prices)), \
          patch.object(eem, "place_order", side_effect=fake_place_order), \
          patch.object(eem, "get_order"), \
+         patch.object(eem, "get_order_by_client_id", return_value=None), \
          patch.object(eem, "post_discord"):
         mock_time.time.side_effect = clock.time
         mock_time.sleep.side_effect = lambda s: None
 
         result = eem.watch_and_exit_active(
-            symbol="FUZZ", qty=10, entry_price=entry_price,
+            symbol=symbol, qty=10, entry_price=entry_price,
             take_profit=take_profit, stop_loss=stop_loss, venue="paper",
         )
 
@@ -119,7 +120,7 @@ def test_equity_active_exit_always_terminates_and_pnl_is_consistent():
             rng = random.Random(f"{regime_name}-{seed}")
             prices = _price_path(rng, n=30, start=entry, **params)
             try:
-                _run_case(prices, entry, take_profit, stop_loss)
+                _run_case(prices, entry, take_profit, stop_loss, symbol=f"FUZZ-{regime_name}-{seed}")
             except Exception as e:
                 failures.append(f"{regime_name}/seed={seed}: {type(e).__name__}: {e}")
 
@@ -138,5 +139,5 @@ def test_a_single_bar_gapping_through_both_target_and_stop_still_resolves_cleanl
         # a single step, in a random direction each seed.
         direction = rng.choice([1, -1])
         prices = [entry, entry + direction * 20.0] + _price_path(rng, 10, entry + direction * 20.0, 0.001)
-        result = _run_case(prices, entry, take_profit=103.0, stop_loss=95.0)
+        result = _run_case(prices, entry, take_profit=103.0, stop_loss=95.0, symbol=f"GAP-{seed}")
         assert result["reason"] in ("target", "stop", "max_hold_timeout")
