@@ -82,6 +82,10 @@ def classify(text: str) -> dict:
         kind = 'position_management'
     elif requires_confirmation(normalized):
         kind = 'conditional_setup'
+    elif re.search(r'\bwent\s+from\s+\$?\d+(?:\.\d+)?\s*(?:a\s+contract\s+)?to\s+\$?\d+(?:\.\d+)?\b|\bno\s+valid\s+(?:call|put|entry|trade)\b', normalized):
+        # Retrospective performance and failed-trigger reports remain context
+        # even when an adjacent screenshot supplies a complete contract.
+        kind = 'progress_update'
     elif re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
         kind = 'progress_update'
     elif re.search(r'\b(?:buy|sell|exit|close)\s+\$?[a-z]{1,6}\s+(?:now|here)\b|\bbto\b', normalized) and not re.search(r'\b(?:if|when|once|tomorrow|break and hold|reclaim.*hold|only above|only below)\b', normalized):
