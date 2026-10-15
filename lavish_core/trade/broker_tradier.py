@@ -146,9 +146,29 @@ def get_clock() -> Dict[str, Any]:
     }
 
 
+def _safe_float(value: Any, field_name: str, symbol: str) -> float:
+    """
+    A single malformed field (a non-numeric string, a stray type) on ONE
+    position must not take down get_positions() for every other real,
+    healthy position in the same response - found via randomized fuzz
+    testing (test_broker_response_fuzz.py), not a hypothetical: the bare
+    float(...) calls this replaces raised an uncaught ValueError on input
+    as simple as {"quantity": "not_a_number"}, which would have propagated
+    out of the whole list comprehension in get_positions() below.
+    Degrades to 0.0 (loudly logged, not silently) rather than crashing the
+    batch - matches this codebase's established "can't parse = treat as
+    unknown, keep going" convention (see latest_quote/get_bars).
+    """
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        log.warning("Tradier position %s: unparseable %s=%r - treating as 0.0", symbol, field_name, value)
+        return 0.0
+
+
 def _normalize_position(p: Dict[str, Any]) -> Dict[str, Any]:
     symbol = str(p.get("symbol", ""))
-    qty = float(p.get("quantity", 0) or 0)
+    qty = _safe_float(p.get("quantity", 0), "quantity", symbol)
     is_option = bool(_OCC_RE.match(symbol))
     # cost_basis is Tradier's TOTAL dollar cost for the position, not a
     # per-share/per-contract average - divide back out to match Alpaca's
@@ -159,7 +179,7 @@ def _normalize_position(p: Dict[str, Any]) -> Dict[str, Any]:
     # sandbox before trusting avg_entry_price-derived P&L math under
     # Tradier.
     multiplier = 100.0 if is_option else 1.0
-    cost_basis = float(p.get("cost_basis", 0) or 0)
+    cost_basis = _safe_float(p.get("cost_basis", 0), "cost_basis", symbol)
     avg_entry_price = abs(cost_basis / (qty * multiplier)) if qty else 0.0
     return {
         "symbol": symbol,
