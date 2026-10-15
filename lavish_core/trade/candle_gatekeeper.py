@@ -55,6 +55,10 @@ VOLUME_LOOKBACK_BARS = int(os.getenv("GATEKEEPER_VOLUME_LOOKBACK_BARS", "10"))
 # to prevent.
 MAX_CONSECUTIVE_NO_DATA = int(os.getenv("GATEKEEPER_MAX_CONSECUTIVE_NO_DATA", "4"))
 
+# Data-quality floor, not a claim about profitable breakout thresholds.
+# One basis point rejects essentially flat reference prints.
+MIN_REFERENCE_RANGE_BPS = float(os.getenv("GATEKEEPER_MIN_REFERENCE_RANGE_BPS", "1"))
+
 
 def _rolling_avg_volume(bars: List[Dict[str, Any]], before_index: int) -> float:
     lookback = bars[max(0, before_index - VOLUME_LOOKBACK_BARS):before_index]
@@ -116,7 +120,8 @@ def confirm_entry(
 
     wait_budget = max_wait_seconds if max_wait_seconds is not None else MAX_WAIT_SECONDS
     wait_budget = finite_number(wait_budget, nonnegative=True)
-    deadline = time.time() + wait_budget
+    deadline = time.monotonic() + wait_budget
+    min_range_bps = finite_number(MIN_REFERENCE_RANGE_BPS, nonnegative=True)
 
     no_data_streak = 0
     ref_bar: Optional[Dict[str, Any]] = None
@@ -125,11 +130,21 @@ def confirm_entry(
     log.info("Gatekeeper watching %s (%s) for up to %.0fs before confirming entry.",
               symbol, direction, wait_budget)
 
-    while time.time() < deadline:
-        bars = get_bars(symbol, limit=VOLUME_LOOKBACK_BARS + 5)
+    while time.monotonic() < deadline:
+        try:
+            bars = get_bars(symbol, limit=VOLUME_LOOKBACK_BARS + 5)
+        except Exception as exc:
+            # A bounded outage must never escape the worker or confirm entry.
+            # Log the type only: broker exception text can contain credentials.
+            log.warning("Gatekeeper data fetch failed for %s (%s)", symbol, type(exc).__name__)
+            bars = None
+        if time.monotonic() >= deadline:
+            break
+        if bars is None:
+            bars = []
         try:
             bars = _validated_bars(bars)
-        except (ValueError, KeyError, TypeError):
+        except (ValueError, KeyError, TypeError, AttributeError):
             return {"confirmed": False, "reason": "invalid_bars", "price": None, "bar": None}
         if not bars:
             no_data_streak += 1
@@ -146,6 +161,10 @@ def confirm_entry(
             # bar at the moment the alert started being watched is the
             # fixed reference candle (its high/low don't move after this).
             ref_bar = bars[-1]
+            range_bps = (ref_bar["h"] - ref_bar["l"]) / ref_bar["c"] * 10000
+            if range_bps <= min_range_bps:
+                return {"confirmed": False, "reason": "reference_range_too_small",
+                        "price": None, "bar": ref_bar}
             last_seen_t = ref_bar["t"]
             log.info("Gatekeeper: %s reference candle h=%.2f l=%.2f (t=%s)",
                       symbol, ref_bar["h"], ref_bar["l"], ref_bar["t"])
@@ -156,6 +175,8 @@ def confirm_entry(
         for i, bar in enumerate(bars):
             if bar["t"] not in {b["t"] for b in new_bars}:
                 continue
+            if time.monotonic() >= deadline:
+                return {"confirmed": False, "reason": "timeout", "price": None, "bar": None}
             close = bar["c"]
             breakout = (direction == "bullish" and close > ref_bar["h"]) or \
                        (direction == "bearish" and close < ref_bar["l"])
