@@ -18,6 +18,14 @@ Baseline invented exit quotes are 0.12/0.14/0.16 against a 0.10 entry. Weak foll
 
 These scenarios have no empirically calibrated frequencies and cannot establish a strategy edge, probability of ruin, confidence interval or expected return. Cheap 0.10 contracts do not represent the affordability or liquidity of an authentic option chain. There is one synthetic year per profile, not twelve independent years of market evidence. Do not promote the best allocation to production.
 
+## Completed run and blockers
+
+All twelve corrected annual runs completed (4,380 daily alert records). Ten reconciled throughout. Exclude the 10% gap-loss and 25% baseline runs: they accumulated cash/inventory discrepancies. The first 10% gap-loss discrepancy appears March 5, 2027, with 159.75 cash error and an orphaned local position for SPY270303C00770000. Its saved ledger contains duplicate local order rows for one ID and an extra buy fill. Root cause is not established; this is a local replay/ledger integrity blocker, not evidence of real broker activity. Do not erase the evidence, reset an account or report these runs as profitable.
+
+Weak-follow-through outcomes from $1,000: 10% allocation ends 523.50; 25% ends 170.00; 50% ends 52.80; 100% ends 10.90. All reconcile. Their session-end cash drawdowns are 47.93%, 83.21%, 94.7437% and 98.91%, respectively. All have zero months reaching +178.60 net. Positive baseline outcomes are strongly driven by the deliberately favorable invented event mix; they cannot select an allocation or validate monthly profitability.
+
+The corrected code passed 29 focused replay tests and 3,154 full offline validation tests. Reporting was then hardened to flag reconciliation failures explicitly and distinguish disabled halt tuples from active halts; targeted reporting tests cover both. Full results and SHA-256-linked compressed traces are in `docs/evidence/options-risk-comparison-20261015.json` and `options-risk-comparison-traces-20261015.json.gz`.
+
 ## What I would build toward
 
 Use a focused, explicit creator-trigger strategy in liquid contracts, with contract identity, underlying confirmation and option quote confirmation separated. Preserve original alert versions and receipt times. Compare fills at executable bid/ask with latency, whole-contract sizing, fees, liquidity and adverse gaps. Record actual reason codes for skips. Complete held-position creator close/trim coordination and restart recovery before autonomous operation. An 80/20 runner requires an integer-feasible position; one contract cannot be split.

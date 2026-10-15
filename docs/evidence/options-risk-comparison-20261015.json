@@ -1,0 +1,1103 @@
+{
+  "synthetic": true,
+  "real_orders": 0,
+  "days": 365,
+  "initial": 1000,
+  "profitability_evidence": false,
+  "outcomes": [
+    {
+      "fraction": 0.1,
+      "profile": "baseline",
+      "reconciliation_passed": true,
+      "final_cash": 9273.0,
+      "net": 8273.0,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1195.7999999999995,
+          "net": 195.8,
+          "return_pct": 19.58
+        },
+        "2026-11": {
+          "start": 1195.7999999999995,
+          "end": 1226.0999999999997,
+          "net": 30.3,
+          "return_pct": 2.5339
+        },
+        "2026-12": {
+          "start": 1226.0999999999997,
+          "end": 1572.9999999999986,
+          "net": 346.9,
+          "return_pct": 28.293
+        },
+        "2027-01": {
+          "start": 1572.9999999999986,
+          "end": 1670.0999999999992,
+          "net": 97.1,
+          "return_pct": 6.1729
+        },
+        "2027-02": {
+          "start": 1670.0999999999992,
+          "end": 2295.5999999999995,
+          "net": 625.5,
+          "return_pct": 37.4528
+        },
+        "2027-03": {
+          "start": 2295.5999999999995,
+          "end": 2929.0999999999995,
+          "net": 633.5,
+          "return_pct": 27.5963
+        },
+        "2027-04": {
+          "start": 2929.0999999999995,
+          "end": 3589.8999999999996,
+          "net": 660.8,
+          "return_pct": 22.5598
+        },
+        "2027-05": {
+          "start": 3589.8999999999996,
+          "end": 3951.9,
+          "net": 362.0,
+          "return_pct": 10.0838
+        },
+        "2027-06": {
+          "start": 3951.9,
+          "end": 4722.5,
+          "net": 770.6,
+          "return_pct": 19.4995
+        },
+        "2027-07": {
+          "start": 4722.5,
+          "end": 5456.000000000003,
+          "net": 733.5,
+          "return_pct": 15.532
+        },
+        "2027-08": {
+          "start": 5456.000000000003,
+          "end": 7944.000000000004,
+          "net": 2488.0,
+          "return_pct": 45.6012
+        },
+        "2027-09": {
+          "start": 7944.000000000004,
+          "end": 9273.000000000005,
+          "net": 1329.0,
+          "return_pct": 16.7296
+        }
+      },
+      "months_at_178_60": 10,
+      "losing_months": 0,
+      "closed_session_cash_drawdown_pct": 6.4325,
+      "entries": 118,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 0.1,
+      "profile": "gap_loss",
+      "reconciliation_passed": false,
+      "final_cash": 6674.1,
+      "net": 5674.1,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1121.3999999999994,
+          "net": 121.4,
+          "return_pct": 12.14
+        },
+        "2026-11": {
+          "start": 1121.3999999999994,
+          "end": 1095.7999999999993,
+          "net": -25.6,
+          "return_pct": -2.2829
+        },
+        "2026-12": {
+          "start": 1095.7999999999993,
+          "end": 1399.4999999999989,
+          "net": 303.7,
+          "return_pct": 27.7149
+        },
+        "2027-01": {
+          "start": 1399.4999999999989,
+          "end": 1417.3999999999987,
+          "net": 17.9,
+          "return_pct": 1.279
+        },
+        "2027-02": {
+          "start": 1417.3999999999987,
+          "end": 1947.2999999999984,
+          "net": 529.9,
+          "return_pct": 37.3854
+        },
+        "2027-03": {
+          "start": 1947.2999999999984,
+          "end": 2472.2999999999984,
+          "net": 525.0,
+          "return_pct": 26.9604
+        },
+        "2027-04": {
+          "start": 2472.2999999999984,
+          "end": 3022.7999999999975,
+          "net": 550.5,
+          "return_pct": 22.2667
+        },
+        "2027-05": {
+          "start": 3022.7999999999975,
+          "end": 3102.9999999999964,
+          "net": 80.2,
+          "return_pct": 2.6532
+        },
+        "2027-06": {
+          "start": 3102.9999999999964,
+          "end": 3601.699999999997,
+          "net": 498.7,
+          "return_pct": 16.0715
+        },
+        "2027-07": {
+          "start": 3601.699999999997,
+          "end": 4045.199999999997,
+          "net": 443.5,
+          "return_pct": 12.3136
+        },
+        "2027-08": {
+          "start": 4045.199999999997,
+          "end": 5888.499999999999,
+          "net": 1843.3,
+          "return_pct": 45.5676
+        },
+        "2027-09": {
+          "start": 5888.499999999999,
+          "end": 6674.0999999999985,
+          "net": 785.6,
+          "return_pct": 13.3413
+        }
+      },
+      "months_at_178_60": 8,
+      "losing_months": 1,
+      "closed_session_cash_drawdown_pct": 9.0957,
+      "entries": 115,
+      "halt_sessions": 0,
+      "cash_errors": 210,
+      "inventory_errors": 210,
+      "below_half_start": false
+    },
+    {
+      "fraction": 0.1,
+      "profile": "weak_followthrough",
+      "reconciliation_passed": true,
+      "final_cash": 523.5,
+      "net": -476.5,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 925.5999999999992,
+          "net": -74.4,
+          "return_pct": -7.44
+        },
+        "2026-11": {
+          "start": 925.5999999999992,
+          "end": 801.3999999999999,
+          "net": -124.2,
+          "return_pct": -13.4183
+        },
+        "2026-12": {
+          "start": 801.3999999999999,
+          "end": 780.0000000000005,
+          "net": -21.4,
+          "return_pct": -2.6703
+        },
+        "2027-01": {
+          "start": 780.0000000000005,
+          "end": 711.6000000000008,
+          "net": -68.4,
+          "return_pct": -8.7692
+        },
+        "2027-02": {
+          "start": 711.6000000000008,
+          "end": 715.8000000000013,
+          "net": 4.2,
+          "return_pct": 0.5902
+        },
+        "2027-03": {
+          "start": 715.8000000000013,
+          "end": 711.6000000000017,
+          "net": -4.2,
+          "return_pct": -0.5868
+        },
+        "2027-04": {
+          "start": 711.6000000000017,
+          "end": 673.8000000000022,
+          "net": -37.8,
+          "return_pct": -5.312
+        },
+        "2027-05": {
+          "start": 673.8000000000022,
+          "end": 626.8000000000022,
+          "net": -47.0,
+          "return_pct": -6.9754
+        },
+        "2027-06": {
+          "start": 626.8000000000022,
+          "end": 586.8000000000022,
+          "net": -40.0,
+          "return_pct": -6.3816
+        },
+        "2027-07": {
+          "start": 586.8000000000022,
+          "end": 539.5000000000019,
+          "net": -47.3,
+          "return_pct": -8.0607
+        },
+        "2027-08": {
+          "start": 539.5000000000019,
+          "end": 554.3000000000017,
+          "net": 14.8,
+          "return_pct": 2.7433
+        },
+        "2027-09": {
+          "start": 554.3000000000017,
+          "end": 523.5000000000013,
+          "net": -30.8,
+          "return_pct": -5.5566
+        }
+      },
+      "months_at_178_60": 0,
+      "losing_months": 10,
+      "closed_session_cash_drawdown_pct": 47.93,
+      "entries": 118,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 1.0,
+      "profile": "baseline",
+      "reconciliation_passed": true,
+      "final_cash": 11097.2,
+      "net": 10097.2,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 2256.8999999999996,
+          "net": 1256.9,
+          "return_pct": 125.69
+        },
+        "2026-11": {
+          "start": 2256.8999999999996,
+          "end": 1195.8999999999999,
+          "net": -1061.0,
+          "return_pct": -47.0114
+        },
+        "2026-12": {
+          "start": 1195.8999999999999,
+          "end": 11097.200000000003,
+          "net": 9901.3,
+          "return_pct": 827.9371
+        },
+        "2027-01": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-02": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-03": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-04": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-05": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-06": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-07": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-08": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-09": {
+          "start": 11097.200000000003,
+          "end": 11097.200000000003,
+          "net": 0.0,
+          "return_pct": 0.0
+        }
+      },
+      "months_at_178_60": 2,
+      "losing_months": 1,
+      "closed_session_cash_drawdown_pct": 64.6595,
+      "entries": 30,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 1.0,
+      "profile": "gap_loss",
+      "reconciliation_passed": true,
+      "final_cash": 12052.1,
+      "net": 11052.1,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 594.2999999999994,
+          "net": -405.7,
+          "return_pct": -40.57
+        },
+        "2026-11": {
+          "start": 594.2999999999994,
+          "end": 25.399999999999483,
+          "net": -568.9,
+          "return_pct": -95.7261
+        },
+        "2026-12": {
+          "start": 25.399999999999483,
+          "end": 208.0999999999995,
+          "net": 182.7,
+          "return_pct": 719.2913
+        },
+        "2027-01": {
+          "start": 208.0999999999995,
+          "end": 48.7999999999994,
+          "net": -159.3,
+          "return_pct": -76.5497
+        },
+        "2027-02": {
+          "start": 48.7999999999994,
+          "end": 775.0999999999995,
+          "net": 726.3,
+          "return_pct": 1488.3197
+        },
+        "2027-03": {
+          "start": 775.0999999999995,
+          "end": 6629.2,
+          "net": 5854.1,
+          "return_pct": 755.2703
+        },
+        "2027-04": {
+          "start": 6629.2,
+          "end": 12052.1,
+          "net": 5422.9,
+          "return_pct": 81.8032
+        },
+        "2027-05": {
+          "start": 12052.1,
+          "end": 12052.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-06": {
+          "start": 12052.1,
+          "end": 12052.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-07": {
+          "start": 12052.1,
+          "end": 12052.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-08": {
+          "start": 12052.1,
+          "end": 12052.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-09": {
+          "start": 12052.1,
+          "end": 12052.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        }
+      },
+      "months_at_178_60": 4,
+      "losing_months": 3,
+      "closed_session_cash_drawdown_pct": 98.182,
+      "entries": 62,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 1.0,
+      "profile": "weak_followthrough",
+      "reconciliation_passed": true,
+      "final_cash": 10.9,
+      "net": -989.1,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 830.9999999999995,
+          "net": -169.0,
+          "return_pct": -16.9
+        },
+        "2026-11": {
+          "start": 830.9999999999995,
+          "end": 612.1999999999996,
+          "net": -218.8,
+          "return_pct": -26.3297
+        },
+        "2026-12": {
+          "start": 612.1999999999996,
+          "end": 516.8999999999994,
+          "net": -95.3,
+          "return_pct": -15.5668
+        },
+        "2027-01": {
+          "start": 516.8999999999994,
+          "end": 143.19999999999933,
+          "net": -373.7,
+          "return_pct": -72.2964
+        },
+        "2027-02": {
+          "start": 143.19999999999933,
+          "end": 144.0999999999994,
+          "net": 0.9,
+          "return_pct": 0.6285
+        },
+        "2027-03": {
+          "start": 144.0999999999994,
+          "end": 114.99999999999935,
+          "net": -29.1,
+          "return_pct": -20.1943
+        },
+        "2027-04": {
+          "start": 114.99999999999935,
+          "end": 30.199999999999342,
+          "net": -84.8,
+          "return_pct": -73.7391
+        },
+        "2027-05": {
+          "start": 30.199999999999342,
+          "end": 25.799999999999336,
+          "net": -4.4,
+          "return_pct": -14.5695
+        },
+        "2027-06": {
+          "start": 25.799999999999336,
+          "end": 10.899999999999327,
+          "net": -14.9,
+          "return_pct": -57.7519
+        },
+        "2027-07": {
+          "start": 10.899999999999327,
+          "end": 10.899999999999327,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-08": {
+          "start": 10.899999999999327,
+          "end": 10.899999999999327,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-09": {
+          "start": 10.899999999999327,
+          "end": 10.899999999999327,
+          "net": 0.0,
+          "return_pct": 0.0
+        }
+      },
+      "months_at_178_60": 0,
+      "losing_months": 8,
+      "closed_session_cash_drawdown_pct": 98.91,
+      "entries": 60,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": true
+    },
+    {
+      "fraction": 0.25,
+      "profile": "baseline",
+      "reconciliation_passed": false,
+      "final_cash": 90116.8,
+      "net": 89116.8,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1398.5999999999997,
+          "net": 398.6,
+          "return_pct": 39.86
+        },
+        "2026-11": {
+          "start": 1398.5999999999997,
+          "end": 1475.499999999999,
+          "net": 76.9,
+          "return_pct": 5.4984
+        },
+        "2026-12": {
+          "start": 1475.499999999999,
+          "end": 2759.499999999999,
+          "net": 1284.0,
+          "return_pct": 87.0213
+        },
+        "2027-01": {
+          "start": 2759.499999999999,
+          "end": 2998.8999999999987,
+          "net": 239.4,
+          "return_pct": 8.6755
+        },
+        "2027-02": {
+          "start": 2998.8999999999987,
+          "end": 6638.099999999999,
+          "net": 3639.2,
+          "return_pct": 121.3512
+        },
+        "2027-03": {
+          "start": 6638.099999999999,
+          "end": 12083.5,
+          "net": 5445.4,
+          "return_pct": 82.0325
+        },
+        "2027-04": {
+          "start": 12083.5,
+          "end": 20043.30000000001,
+          "net": 7959.8,
+          "return_pct": 65.8733
+        },
+        "2027-05": {
+          "start": 20043.30000000001,
+          "end": 22730.600000000017,
+          "net": 2687.3,
+          "return_pct": 13.4075
+        },
+        "2027-06": {
+          "start": 22730.600000000017,
+          "end": 45156.70000000002,
+          "net": 22426.1,
+          "return_pct": 98.6604
+        },
+        "2027-07": {
+          "start": 45156.70000000002,
+          "end": 57327.400000000016,
+          "net": 12170.7,
+          "return_pct": 26.9521
+        },
+        "2027-08": {
+          "start": 57327.400000000016,
+          "end": 74742.10000000002,
+          "net": 17414.7,
+          "return_pct": 30.3776
+        },
+        "2027-09": {
+          "start": 74742.10000000002,
+          "end": 90116.80000000003,
+          "net": 15374.7,
+          "return_pct": 20.5703
+        }
+      },
+      "months_at_178_60": 11,
+      "losing_months": 0,
+      "closed_session_cash_drawdown_pct": 16.1288,
+      "entries": 128,
+      "halt_sessions": 0,
+      "cash_errors": 132,
+      "inventory_errors": 132,
+      "below_half_start": false
+    },
+    {
+      "fraction": 0.25,
+      "profile": "gap_loss",
+      "reconciliation_passed": true,
+      "final_cash": 51979.3,
+      "net": 50979.3,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1284.0999999999997,
+          "net": 284.1,
+          "return_pct": 28.41
+        },
+        "2026-11": {
+          "start": 1284.0999999999997,
+          "end": 1141.1999999999991,
+          "net": -142.9,
+          "return_pct": -11.1284
+        },
+        "2026-12": {
+          "start": 1141.1999999999991,
+          "end": 2131.7,
+          "net": 990.5,
+          "return_pct": 86.7946
+        },
+        "2027-01": {
+          "start": 2131.7,
+          "end": 2133.0999999999995,
+          "net": 1.4,
+          "return_pct": 0.0657
+        },
+        "2027-02": {
+          "start": 2133.0999999999995,
+          "end": 4721.099999999999,
+          "net": 2588.0,
+          "return_pct": 121.3258
+        },
+        "2027-03": {
+          "start": 4721.099999999999,
+          "end": 8591.799999999997,
+          "net": 3870.7,
+          "return_pct": 81.9872
+        },
+        "2027-04": {
+          "start": 8591.799999999997,
+          "end": 14245.900000000003,
+          "net": 5654.1,
+          "return_pct": 65.8081
+        },
+        "2027-05": {
+          "start": 14245.900000000003,
+          "end": 14880.800000000003,
+          "net": 634.9,
+          "return_pct": 4.4567
+        },
+        "2027-06": {
+          "start": 14880.800000000003,
+          "end": 20940.5,
+          "net": 6059.7,
+          "return_pct": 40.7216
+        },
+        "2027-07": {
+          "start": 20940.5,
+          "end": 28229.9,
+          "net": 7289.4,
+          "return_pct": 34.8101
+        },
+        "2027-08": {
+          "start": 28229.9,
+          "end": 38404.6,
+          "net": 10174.7,
+          "return_pct": 36.0423
+        },
+        "2027-09": {
+          "start": 38404.6,
+          "end": 51979.299999999996,
+          "net": 13574.7,
+          "return_pct": 35.3465
+        }
+      },
+      "months_at_178_60": 10,
+      "losing_months": 1,
+      "closed_session_cash_drawdown_pct": 24.9233,
+      "entries": 120,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 0.25,
+      "profile": "weak_followthrough",
+      "reconciliation_passed": true,
+      "final_cash": 170.0,
+      "net": -830.0,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 792.6,
+          "net": -207.4,
+          "return_pct": -20.74
+        },
+        "2026-11": {
+          "start": 792.6,
+          "end": 538.0999999999997,
+          "net": -254.5,
+          "return_pct": -32.1095
+        },
+        "2026-12": {
+          "start": 538.0999999999997,
+          "end": 500.39999999999935,
+          "net": -37.7,
+          "return_pct": -7.0061
+        },
+        "2027-01": {
+          "start": 500.39999999999935,
+          "end": 389.09999999999934,
+          "net": -111.3,
+          "return_pct": -22.2422
+        },
+        "2027-02": {
+          "start": 389.09999999999934,
+          "end": 393.3999999999995,
+          "net": 4.3,
+          "return_pct": 1.1051
+        },
+        "2027-03": {
+          "start": 393.3999999999995,
+          "end": 387.7999999999997,
+          "net": -5.6,
+          "return_pct": -1.4235
+        },
+        "2027-04": {
+          "start": 387.7999999999997,
+          "end": 339.7999999999998,
+          "net": -48.0,
+          "return_pct": -12.3775
+        },
+        "2027-05": {
+          "start": 339.7999999999998,
+          "end": 269.99999999999966,
+          "net": -69.8,
+          "return_pct": -20.5415
+        },
+        "2027-06": {
+          "start": 269.99999999999966,
+          "end": 227.69999999999965,
+          "net": -42.3,
+          "return_pct": -15.6667
+        },
+        "2027-07": {
+          "start": 227.69999999999965,
+          "end": 185.59999999999974,
+          "net": -42.1,
+          "return_pct": -18.4892
+        },
+        "2027-08": {
+          "start": 185.59999999999974,
+          "end": 200.39999999999978,
+          "net": 14.8,
+          "return_pct": 7.9741
+        },
+        "2027-09": {
+          "start": 200.39999999999978,
+          "end": 169.99999999999986,
+          "net": -30.4,
+          "return_pct": -15.1697
+        }
+      },
+      "months_at_178_60": 0,
+      "losing_months": 10,
+      "closed_session_cash_drawdown_pct": 83.21,
+      "entries": 114,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": true
+    },
+    {
+      "fraction": 0.5,
+      "profile": "baseline",
+      "reconciliation_passed": true,
+      "final_cash": 27887.1,
+      "net": 26887.1,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1819.7,
+          "net": 819.7,
+          "return_pct": 81.97
+        },
+        "2026-11": {
+          "start": 1819.7,
+          "end": 1805.9,
+          "net": -13.8,
+          "return_pct": -0.7584
+        },
+        "2026-12": {
+          "start": 1805.9,
+          "end": 6105.200000000002,
+          "net": 4299.3,
+          "return_pct": 238.0697
+        },
+        "2027-01": {
+          "start": 6105.200000000002,
+          "end": 6858.0,
+          "net": 752.8,
+          "return_pct": 12.3305
+        },
+        "2027-02": {
+          "start": 6858.0,
+          "end": 25787.1,
+          "net": 18929.1,
+          "return_pct": 276.0149
+        },
+        "2027-03": {
+          "start": 25787.1,
+          "end": 27887.1,
+          "net": 2100.0,
+          "return_pct": 8.1436
+        },
+        "2027-04": {
+          "start": 27887.1,
+          "end": 27887.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-05": {
+          "start": 27887.1,
+          "end": 27887.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-06": {
+          "start": 27887.1,
+          "end": 27887.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-07": {
+          "start": 27887.1,
+          "end": 27887.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-08": {
+          "start": 27887.1,
+          "end": 27887.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-09": {
+          "start": 27887.1,
+          "end": 27887.1,
+          "net": 0.0,
+          "return_pct": 0.0
+        }
+      },
+      "months_at_178_60": 5,
+      "losing_months": 1,
+      "closed_session_cash_drawdown_pct": 32.2406,
+      "entries": 53,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 0.5,
+      "profile": "gap_loss",
+      "reconciliation_passed": true,
+      "final_cash": 30043.0,
+      "net": 29043.0,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1461.0999999999995,
+          "net": 461.1,
+          "return_pct": 46.11
+        },
+        "2026-11": {
+          "start": 1461.0999999999995,
+          "end": 938.4999999999992,
+          "net": -522.6,
+          "return_pct": -35.7676
+        },
+        "2026-12": {
+          "start": 938.4999999999992,
+          "end": 3158.2999999999984,
+          "net": 2219.8,
+          "return_pct": 236.5264
+        },
+        "2027-01": {
+          "start": 3158.2999999999984,
+          "end": 2855.3999999999987,
+          "net": -302.9,
+          "return_pct": -9.5906
+        },
+        "2027-02": {
+          "start": 2855.3999999999987,
+          "end": 13188.199999999997,
+          "net": 10332.8,
+          "return_pct": 361.8687
+        },
+        "2027-03": {
+          "start": 13188.199999999997,
+          "end": 29622.999999999993,
+          "net": 16434.8,
+          "return_pct": 124.6175
+        },
+        "2027-04": {
+          "start": 29622.999999999993,
+          "end": 30042.999999999993,
+          "net": 420.0,
+          "return_pct": 1.4178
+        },
+        "2027-05": {
+          "start": 30042.999999999993,
+          "end": 30042.999999999993,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-06": {
+          "start": 30042.999999999993,
+          "end": 30042.999999999993,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-07": {
+          "start": 30042.999999999993,
+          "end": 30042.999999999993,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-08": {
+          "start": 30042.999999999993,
+          "end": 30042.999999999993,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-09": {
+          "start": 30042.999999999993,
+          "end": 30042.999999999993,
+          "net": 0.0,
+          "return_pct": 0.0
+        }
+      },
+      "months_at_178_60": 5,
+      "losing_months": 2,
+      "closed_session_cash_drawdown_pct": 48.2992,
+      "entries": 58,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": false
+    },
+    {
+      "fraction": 0.5,
+      "profile": "weak_followthrough",
+      "reconciliation_passed": true,
+      "final_cash": 52.8,
+      "net": -947.2,
+      "monthly": {
+        "2026-10": {
+          "start": 1000,
+          "end": 1004.5,
+          "net": 4.5,
+          "return_pct": 0.45
+        },
+        "2026-11": {
+          "start": 1004.5,
+          "end": 421.8999999999998,
+          "net": -582.6,
+          "return_pct": -57.999
+        },
+        "2026-12": {
+          "start": 421.8999999999998,
+          "end": 356.7999999999997,
+          "net": -65.1,
+          "return_pct": -15.4302
+        },
+        "2027-01": {
+          "start": 356.7999999999997,
+          "end": 218.09999999999974,
+          "net": -138.7,
+          "return_pct": -38.8733
+        },
+        "2027-02": {
+          "start": 218.09999999999974,
+          "end": 216.8999999999998,
+          "net": -1.2,
+          "return_pct": -0.5502
+        },
+        "2027-03": {
+          "start": 216.8999999999998,
+          "end": 195.19999999999982,
+          "net": -21.7,
+          "return_pct": -10.0046
+        },
+        "2027-04": {
+          "start": 195.19999999999982,
+          "end": 80.3999999999998,
+          "net": -114.8,
+          "return_pct": -58.8115
+        },
+        "2027-05": {
+          "start": 80.3999999999998,
+          "end": 52.799999999999784,
+          "net": -27.6,
+          "return_pct": -34.3284
+        },
+        "2027-06": {
+          "start": 52.799999999999784,
+          "end": 52.799999999999784,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-07": {
+          "start": 52.799999999999784,
+          "end": 52.799999999999784,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-08": {
+          "start": 52.799999999999784,
+          "end": 52.799999999999784,
+          "net": 0.0,
+          "return_pct": 0.0
+        },
+        "2027-09": {
+          "start": 52.799999999999784,
+          "end": 52.799999999999784,
+          "net": 0.0,
+          "return_pct": 0.0
+        }
+      },
+      "months_at_178_60": 0,
+      "losing_months": 7,
+      "closed_session_cash_drawdown_pct": 94.7437,
+      "entries": 66,
+      "halt_sessions": 0,
+      "cash_errors": 0,
+      "inventory_errors": 0,
+      "below_half_start": true
+    }
+  ],
+  "limits": [
+    "Invented 0.10 entry premiums and predetermined event mix; no calibrated market distribution",
+    "Daily quote draws paired independently of entries and account outcomes",
+    "Existing production halts and risk gates preserved; no automatic reset",
+    "Drawdown measured at flat session boundaries, not intraday",
+    "No creator close/trim orchestration or conditional promotion",
+    "Twelve calendar months on one synthetic year; no probability estimates or strategy selection"
+  ],
+  "production_allocation_changed": false,
+  "excluded_runs": [
+    {
+      "fraction": 0.1,
+      "profile": "gap_loss"
+    },
+    {
+      "fraction": 0.25,
+      "profile": "baseline"
+    }
+  ],
+  "test_verification": {
+    "focused": 29,
+    "full": 3154,
+    "errors": 0,
+    "failures": 0
+  },
+  "trace_sha256": "0101c05787613e19764ffdd77210decbeafb96fd122602f131821797712f9be3"
+}

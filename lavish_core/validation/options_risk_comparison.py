@@ -18,15 +18,18 @@ def summarize(report):
     for row in months.values():
         row['net']=round(row['end']-row['start'],2)
         row['return_pct']=round(100*(row['end']/row['start']-1),4) if row['start'] else None
+    cash_errors=sum(x['cash_error']!=0 for x in report['sessions'])
+    inventory_errors=sum(not x['position_match'] for x in report['sessions'])
     return dict(fraction=report['simulation_fixed_fraction'],profile=report['stress_profile'],
+        reconciliation_passed=not (cash_errors or inventory_errors),
         final_cash=round(report['final_cash'],2),net=round(report['final_cash']-initial,2),
         monthly=months,months_at_178_60=sum(x['net']>=178.60 for x in months.values()),
         losing_months=sum(x['net']<0 for x in months.values()),
         closed_session_cash_drawdown_pct=round(drawdown*100,4),
         entries=sum(x['entry_orders'] for x in report['sessions']),
         halt_sessions=sum(bool(x['halt'][0]) if isinstance(x['halt'],(list,tuple)) else bool(x['halt']) for x in report['sessions']),
-        cash_errors=sum(x['cash_error']!=0 for x in report['sessions']),
-        inventory_errors=sum(not x['position_match'] for x in report['sessions']),
+        cash_errors=cash_errors,
+        inventory_errors=inventory_errors,
         below_half_start=report['final_cash']<initial/2)
 
 

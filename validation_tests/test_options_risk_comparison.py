@@ -26,6 +26,12 @@ def test_month_boundaries_losses_and_drawdown_are_not_hidden():
     sessions[1]['halt']=[True,'review']
     assert summarize(dict(initial=1000,final_cash=950,simulation_fixed_fraction=.25,
                           stress_profile='baseline',sessions=sessions))['halt_sessions']==1
+    sessions[0]['cash_error']=1
+    sessions[0]['position_match']=False
+    rejected=summarize(dict(initial=1000,final_cash=950,simulation_fixed_fraction=.25,
+                          stress_profile='baseline',sessions=sessions))
+    assert not rejected['reconciliation_passed']
+    assert rejected['cash_errors']==rejected['inventory_errors']==1
 
 
 @pytest.mark.parametrize('fraction',[.1,.25,.5,1.])
