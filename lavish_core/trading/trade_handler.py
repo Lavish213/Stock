@@ -56,6 +56,9 @@ STOP_LOSS_PCT = float(os.getenv("DEFAULT_STOP_LOSS_PCT", "0.015"))
 TAKE_PROFIT_PCT = float(os.getenv("DEFAULT_TAKE_PROFIT_PCT", "0.02"))
 
 DEFAULT_OPTION_TRADE_DOLLARS = float(os.getenv("DEFAULT_OPTION_TRADE_DOLLARS", "200"))
+# Explicit per-side estimate for sizing; zero preserves existing deployments.
+# Configure from the account's fee schedule, never infer it from synthetic P&L.
+OPTION_FEE_RESERVE_PER_CONTRACT = float(os.getenv("OPTION_FEE_RESERVE_PER_CONTRACT", "0"))
 OPTION_STRIKE_TOLERANCE = float(os.getenv("OPTION_STRIKE_TOLERANCE", "5"))
 
 # She posts to Patreon and Discord independently, and it's not consistently
@@ -483,7 +486,11 @@ def _finish_option_entry(
     dollars = (float(amt) if amt is not None else DEFAULT_OPTION_TRADE_DOLLARS) * POSITION_SIZE_SCALE
     if not valid_positive(dollars):
         return True
-    qty = int(dollars // (mid_price * 100))
+    try:
+        fee_reserve = finite_number(OPTION_FEE_RESERVE_PER_CONTRACT, nonnegative=True)
+    except ValueError:
+        return True
+    qty = int(dollars // (mid_price * 100 + 2 * fee_reserve))
     if qty < 1:
         # max(1, ...) used to force a purchase here regardless of cost -
         # a contract priced above the configured budget still bought 1,
