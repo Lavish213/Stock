@@ -95,6 +95,33 @@ def test_missing_candle_breaks_confirmation_streak():
     assert replay([candles[0],candles[2]])['state']=='waiting'
 
 
+@pytest.mark.parametrize('unknown_close',[345,347])
+def test_unavailable_middle_bar_cannot_bridge_observed_confirmation(unknown_close):
+    candles=bars([347,unknown_close,348])
+    candles[1]['available_at']='2026-10-08T13:50:00Z'
+    assert replay(candles)['state']=='waiting'
+    # Authentic later availability may establish the condition later, but
+    # only when every required close was above the threshold.
+    later=replay(candles,as_of='2026-10-08T13:51:00Z')
+    assert later['state']==('condition_confirmed_review' if unknown_close==347 else 'waiting')
+    if unknown_close==347:
+        assert later['confirmed_at']=='2026-10-08T13:50:00+00:00'
+
+
+def test_bar_arrival_after_setup_expiry_cannot_confirm():
+    candles=bars([347,348])
+    candles[1]['available_at']='2026-10-08T20:00:01Z'
+    assert replay(candles,as_of='2026-10-08T20:01:00Z')['state']=='expired'
+
+
+def test_confirmation_arriving_exactly_at_expiry_is_retained():
+    candles=bars([347,348])
+    candles[1]['available_at']='2026-10-08T20:00:00Z'
+    result=replay(candles,as_of='2026-10-08T20:01:00Z')
+    assert result['state']=='condition_confirmed_review'
+    assert result['confirmed_at']=='2026-10-08T20:00:00+00:00'
+
+
 def test_handler_persists_news_before_rejecting(tmp_path,monkeypatch):
     from lavish_core.trading import alert_handler as ah
     path=tmp_path/'r.sqlite'

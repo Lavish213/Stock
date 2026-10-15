@@ -42,7 +42,12 @@ def replay_break_hold(*, published_at: str | None, expires_at: str | None,
             streak = 0
             streak_available = None
         previous_end = end
-        if start < published or available > cutoff or end > expiry:
+        if start < published or available > cutoff or end > expiry or available > expiry:
+            # Unknown/unusable bars break the observable consecutive streak.
+            # An eventual close cannot bridge a bar that was unavailable at
+            # the decision cutoff, nor arrive after the setup's deadline.
+            streak = 0
+            streak_available = None
             continue
         streak = streak + 1 if (close > level if direction == 'above' else close < level) else 0
         streak_available = max(streak_available, available) if streak and streak_available else available
