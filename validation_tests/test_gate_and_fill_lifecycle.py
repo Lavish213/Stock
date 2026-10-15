@@ -8,7 +8,7 @@ from lavish_core.trade import candle_gatekeeper as gk
 from lavish_core.trading import trade_handler as th
 class Clock:
  def __init__(self):self.value=0
- def time(self):self.value+=1;return self.value
+ def monotonic(self):self.value+=1;return self.value
  def sleep(self,*a):pass
 BASE=datetime.now(timezone.utc).replace(second=0,microsecond=0)-timedelta(minutes=4)
 @pytest.fixture(autouse=True)

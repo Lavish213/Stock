@@ -24,6 +24,7 @@ class Clock:
     def __init__(self):
         self.epoch=float(int(time.time()));self.elapsed=0.;self.monitor_started=None
     def time(self):return self.epoch+self.elapsed
+    def monotonic(self):return self.elapsed
     def sleep(self,seconds):
         self.elapsed+=seconds
         if self.elapsed>600:raise AssertionError('Synthetic scenario exceeded bounded 600-second clock')
