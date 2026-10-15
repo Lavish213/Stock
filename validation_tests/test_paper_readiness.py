@@ -48,8 +48,8 @@ def test_approval_caps_and_never_clears_halt(tmp_path,monkeypatch):
     result=enforce(db,account=dict(id='fixture-paper',equity=10000),path=file)
     assert result['paper_ready'] and not result['live_ready']
     assert not db.set_kill_switch.called
-    limits=db.set_risk_limits.call_args.args[0]
-    assert limits['max_gross_exposure']==1000 and limits['max_pos_per_symbol']==200
+    calls={c.args[0]:c.args[1] for c in db.set_risk_limit.call_args_list}
+    assert calls['max_gross_exposure']==1000 and calls['max_pos_per_symbol']==200
     assert not validate_approval(file,account_id='fixture-paper')['live_ready']
 
 
@@ -72,7 +72,7 @@ def test_unverified_state_halts_entries(tmp_path,monkeypatch,fault):
         data['runtime_sha256']='a'*64;file.write_text(json.dumps(data))
     assert not enforce(db,account=account,path=file)['paper_ready']
     assert db.set_kill_switch.call_args.args[0] is True
-    assert not db.set_risk_limits.called
+    assert not db.set_risk_limit.called
 
 
 def test_broker_read_failure_halts_without_stopping_exit_supervision(monkeypatch):
@@ -82,3 +82,14 @@ def test_broker_read_failure_halts_without_stopping_exit_supervision(monkeypatch
     db=store()
     assert not enforce(db)['paper_ready']
     assert db.set_kill_switch.call_args.args[0]
+
+
+def test_kill_switch_write_failure_cannot_crash_the_watchdog(monkeypatch):
+    # A DB race while recording the halt itself must still return the
+    # fail-closed result instead of propagating out of enforce().
+    from lavish_core.trade import broker
+    monkeypatch.setenv('TRADE_MODE','paper')
+    monkeypatch.setattr(broker,'get_account',Mock(side_effect=ConnectionError('fixture outage')))
+    db=store(); db.set_kill_switch.side_effect=ConnectionError('fixture db race')
+    result=enforce(db)
+    assert not result['paper_ready']

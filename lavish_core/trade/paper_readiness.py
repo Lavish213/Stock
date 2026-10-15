@@ -33,11 +33,15 @@ def enforce(store, *, account=None, path=None):
         if baseline - equity >= limits['max_daily_loss_usd']:
             raise ValueError('Paper daily loss limit reached')
         # Tighten existing exposure caps; never enlarge them during approval.
+        # Write back only the keys actually changed (not the whole risk_limits
+        # table) since this runs on every watchdog tick.
         for key, cap in (('max_gross_exposure', limits['max_gross_exposure']), ('max_pos_per_symbol', limits['max_trade_usd'])):
-            risk[key] = min(finite_number(risk.get(key, cap), positive=True), cap)
-        store.set_risk_limits(risk)
+            store.set_risk_limit(key, min(finite_number(risk.get(key, cap), positive=True), cap))
         return approval
     except Exception:
         reason = 'Automatic paper entries blocked: verified source, lifecycle, deployment, budgets and account evidence required'
-        store.set_kill_switch(True, reason)
+        try:
+            store.set_kill_switch(True, reason)
+        except Exception:
+            pass
         return {'paper_ready': False, 'reasons': [reason]}
