@@ -38,3 +38,11 @@ Primary references checked October 15, 2026:
 * https://www.optionseducation.org/news — option time decay, volatility changes and spread costs can overwhelm a favorable underlying move.
 
 No broker orders, account resets, live-mode activation or production allocation changes are part of this experiment.
+
+## Sequential annual rerun follow-up
+
+On October 15, both previously failing configurations were rerun sequentially in new databases with the same seed, days, starting capital, allocation and stress profile. The 10% gap-loss run and 25% baseline run each had zero cash-error sessions and zero inventory-mismatch sessions, with the same final synthetic broker balances as their original failed runs. This establishes intermittent behavior, not a root cause or a verified fix. The original failed runs remain excluded and their evidence is preserved. Do not substitute the successful reruns to hide the failures.
+
+The focused fill lifecycle, monitoring/concurrency and cash reconciliation suite passed 101 tests in 4.62 seconds. It ran briefly during the second replay, so this is not a fully isolated host experiment and cannot prove parallel execution caused the original discrepancy. No production change is justified by these observations alone. The unresolved issue concerns local synthetic replay integrity; it does not reopen the already resolved October 14 broker cash concern.
+
+The two full rerun traces (730 daily alert records), summary and trace hash are retained in `docs/evidence/options-ledger-rerun-20261015.json` and `options-ledger-rerun-traces-20261015.json.gz`. No market-profitability claim, strategy promotion, order submission or allocation change follows from these reruns.
