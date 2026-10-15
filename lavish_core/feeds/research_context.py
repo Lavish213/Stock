@@ -24,17 +24,32 @@ def research_source(source: str) -> bool:
     return bool(re.search(r'reddit|wallstreetbets|(?:^|\W)wsb(?:$|\W)', source, re.I))
 
 
+def requires_confirmation(text: str) -> bool:
+    """Literal source constraints; contract details cannot override them."""
+    return bool(re.search(
+        r'\bwait(?:ing)?\s+for\s+(?:market\s+)?confirmation\b'
+        r'|\bnot\s+(?:an?\s+)?automatic\s+entr(?:y|ies)\b'
+        r'|\b(?:entry|trade|setup)s?\s+(?:requires?|needs?)\s+(?:market\s+)?confirmation\b'
+        r'|\bonly\s+enter\s+(?:trades?\s+)?(?:based\s+on|with)\s+(?:market\s+)?confirmation\b', text, re.I))
+
+
 def classify(text: str) -> dict:
     """Return a review tag, never an execution decision."""
     normalized = ' '.join(text.lower().split())
-    if re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
+    if re.search(r'\b(?:take|sell|trim)\s+(?:\d+(?:\.\d+)?\s*%|half|a quarter)(?!\w)|\btake\s+\d+(?:\.\d+)?\s*%\s+(?:of\s+)?profits|\bride the rest\b', normalized):
+        kind = 'position_management'
+    elif requires_confirmation(normalized):
+        kind = 'conditional_setup'
+    elif re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
         kind = 'progress_update'
-    elif re.search(r'\b(?:buy|sell|exit|close)\s+\$?[a-z]{1,6}\s+(?:now|here)\b|\bbto\b', normalized) and not re.search(r'\b(?:if|when|once|tomorrow|break and hold|only above|only below)\b', normalized):
+    elif re.search(r'\b(?:buy|sell|exit|close)\s+\$?[a-z]{1,6}\s+(?:now|here)\b|\bbto\b', normalized) and not re.search(r'\b(?:if|when|once|tomorrow|break and hold|reclaim.*hold|only above|only below)\b', normalized):
         kind = 'instruction_candidate'
     elif re.search(r'\b(?:cpi|inflation|jobs report|employment situation|payrolls|ppi|fomc|fed|beige book|gdp|jobless claims)\b', normalized):
         kind = 'macro_context'
-    elif re.search(r'\b(?:break and hold|break.*above|buy.*(?:when|if|above|below)|watch(?:ing|list)?|set ?up)\b', normalized):
+    elif re.search(r'\b(?:break and hold|reclaim.*hold|break.*above|buy.*(?:when|if|above|below)|watch(?:ing|list)?|set ?up)\b', normalized):
         kind = 'conditional_setup'
+    elif re.search(r'\bwhales?\b|\b(?:unusual|institutional) (?:options? )?flow\b', normalized):
+        kind = 'flow_context'
     elif re.search(r'\b(?:buy|buying|bto|sell|selling|stc|entry|exit|close|closing)\b', normalized):
         kind = 'instruction_candidate'
     else:

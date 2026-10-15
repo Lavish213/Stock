@@ -398,20 +398,20 @@ def _find_entry_price(text: str) -> Optional[float]:
 
 def _find_target(text: str) -> Optional[float]:
     # “Target $183” or “Target 526” or “Target $1,120” or “My target is $575.00”
-    m = re.search(r"\btarget\s*(?:is\s*)?\$?\s*(\d{2,5}(?:\.\d{1,2})?)", text, re.I)
+    m = re.search(r"\btarget\s*(?:is\s*)?\$?\s*(\d{1,5}(?:\.\d{1,2})?)", text, re.I)
     if m: return _to_float(m.group(1))
     # “Should hit $1,120” (target stated after the trigger phrase).
     # Deliberately NOT matching a bare "to" - "up close to $100 million"
     # isn't a stated target, and a standalone "to" is far too generic a
     # trigger for what should be a specific, intentional phrase.
-    m2 = re.search(r"\b(should\s+)?(hit|reach)\s*\$?\s*(\d{2,5}(?:\.\d{1,2})?)", text, re.I)
+    m2 = re.search(r"\b(should\s+)?(hit|reach)\s*\$?\s*(\d{1,5}(?:\.\d{1,2})?)", text, re.I)
     if m2: return _to_float(m2.group(3))
     # “That $1,120 call on NVDA should hit” (target stated BEFORE the
     # trigger phrase - also her actual real phrasing, seen verbatim in a
     # real alert). Allow a short gap of a few words between the number and
     # "should hit/reach" so this doesn't also match an unrelated number
     # much earlier in a longer post.
-    m3 = re.search(r"\$?\s?(\d{2,5}(?:\.\d{1,2})?)\b(?:\s+\S+){0,6}?\s+should\s+(?:hit|reach)\b", text, re.I)
+    m3 = re.search(r"\$?\s?(\d{1,5}(?:\.\d{1,2})?)\b(?:\s+\S+){0,6}?\s+should\s+(?:hit|reach)\b", text, re.I)
     if m3: return _to_float(m3.group(1))
     return None
 
@@ -428,7 +428,7 @@ def _find_stop(text: str) -> Optional[float]:
     if re.search(r"\b(no|not|don'?t|doesn'?t|without)\b[^.]{0,20}\bstop\s*loss\b", text, re.I):
         return None
     # “Stop loss 528.20” or “SL 528.20”
-    m = re.search(r"\b(stop|sl|stop\s*loss)\s*\$?\s*(\d{2,5}(?:\.\d{1,2})?)", text, re.I)
+    m = re.search(r"\b(stop|sl|stop\s*loss)\s*\$?\s*(\d{1,5}(?:\.\d{1,2})?)", text, re.I)
     if m: return _to_float(m.group(2))
     # “Added @everyone $1,690 stop loss.” (stated BEFORE "stop loss" -
     # her actual real phrasing, seen verbatim in a real alert, same
@@ -437,7 +437,7 @@ def _find_stop(text: str) -> Optional[float]:
     # same sentence, or this can bridge to an unrelated number entirely
     # (confirmed against a real alert: "risk the $527 strike instead. No
     # stop loss..." must NOT attach $527 to that later, unrelated clause).
-    m2 = re.search(r"\$?\s?(\d{2,5}(?:\.\d{1,2})?)\b(?:\s+[^.\s]+){0,6}?\s+stop\s*loss\b", text, re.I)
+    m2 = re.search(r"\$?\s?(\d{1,5}(?:\.\d{1,2})?)\b(?:\s+[^.\s]+){0,6}?\s+stop\s*loss\b", text, re.I)
     if m2: return _to_float(m2.group(1))
     return None
 
