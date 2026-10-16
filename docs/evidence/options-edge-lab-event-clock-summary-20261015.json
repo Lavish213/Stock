@@ -1,0 +1,27 @@
+{
+  "source_kind": "synthetic",
+  "source_id": "synthetic-edge-lab-six-scenarios-v1",
+  "real_orders": 0,
+  "profitability_established": false,
+  "authenticity_independently_verified": false,
+  "candidate_count": 108,
+  "per_alert_budget": 100,
+  "limitations": [
+    "Independent alert trials, not a shared-capital or compounded portfolio",
+    "Sampled two-minute hold is not proof of continuous price holding",
+    "Ask-entry/bid-exit plus 0.01 adverse slippage and 0.65 fee per contract per side",
+    "Displayed depth does not guarantee a fill; no queue, routing or hidden liquidity model",
+    "One-second order latency; missing or insufficient exit quotes stay unresolved",
+    "Caller supplies source session calendar; source authenticity requires independent audit",
+    "No automatic winner selection, parameter learning, or production configuration changes",
+    "108 comparisons require fresh prospective validation; consumed SPY holdout is excluded"
+  ],
+  "input_sha256": "0ecc4dceed02ac3de914aabaad656426b602868c48caddd714ac4d83e13b8de3",
+  "results_sha256": "33e5a4adffe38e50e8c6e8725601b96f619153e09721d4ba260e0720313e6252",
+  "status_counts": {
+    "closed": 270,
+    "entry_invalidated_or_already_at_target": 54,
+    "no_confirmed_trigger": 234,
+    "unresolved_exit": 90
+  }
+}

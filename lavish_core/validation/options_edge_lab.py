@@ -36,11 +36,15 @@ def validate(data):
         number(c['strike'], .001)
         stamp(c['expiry_at'])
     ids = set()
+    posts = set()
     for a in data['alerts']:
         identity = (a['post_id'], a['version_id'])
         if identity in ids or not all(identity):
             raise ValueError('Duplicate or missing source version')
+        if a['post_id'] in posts:
+            raise ValueError('Multiple versions of one post require edit-lifecycle replay, not independent trades')
         ids.add(identity)
+        posts.add(a['post_id'])
         published, observed = stamp(a['published_at']), stamp(a['observed_at'])
         start, end = stamp(a['session_open']), stamp(a['session_close'])
         if observed < published or start >= end or not start <= observed < end:
@@ -163,25 +167,34 @@ def trial(data, contracts, alert, mode='hold', delay=0, bucket=(1, 7), exit_rule
     pending = None
     end = stamp(alert['session_close'])
     close = stamp(alert['creator_close_at']) if alert.get('creator_close_at') else None
-    for row in sorted(quotes, key=lambda r: stamp(r['available_at'])):
-        now = stamp(row['available_at'])
-        if not entry_time < now <= end or (now-stamp(row['timestamp'])).total_seconds() > 5:
+    # Underlying stops, creator receipts and session deadlines run on their
+    # own event clocks. An option-quote-only loop loses transient breaches
+    # and adds an entire quote interval to creator-close latency.
+    events = [(stamp(r['available_at']), 0, 'tick', r) for r in ticks]
+    events += [(stamp(r['available_at']), 3, 'quote', r) for r in quotes]
+    events.append((end-timedelta(minutes=5), 2, 'session', None))
+    if close:
+        events.append((close, 1, 'creator', None))
+    for now, _, event, row in sorted(events, key=lambda e: (e[0], e[1])):
+        if not entry_time < now <= end:
+            continue
+        if row is not None and (now-stamp(row['timestamp'])).total_seconds() > 5:
             continue
         underlying = latest(ticks, now)
         if pending is None:
             reason = None
             if now >= end-timedelta(minutes=5): reason = 'session_exit'
             elif underlying and direction*(underlying['price']-alert['stop']) <= 0: reason = 'structural_stop'
-            elif row['bid'] <= buy*.70: reason = 'premium_stop'
+            elif event == 'quote' and row['bid'] <= buy*.70: reason = 'premium_stop'
             elif close and now >= close: reason = 'creator_close'
             elif exit_rule == 'target' and underlying and direction*(underlying['price']-alert['target']) >= 0: reason = 'target'
-            elif exit_rule == 'premium_45' and row['bid'] >= buy*1.45: reason = 'premium_target'
-            elif exit_rule == 'scale_80_runner' and not scaled and row['bid'] >= buy*1.45: reason = 'scale'
-            elif scaled and row['bid'] <= buy: reason = 'runner_breakeven_trigger'
+            elif event == 'quote' and exit_rule == 'premium_45' and row['bid'] >= buy*1.45: reason = 'premium_target'
+            elif event == 'quote' and exit_rule == 'scale_80_runner' and not scaled and row['bid'] >= buy*1.45: reason = 'scale'
+            elif event == 'quote' and scaled and row['bid'] <= buy: reason = 'runner_breakeven_trigger'
             if reason:
                 sell_qty = max(1, math.floor(qty*.8)) if reason == 'scale' else remaining
                 pending = (now+timedelta(seconds=order_latency), sell_qty, reason)
-        if pending and now >= pending[0] and row['bid'] > 0 and row['bid_size'] >= pending[1]:
+        if event == 'quote' and pending and now >= pending[0] and row['bid'] > 0 and row['bid_size'] >= pending[1]:
             _, sell_qty, reason = pending
             sell = max(0, row['bid']-slippage)
             cash_flow += sell_qty*(sell*100-fee)

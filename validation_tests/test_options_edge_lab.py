@@ -138,3 +138,39 @@ def test_put_direction_is_symmetric():
     for tick in data['ticks']: tick['price'] = 1540-tick['price']
     result = trial(data, validate(data), data['alerts'][0])
     assert result['status'] == 'closed' and result['net'] == 26.70
+
+
+def test_structural_stop_between_option_quotes_is_not_forgotten():
+    data = fixture()
+    data['ticks'][8]['price'] = 767  # 15:04:00; recovery at 15:04:30
+    data['quotes'] = [q for q in data['quotes'] if stamp(q['timestamp']) != stamp(data['ticks'][8]['timestamp'])]
+    result = trial(data, validate(data), data['alerts'][0])
+    assert result['fills'][-1]['reason'] == 'structural_stop'
+    assert result['fills'][-1]['at'] == data['ticks'][9]['timestamp']
+
+
+def test_creator_close_between_quotes_starts_latency_at_receipt():
+    data = fixture()
+    data['alerts'][0]['creator_close_at'] = (stamp(data['ticks'][8]['timestamp'])+timedelta(seconds=1)).isoformat()
+    result = trial(data, validate(data), data['alerts'][0])
+    assert result['fills'][-1]['reason'] == 'creator_close'
+    assert result['fills'][-1]['at'] == data['ticks'][9]['timestamp']
+
+
+def test_session_exit_request_does_not_wait_for_next_quote_to_start_clock():
+    data = fixture()
+    data['alerts'][0]['target'] = 800
+    entry_cutoff = stamp(data['ticks'][8]['timestamp'])
+    end = stamp(data['alerts'][0]['session_close'])
+    data['quotes'] = [q for q in data['quotes'] if stamp(q['timestamp']) <= entry_cutoff or stamp(q['timestamp']) == end]
+    result = trial(data, validate(data), data['alerts'][0])
+    assert result['status'] == 'closed'
+    assert result['fills'][-1]['reason'] == 'session_exit'
+
+
+def test_later_version_cannot_count_as_another_independent_alert():
+    data = fixture()
+    revised = copy.deepcopy(data['alerts'][0]); revised['version_id'] = 'v2'
+    data['alerts'].append(revised)
+    with pytest.raises(ValueError, match='edit-lifecycle'):
+        evaluate(data)
