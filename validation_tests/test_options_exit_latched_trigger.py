@@ -37,7 +37,7 @@ def test_latched_exit_does_not_depend_on_recovering_underlying_feed(monkeypatch)
     assert quotes.call_count == 1
 
 
-@pytest.mark.parametrize('retry_quote', [1., None, 0.])
+@pytest.mark.parametrize('retry_quote', [1., None, 0., RuntimeError('quote transport unavailable')])
 def test_lost_ack_recovery_keeps_one_order_and_books_one_exit(store, monkeypatch, retry_quote):
     symbol = 'SPY261016C00770000'
     buy = store.submit_order(symbol, 'buy', 1)
@@ -85,3 +85,28 @@ def test_quote_outage_can_resolve_cancel_but_cannot_submit_replacement():
                              allow_submit=False) is None
     submit.assert_not_called()
     assert state.remaining == 1 and state.pending is None and not state.unknown
+
+
+def test_quote_exception_without_existing_order_cannot_attempt_exit(monkeypatch):
+    clock = iter(range(100))
+    monkeypatch.setattr(monitor, 'time', SimpleNamespace(time=lambda:next(clock), sleep=lambda _:None))
+    monkeypatch.setattr(monitor, 'MAX_MONITOR_HOURS', 3/3600)
+    monkeypatch.setattr(monitor, 'latest_quote', Mock(return_value=90))
+    monkeypatch.setattr(monitor, 'post_discord', Mock())
+    attempt = Mock(return_value=dict(status='exited', price=1., filled_qty=1,
+                                    order={}, ledger_recorded=True))
+    monkeypatch.setattr(monitor, 'ExitState', lambda *a, **k:SimpleNamespace(
+        pending=None, unknown=False, attempt=attempt))
+    calls = []
+    def quote(_):
+        calls.append(None)
+        if len(calls) <= 2:
+            attempt.assert_not_called()
+            raise RuntimeError('synthetic quote outage')
+        return 1.
+    monkeypatch.setattr(monitor, '_option_limit_price', quote)
+    result = monitor.watch_and_exit('SPY', 'SPY261016C00770000', 1, 'call', 1.,
+                                    stop_underlying=95)
+    assert result['reason'] == 'her_stop'
+    assert len(calls) == 3
+    attempt.assert_called_once()
