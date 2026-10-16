@@ -195,13 +195,15 @@ def watch_and_exit(
                 "option_price":outcome["price"], "filled_qty":outcome["filled_qty"], "order":outcome["order"], "ledger_recorded":outcome.get("ledger_recorded",False)}
 
     loop_errors = 0
+    latched_reason = None
+    latched_underlying_price = None
     while time.time() < deadline:
         try:
-            triggered_reason: Optional[str] = None
-            underlying_price = latest_quote(underlying_symbol)
+            triggered_reason: Optional[str] = latched_reason
+            underlying_price = latched_underlying_price if latched_reason else latest_quote(underlying_symbol)
 
             # --- her stated levels (checked first - this is the call being copied) ---
-            if underlying_price is not None:
+            if triggered_reason is None and underlying_price is not None:
                 if is_call:
                     if target_underlying is not None and underlying_price >= target_underlying:
                         triggered_reason = "her_target"
@@ -235,6 +237,11 @@ def watch_and_exit(
                     triggered_reason = "expiry_force_close"
 
             if triggered_reason:
+                # Once an exit is requested, a recovered price (or an
+                # unavailable underlying feed) must not cancel retries of
+                # that same ExitState/order identity after a failed attempt.
+                latched_reason = triggered_reason
+                latched_underlying_price = underlying_price
                 result = _exit(triggered_reason, underlying_price)
                 if result is not None:
                     if on_exit:
@@ -268,11 +275,11 @@ def watch_and_exit(
     # than abandon the position unmanaged. This one must actually succeed:
     # keep retrying past the deadline (which has already been spent) rather
     # than returning a failure that would falsely read as "handled".
-    log.warning("%s: max hold time (%.1fh) reached with no other exit - forcing close.",
-                contract_symbol, MAX_MONITOR_HOURS)
+    log.warning("%s: max monitor window (%.1fh) reached; continuing %s exit.",
+                contract_symbol, MAX_MONITOR_HOURS, latched_reason or "max_hold_timeout")
     while True:
         try:
-            result = _exit("max_hold_timeout")
+            result = _exit(latched_reason or "max_hold_timeout", latched_underlying_price)
             if result is not None:
                 if on_exit:
                     on_exit(result)
