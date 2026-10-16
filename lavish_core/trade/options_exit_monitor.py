@@ -166,10 +166,20 @@ def watch_and_exit(
         not be.
         """
         nonlocal consecutive_failures
-        limit_price = _option_limit_price(contract_symbol)
         # Order-status recovery does not require a new executable quote.
         # Never submit a replacement without one, even after cancellation.
         in_flight = getattr(exit_state, "pending", None) is not None or getattr(exit_state, "unknown", False)
+        try:
+            limit_price = _option_limit_price(contract_symbol)
+        except Exception as exc:
+            if not in_flight:
+                raise
+            # A quote transport/configuration fault must not prevent status
+            # lookup of an order that may already have filled. Lookup itself
+            # retains its normal failure handling; this grants no submit path.
+            limit_price = None
+            log.warning("%s: option quote failed (%s); reconciling existing exit only",
+                        contract_symbol, type(exc).__name__)
 
         if limit_price == 0.0 and not in_flight:
             # A zero bid can recover; only an expired contract can settle.
