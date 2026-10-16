@@ -108,7 +108,7 @@ class ExitState:
             finally:
                 store.con.close()
 
-    def attempt(self, submit, lookup, get_order, cancel, poll_attempts, sleep):
+    def attempt(self, submit, lookup, get_order, cancel, poll_attempts, sleep, *, allow_submit=True):
         """Return None while unresolved; never replace an unconfirmed order.
 
         Cancellation acceptance alone is insufficient: poll a terminal
@@ -134,6 +134,8 @@ class ExitState:
             else:
                 return None
         if self.pending is None:
+            if not allow_submit:
+                return None
             self.client_id = self.retry_client_id or ('exit_' + uuid.uuid4().hex[:24])
             self.retry_client_id = None
             self._start_journal()

@@ -37,7 +37,8 @@ def test_latched_exit_does_not_depend_on_recovering_underlying_feed(monkeypatch)
     assert quotes.call_count == 1
 
 
-def test_lost_ack_recovery_keeps_one_order_and_books_one_exit(store, monkeypatch):
+@pytest.mark.parametrize('retry_quote', [1., None, 0.])
+def test_lost_ack_recovery_keeps_one_order_and_books_one_exit(store, monkeypatch, retry_quote):
     symbol = 'SPY261016C00770000'
     buy = store.submit_order(symbol, 'buy', 1)
     store.log_fill(buy, symbol, 'buy', 1, 1.)
@@ -46,7 +47,8 @@ def test_lost_ack_recovery_keeps_one_order_and_books_one_exit(store, monkeypatch
     monkeypatch.setattr(monitor, 'time', SimpleNamespace(time=lambda:next(clock), sleep=lambda _:None))
     monkeypatch.setattr(monitor, 'MAX_MONITOR_HOURS', 3/3600)
     monkeypatch.setattr(monitor, 'latest_quote', Mock(side_effect=[90, 100]))
-    monkeypatch.setattr(monitor, '_option_limit_price', lambda _:1.)
+    option_quotes = Mock(side_effect=[1., retry_quote] + [1.] * 100)
+    monkeypatch.setattr(monitor, '_option_limit_price', option_quotes)
     monkeypatch.setattr(monitor, 'post_discord', Mock())
     submitted = []
     def lost_ack(**kwargs):
@@ -63,6 +65,23 @@ def test_lost_ack_recovery_keeps_one_order_and_books_one_exit(store, monkeypatch
     result = monitor.watch_and_exit('SPY',symbol,1,'call',1.,stop_underlying=95,on_exit=callback)
     assert result['reason'] == 'her_stop' and result['ledger_recorded']
     assert len(submitted) == 1
+    assert option_quotes.call_count == 2
     assert store.get_position(symbol) is None
     assert store.fetchall("SELECT count(*),sum(qty),sum(fee) FROM fills WHERE side='sell'") == [(1,1.,.65)]
     assert callback.call_count == 1
+
+
+def test_quote_outage_can_resolve_cancel_but_cannot_submit_replacement():
+    from lavish_core.trade.exit_state import ExitState
+    state = ExitState(1, symbol='SPY261016C00770000')
+    state.client_id = 'synthetic-existing-exit'
+    state.unknown = True
+    canceled = dict(id='synthetic-canceled', symbol=state.symbol, side='sell', qty=1,
+                    client_order_id=state.client_id, status='canceled', filled_qty=0)
+    submit = Mock(side_effect=AssertionError('No replacement without a usable quote'))
+    lookup = Mock(return_value=canceled)
+    for _ in range(2):
+        assert state.attempt(submit, lookup, Mock(), Mock(), 1, lambda:None,
+                             allow_submit=False) is None
+    submit.assert_not_called()
+    assert state.remaining == 1 and state.pending is None and not state.unknown
