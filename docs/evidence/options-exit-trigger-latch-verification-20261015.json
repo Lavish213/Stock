@@ -1,0 +1,13 @@
+{
+  "scope": "offline production options monitor exit retry regression",
+  "parent_remote_commit": "0e606a79b262ee503a3e8fc87d4cac9c794bf60b",
+  "before_fix_regressions_failed": 3,
+  "after_fix_full_validation": {"passed": 3186, "failed": 0, "seconds": 345.18},
+  "final_focused_latch_file": {"passed": 4, "failed": 0, "seconds": 1.04},
+  "scope_note": "Full suite collected first three new regressions; fourth integration test checked separately. Counts overlap.",
+  "bandit_changed_production_module_issues": 0,
+  "broker_interactions": "mocked only",
+  "authentic_creator_samples": 0,
+  "profitability_evidence": false,
+  "remaining": ["durable pre-order exit intent", "creator close/trim coordination", "intermittent historical replay ledger anomaly", "authenticated creator replay", "persistent deployment"]
+}
