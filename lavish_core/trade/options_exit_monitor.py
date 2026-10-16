@@ -167,8 +167,11 @@ def watch_and_exit(
         """
         nonlocal consecutive_failures
         limit_price = _option_limit_price(contract_symbol)
+        # Order-status recovery does not require a new executable quote.
+        # Never submit a replacement without one, even after cancellation.
+        in_flight = getattr(exit_state, "pending", None) is not None or getattr(exit_state, "unknown", False)
 
-        if limit_price == 0.0:
+        if limit_price == 0.0 and not in_flight:
             # A zero bid can recover; only an expired contract can settle.
             from lavish_core.trade.reconcile import parse_occ_symbol
             parsed = parse_occ_symbol(contract_symbol)
@@ -179,12 +182,13 @@ def watch_and_exit(
             return {"status":"settlement_unverified", "reason":f"{reason}_worthless_requires_broker_confirmation", "underlying_price":underlying_price,
                     "option_price":None, "quoted_bid":0.0, "order":None}
 
-        if limit_price is None:
+        if limit_price is None and not in_flight:
             return None
         outcome = exit_state.attempt(
             lambda remaining, client_id: place_option_order(contract_symbol=contract_symbol, side="sell", qty=remaining, order_type="limit", limit_price=limit_price, client_order_id=client_id),
             get_order_by_client_id, get_order, cancel_order, EXIT_FILL_POLL_ATTEMPTS,
-            lambda: time.sleep(EXIT_FILL_POLL_INTERVAL_SEC))
+            lambda: time.sleep(EXIT_FILL_POLL_INTERVAL_SEC),
+            **({"allow_submit": False} if limit_price is None or limit_price == 0.0 else {}))
         if outcome is None:
             consecutive_failures += 1
             _alert_failure(reason,"Closing order unresolved; retaining its identity")
