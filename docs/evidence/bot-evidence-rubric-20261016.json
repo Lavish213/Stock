@@ -1,0 +1,1209 @@
+{
+  "schema_version": 1,
+  "title": "Stock bot intensive evidence rubric",
+  "as_of_date": "2026-10-16",
+  "timezone": "America/Los_Angeles",
+  "reviewed_remote_commit": "0a2ebbd2d0eade5b5da2f1b6cc39ba5e4d533a09",
+  "reviewed_local_commit": "1998c33ece4f2d97b18ad9b368e16292f7ba87a9",
+  "numeric_score": null,
+  "assessment_complete": false,
+  "provisional_editorial_grade": "C",
+  "grade_warning": "C is a qualitative judgment of overall development maturity, not a calculated rubric score, profitability rating or execution approval.",
+  "score_anchors": {
+    "0": "Failed or absent; distinguishes observed failure from missing evidence in status.",
+    "1": "Documented design or isolated unit evidence only.",
+    "2": "Passing reproducible production-path offline integration including relevant positive and fault cases.",
+    "3": "Representative authentic source replay and/or authenticated paper observation applicable to this criterion, with complete trace and independent review.",
+    "4": "Repeated prospective or actual-host evidence meeting preregistered limits, drift monitoring and reviewed recovery, where applicable."
+  },
+  "missing_evidence_policy": "Null scores remain in denominator for conservative lower bound but are never called observed failures. Do not publish completed numeric grade until all items assessed.",
+  "domains": [
+    {
+      "id": "A",
+      "name": "Source authenticity and chronology",
+      "weight": 10,
+      "test_discovery": "test_signed_alert_feed.py,test_patreon_safe_ingest.py,test_discord_creator_ingestion.py",
+      "source_ids": [
+        "S1",
+        "S2"
+      ],
+      "checks": [
+        {
+          "id": "A01",
+          "name": "Publisher identity",
+          "acceptance_requirement": "Reject forged sender/signature and unauthorized source; retain successful authorized-delivery controls.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A02",
+          "name": "Original versions",
+          "acceptance_requirement": "Persist post ID, version ID, raw bytes/hash, publication, receipt and observation times; absent original times remain unknown.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A03",
+          "name": "Edit lifecycle",
+          "acceptance_requirement": "Replay initial setup, later edit and deletion in availability order; never apply a later target to an earlier decision.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A04",
+          "name": "Delivery deduplication",
+          "acceptance_requirement": "Repeated transport retries and reordered JSON produce one semantic event across concurrent workers and restart.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A05",
+          "name": "Complete sampling",
+          "acceptance_requirement": "Inventory every accessible alert in the evaluation window, including deleted/failed/untraded cases; quantify inaccessible coverage.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A06",
+          "name": "Clock integrity",
+          "acceptance_requirement": "Reject impossible future receipt/availability; exercise UTC, Pacific daylight-saving transitions and clock skew.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A07",
+          "name": "Source interruptions",
+          "acceptance_requirement": "Authentication expiry, rate limits and stale polling produce visible source-health failures and bounded backoff.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "A08",
+          "name": "Authority boundaries",
+          "acceptance_requirement": "Social commentary, Reddit, newsletter marketing and quoted messages cannot silently become execution authorization.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Alert understanding and instruction fidelity",
+      "weight": 10,
+      "test_discovery": "test_alert_instruction_integrity.py,test_creator_screenshot_conditions.py,test_labeled_intent_benchmark.py",
+      "source_ids": [
+        "S1"
+      ],
+      "checks": [
+        {
+          "id": "B01",
+          "name": "Intent taxonomy",
+          "acceptance_requirement": "Label setup, conditional entry, immediate entry, hold, trim, close, update, recap and no-trade separately; publish confusion matrix.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B02",
+          "name": "Contract identity",
+          "acceptance_requirement": "Match ticker, call/put, strike, expiry and multiplier exactly; ambiguity must not silently select another contract.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B03",
+          "name": "Price units",
+          "acceptance_requirement": "Separate underlying trigger/stop/target from option premium; validate decimal, percent, range and OCR formatting.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B04",
+          "name": "Negation and conditionals",
+          "acceptance_requirement": "No call, not yet, only if, did not hold and hypothetical examples cannot execute immediately.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B05",
+          "name": "Cross-modal conflicts",
+          "acceptance_requirement": "Caption/image or within-message disagreement requires review with conflicting fields retained.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B06",
+          "name": "Context binding",
+          "acceptance_requirement": "Associate reply/update with the correct original setup and held position; never inherit another ticker's stop.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B07",
+          "name": "Close and trim semantics",
+          "acceptance_requirement": "Apply full/partial close only to matched holdings; ambiguous unsupported trims are reviewed, never treated as new buys.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "B08",
+          "name": "Useful acceptance",
+          "acceptance_requirement": "Retain valid CALL/PUT and full-exit positives alongside adversarial cases; report false rejection as well as false execution.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Trigger and market context",
+      "weight": 9,
+      "test_discovery": "test_screenshot_trigger_study.py,test_checklist_candle_faults.py,test_research_context.py",
+      "source_ids": [
+        "S1",
+        "S9",
+        "S10"
+      ],
+      "checks": [
+        {
+          "id": "C01",
+          "name": "Break and hold",
+          "acceptance_requirement": "Specify candle interval, completed-bar rule and hold duration before evaluation; a wick alone does not satisfy a close-based rule.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C02",
+          "name": "Reclaim and retest",
+          "acceptance_requirement": "Explicit state transitions distinguish touch, reclaim, retest and invalidation; cover bullish and bearish mirrors.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C03",
+          "name": "False breakout",
+          "acceptance_requirement": "A brief breach followed by reversal invalidates or waits according to frozen rules; no retroactive favorable entry.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C04",
+          "name": "Candle completeness",
+          "acceptance_requirement": "Missing, duplicate, zero-volume, out-of-order and still-open candles cannot create unearned confirmation.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C05",
+          "name": "Session boundaries",
+          "acceptance_requirement": "Verify exchange sessions, holidays and early closes; reject late entries according to configured policy.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C06",
+          "name": "Event awareness",
+          "acceptance_requirement": "Use primary release calendars and separately stored actual/forecast/vintage; convert only verified timezones to Pacific.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C07",
+          "name": "Setup expiration",
+          "acceptance_requirement": "Late alerts, target already reached, canceled setup and stale levels have explicit expiration outcomes.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "C08",
+          "name": "Reason trace",
+          "acceptance_requirement": "Every entered or skipped alert records source/version, bars used, state transition, rule revision and reason code.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": "Option data and economic exposure",
+      "weight": 9,
+      "test_discovery": "test_contract_identity.py,test_options_edge_lab.py,test_tradier_contract_identity.py",
+      "source_ids": [
+        "S2",
+        "S5",
+        "S6"
+      ],
+      "checks": [
+        {
+          "id": "D01",
+          "name": "Authentic quotes",
+          "acceptance_requirement": "Authenticate point-in-time quote provenance and entitlement; indicative/derived quotes are not relabeled actual OPRA.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D02",
+          "name": "Availability clock",
+          "acceptance_requirement": "Quote event and availability timestamps must precede the decision; enforce and report freshness bounds.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D03",
+          "name": "Executable market",
+          "acceptance_requirement": "Check bid, ask, spread, size and timestamp; test zero bid, locked/crossed markets and missing depth explicitly.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D04",
+          "name": "Chain selection",
+          "acceptance_requirement": "Freeze expiry/strike selection and tie-breakers; preserve explicit creator contract without hindsight substitution.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D05",
+          "name": "Volatility exposure",
+          "acceptance_requirement": "Report IV/vega sensitivity and scenarios where correct stock direction still loses option value.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D06",
+          "name": "Decay and convexity",
+          "acceptance_requirement": "Stress time decay and near-expiry gamma over elapsed market/calendar time; theoretical prices stay labeled synthetic.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D07",
+          "name": "Corporate actions",
+          "acceptance_requirement": "Verify adjusted deliverables, splits, symbol changes and contract multipliers from authoritative metadata.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "D08",
+          "name": "Expiration and exercise",
+          "acceptance_requirement": "Verify broker-specific exercise deadlines, auto-exercise handling, settlement and funding against actual account records.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "name": "Sizing and portfolio feasibility",
+      "weight": 9,
+      "test_discovery": "test_risk_storage_reporting.py,test_small_account_month.py,test_readiness_and_options_simulation.py",
+      "source_ids": [
+        "S3",
+        "S5"
+      ],
+      "checks": [
+        {
+          "id": "E01",
+          "name": "Explicit risk plan",
+          "acceptance_requirement": "Bind positive operator-approved premium, gross exposure and loss limits to intended account; no inferred budget increase.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E02",
+          "name": "Whole contracts",
+          "acceptance_requirement": "Floor quantity after premium multiplier and fees; one contract cannot become a fractional runner.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E03",
+          "name": "Concurrent reservations",
+          "acceptance_requirement": "Reserve capital transactionally across simultaneous alerts; open orders consume available budget.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E04",
+          "name": "Aggregate exposure",
+          "acceptance_requirement": "Enforce per-symbol, correlated exposure and portfolio caps, including pending orders and partial holdings.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E05",
+          "name": "Loss accounting",
+          "acceptance_requirement": "Define realized/unrealized and day-boundary treatment; fees and adverse fills enter loss controls.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E06",
+          "name": "Gap and ruin stress",
+          "acceptance_requirement": "Report depletion and drawdown across adverse gaps and losing streaks; stops do not guarantee capped fill loss.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E07",
+          "name": "Exit independence",
+          "acceptance_requirement": "Entry budget zero or entry halt cannot prevent a valid close; verified holdings cap sell quantity.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "E08",
+          "name": "Shared capital",
+          "acceptance_requirement": "Use one chronological account for monthly/year results, with overlapping trades, cash constraints and no hidden replenishment.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "name": "Broker order lifecycle",
+      "weight": 10,
+      "test_discovery": "test_broker_fault_matrix.py,test_gate_and_fill_lifecycle.py,test_option_entry_identity.py",
+      "source_ids": [
+        "S1",
+        "S3"
+      ],
+      "checks": [
+        {
+          "id": "F01",
+          "name": "Pre-submit intent",
+          "acceptance_requirement": "Persist account/contract/side/quantity/client ID and strategy intent before network submission.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F02",
+          "name": "Lost acknowledgment",
+          "acceptance_requirement": "A timeout after acceptance triggers identity lookup; never assume rejection and submit a duplicate.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F03",
+          "name": "Partial fills",
+          "acceptance_requirement": "Apply cumulative quantity, average price and fee changes incrementally once; position equals confirmed net fills.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F04",
+          "name": "Cancel race",
+          "acceptance_requirement": "Cancellation request is not cancellation confirmation; handle fill-during-cancel and replacement without oversell.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F05",
+          "name": "Response identity",
+          "acceptance_requirement": "Reject wrong account/symbol/side/client ID/order ID or inconsistent quantity; retain evidence and halt affected entries.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F06",
+          "name": "Transport faults",
+          "acceptance_requirement": "Test 429, 5xx, disconnect, malformed payload and duplicate/out-of-order streaming events with bounded retry.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F07",
+          "name": "Outstanding orders",
+          "acceptance_requirement": "Track accepted, pending, canceled, expired, rejected and unknown states; no order vanishes from reconciliation.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "F08",
+          "name": "Positive lifecycle",
+          "acceptance_requirement": "Demonstrate valid entry, partial fill, cancel remainder and full close through production code with confirmed accounting.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "name": "Exit protection and restart recovery",
+      "weight": 10,
+      "test_discovery": "test_options_exit_latched_trigger.py,test_protection_recovery.py,test_equity_restart_recovery.py",
+      "source_ids": [
+        "S1",
+        "S3"
+      ],
+      "checks": [
+        {
+          "id": "G01",
+          "name": "Latched exits",
+          "acceptance_requirement": "Once stop/target/creator close is requested, later underlying recovery cannot erase it.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G02",
+          "name": "Quote-outage reconciliation",
+          "acceptance_requirement": "Resolve already submitted orders during missing/zero quotes; no fresh replacement without a usable quote.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G03",
+          "name": "Durable trigger intent",
+          "acceptance_requirement": "Persist stop/target/close reason and lifecycle before submit; recover after death even before broker acknowledgment.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G04",
+          "name": "Restart adoption",
+          "acceptance_requirement": "Restore orders, remaining holdings and exit ownership exactly once; test kill points before/after every durable write.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G05",
+          "name": "Competing exits",
+          "acceptance_requirement": "Stop, target, creator close/trim and session deadline coordinate one bounded remaining quantity.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G06",
+          "name": "Unresolved exits",
+          "acceptance_requirement": "Missing liquidity/unknown outcomes remain explicit unresolved exposure; no invented flat status or booked favorable price.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G07",
+          "name": "Host/network recovery",
+          "acceptance_requirement": "Actual deployment restart, lost connection, stuck worker and broker recovery restore protection with measured detection times.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "G08",
+          "name": "Independent halt",
+          "acceptance_requirement": "Entry halt works across processes while existing exits remain supervised; resume requires reconciled cause.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "H",
+      "name": "Cash, ledger and reporting integrity",
+      "weight": 8,
+      "test_discovery": "test_cash_activity_reconciliation.py,test_reconciliation_identity.py,test_additional_monitoring_and_concurrency.py",
+      "source_ids": [
+        "S1",
+        "S3"
+      ],
+      "checks": [
+        {
+          "id": "H01",
+          "name": "Cash conservation",
+          "acceptance_requirement": "Opening cash plus signed posted cash flows equals ending broker cash within currency rounding; classify every adjustment.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H02",
+          "name": "Inventory conservation",
+          "acceptance_requirement": "Per-contract bought less sold plus documented actions equals broker holdings; no orphaned positions.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H03",
+          "name": "Unique executions",
+          "acceptance_requirement": "Order/client/execution identifiers and replayed snapshots cannot duplicate rows, fills or fees across restart/concurrency.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H04",
+          "name": "Fee reconciliation",
+          "acceptance_requirement": "Use authentic posted fees for observed trading; synthetic fee assumptions remain separate and explicit.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H05",
+          "name": "Atomic storage",
+          "acceptance_requirement": "Crash during reservation/order/fill/position updates preserves invariants; verify actual database concurrency and durability modes.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H06",
+          "name": "Truthful P&L",
+          "acceptance_requirement": "Mark open positions at declared realizable convention; show realized, unrealized, fees and unresolved exposure separately.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H07",
+          "name": "Failed-run preservation",
+          "acceptance_requirement": "Retain failing seeds, databases, first drift time and traces; successful reruns do not erase original failures.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "H08",
+          "name": "Account boundaries",
+          "acceptance_requirement": "Separate synthetic ledgers, paper/live accounts and strategy research; never aggregate unrelated budgets as one portfolio.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "I",
+      "name": "Simulation validity and reproducibility",
+      "weight": 8,
+      "test_discovery": "test_options_risk_comparison.py,test_production_alert_replay.py,test_options_edge_lab.py",
+      "source_ids": [
+        "S2",
+        "S4",
+        "S7",
+        "S8"
+      ],
+      "checks": [
+        {
+          "id": "I01",
+          "name": "Production path",
+          "acceptance_requirement": "Identify which parser/gate/sizer/broker/exit components are real and which are mocked; alternate lab logic is not production coverage.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I02",
+          "name": "Virtual clocks",
+          "acceptance_requirement": "Advance parser, candles, risk, calendar and persistence consistently; positive entries must remain possible throughout the full simulated year.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I03",
+          "name": "Deterministic comparisons",
+          "acceptance_requirement": "Hash input/code/config and key exogenous draws independently of trading decisions; paired policies see identical market paths.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I04",
+          "name": "Execution realism",
+          "acceptance_requirement": "Model bid/ask, latency, size, fees and failed/partial fills; record omissions such as queue position and market impact.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I05",
+          "name": "No look-ahead",
+          "acceptance_requirement": "Contract selection, context, edits and economics use only information available then; revised data cannot leak backward.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I06",
+          "name": "Unresolved accounting",
+          "acceptance_requirement": "Count every eligible alert and unresolved trade; unresolved P&L is null and blocks whole-run profitability comparisons.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I07",
+          "name": "Scenario diversity",
+          "acceptance_requirement": "Cover trend, chop, gap, IV crush, stale data, event shock, outages and affordability with positive controls.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "I08",
+          "name": "Honest scope",
+          "acceptance_requirement": "Separate authentic observations, curated screenshots, synthetic mutations and broker-paper simulations; never report 648 trials as 648 real trades.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "J",
+      "name": "Profitability and statistical evidence",
+      "weight": 9,
+      "test_discovery": "test_spy_strategies.py,test_options_edge_lab.py; docs/SPY_STRATEGY_STUDY_20261014.md",
+      "source_ids": [
+        "S4",
+        "S7",
+        "S8"
+      ],
+      "checks": [
+        {
+          "id": "J01",
+          "name": "Net expectancy",
+          "acceptance_requirement": "Estimate net portfolio return and per-trade expectancy using complete authentic outcomes after executable costs.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J02",
+          "name": "Benchmark comparison",
+          "acceptance_requirement": "Compare fixed policy against cash and an appropriate exposure-matched simple baseline; show incremental return and risk.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J03",
+          "name": "Chronological validation",
+          "acceptance_requirement": "Freeze development/selection/evaluation boundaries; consumed 2025\u2013October 2026 data cannot become fresh holdout again.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J04",
+          "name": "Multiple testing",
+          "acceptance_requirement": "Log all attempted variants and abandoned searches; adjust claimed significance for selection and correlated trials.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J05",
+          "name": "Uncertainty",
+          "acceptance_requirement": "Use session-clustered or justified block methods, report effective sample size and intervals; insufficient precision stays inconclusive.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J06",
+          "name": "Regime stability",
+          "acceptance_requirement": "Report months, losses, drawdown, recovery duration and event/regime dependence; disclose profit concentration in best days/trades.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J07",
+          "name": "Cost sensitivity",
+          "acceptance_requirement": "Re-evaluate fixed policy under wider spreads, extra latency, missed fills and empirically grounded fee stress without retuning.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "J08",
+          "name": "Prospective confirmation",
+          "acceptance_requirement": "Measure a frozen candidate on genuinely subsequent complete data under the intended capital constraints; no income promise from one year.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "K",
+      "name": "Operations, security and observability",
+      "weight": 4,
+      "test_discovery": "test_source_auth_and_notifications.py,test_manual_scripts_and_deployment.py,test_broker_transport_security.py",
+      "source_ids": [
+        "S1",
+        "S3"
+      ],
+      "checks": [
+        {
+          "id": "K01",
+          "name": "Persistent service",
+          "acceptance_requirement": "Verify process manager, startup path, dependencies and real host availability; scratch runtime is not durable deployment.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K02",
+          "name": "Worker health",
+          "acceptance_requirement": "Measure loop progress, source freshness and reconciliation success separately from thread liveness.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K03",
+          "name": "Actionable notifications",
+          "acceptance_requirement": "Actual delivery/acknowledgment tests cover unknown orders, stale feed, lost protection and cash drift with escalation deadlines.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K04",
+          "name": "Credential controls",
+          "acceptance_requirement": "Verify private storage, least privilege, rotated exposed credentials and paper/live endpoint separation without logging secrets.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K05",
+          "name": "Audit trail",
+          "acceptance_requirement": "Correlate source, decision, order, fill, risk snapshot and incident IDs with synchronized timestamps.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K06",
+          "name": "Operator view",
+          "acceptance_requirement": "Dashboard exposes stale-data age, pending orders, remaining holdings, halts, cash drift and evidence limitations.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K07",
+          "name": "Change control",
+          "acceptance_requirement": "Bind evidence and approvals to exact code/config/account; changed execution logic invalidates prior operational certification.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "K08",
+          "name": "Recovery practice",
+          "acceptance_requirement": "Demonstrate backup restore, deployment rollback and incident runbook on intended host without resetting accounts to hide drift.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    },
+    {
+      "id": "L",
+      "name": "Research discipline and improvement loop",
+      "weight": 4,
+      "test_discovery": "docs/OPTIONS_EDGE_LAB_20261015.md; docs/REAL_MONEY_READINESS.md",
+      "source_ids": [
+        "S1",
+        "S7",
+        "S8"
+      ],
+      "checks": [
+        {
+          "id": "L01",
+          "name": "Failure taxonomy",
+          "acceptance_requirement": "Classify each failure as source, interpretation, trigger, quote, sizing, order, recovery, accounting or strategy.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L02",
+          "name": "Causal attribution",
+          "acceptance_requirement": "Separate signal quality, execution drag and sizing effects using paired fixed-data comparisons; no best-seed promotion.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L03",
+          "name": "Preregistered hypotheses",
+          "acceptance_requirement": "State economic rationale, candidate bounds and rejection criteria before seeing evaluation outcomes.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L04",
+          "name": "Independent labels",
+          "acceptance_requirement": "Review actual-source labels independently of bot output; retain disagreements and ambiguous cases without forced ground truth.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L05",
+          "name": "Mutation quality",
+          "acceptance_requirement": "Mutations target a named invariant; group correlated cases and include useful positives instead of inflating test counts.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L06",
+          "name": "Repair proof",
+          "acceptance_requirement": "Preserve before-fix reproduction, minimal patch, after-fix regression and related integration coverage.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L07",
+          "name": "Readiness reviews",
+          "acceptance_requirement": "Review every mandatory gate, unresolved incident and evidence age before changing execution status.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        },
+        {
+          "id": "L08",
+          "name": "Bounded learning",
+          "acceptance_requirement": "Research can propose candidates but cannot auto-enable orders, leverage, rule changes or larger allocations.",
+          "assessment_status": "unassessed",
+          "score": null,
+          "evidence_ids": [],
+          "measurement_required": "Numerator, denominator, sample origin, date range, code/config/data hashes, worst case and uncertainty; zero-tolerance invariants report exact violation count."
+        }
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "R1",
+      "name": "Authentic authorized source and complete chronology",
+      "status": "blocked",
+      "rationale": "No independently verified complete creator feed/replay; inaccessible Instagram/member posts remain outside coverage.",
+      "check_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A05"
+      ]
+    },
+    {
+      "id": "R2",
+      "name": "Faithful instructions including held-position exits",
+      "status": "blocked",
+      "rationale": "Unsupported ambiguous instructions are guarded; complete production close/trim coordination remains unfinished.",
+      "check_ids": [
+        "B06",
+        "B07",
+        "G05"
+      ]
+    },
+    {
+      "id": "R3",
+      "name": "Account-bound risk and feasible capital",
+      "status": "unverified",
+      "rationale": "Controls exist; intended paper budgets and observed account feasibility are not certified.",
+      "check_ids": [
+        "E01",
+        "E03",
+        "E08"
+      ]
+    },
+    {
+      "id": "R4",
+      "name": "Exactly-once lifecycle and cash/inventory integrity",
+      "status": "blocked",
+      "rationale": "Intermittent synthetic replay duplicate-order/extra-fill anomaly remains unexplained; not the resolved Oct14 broker fee concern.",
+      "check_ids": [
+        "F02",
+        "F03",
+        "H01",
+        "H02",
+        "H03",
+        "H07"
+      ]
+    },
+    {
+      "id": "R5",
+      "name": "Durable exit recovery on actual host",
+      "status": "blocked",
+      "rationale": "PR28 improves in-process lookup during missing/zero quote; durable trigger intent and actual host recovery remain incomplete.",
+      "check_ids": [
+        "G02",
+        "G03",
+        "G04",
+        "G07"
+      ]
+    },
+    {
+      "id": "R6",
+      "name": "Actual monitoring, escalation and secure deployment",
+      "status": "unverified",
+      "rationale": "Persistent deployment, actual notification observations and security attestations remain incomplete.",
+      "check_ids": [
+        "K01",
+        "K03",
+        "K04",
+        "K08"
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "Authentic executable replay with complete outcomes",
+      "status": "blocked",
+      "rationale": "No complete authenticated creator/options dataset; unresolved trades prohibit profitability comparison.",
+      "check_ids": [
+        "D01",
+        "I04",
+        "I05",
+        "I06"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Frozen strategy passes prospective economic criteria",
+      "status": "not_established",
+      "rationale": "SPY selected blend failed later-period superiority; tested ORB/VWAP lost. No options profitability inference.",
+      "check_ids": [
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J06",
+        "J07",
+        "J08"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "title": "FINRA Regulatory Notice 15-09",
+      "url": "https://www.finra.org/rules-guidance/notices/15-09",
+      "scope": "March 26, 2015 guidance: testing, validation, change records and controls. Used as engineering guidance; this rubric is not a legal applicability determination.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S2",
+      "title": "Alpaca historical option data",
+      "url": "https://docs.alpaca.markets/us/docs/historical-option-data",
+      "scope": "Historical coverage begins February 2024; subscribed OPRA BBO differs from derived indicative data.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S3",
+      "title": "Alpaca order lifecycle",
+      "url": "https://docs.alpaca.markets/us/docs/orders-at-alpaca",
+      "scope": "Client IDs, status lookup and order state handling inform reconciliation checks.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S4",
+      "title": "Alpaca paper trading",
+      "url": "https://docs.alpaca.markets/us/docs/paper-trading",
+      "scope": "Paper fills omit several real execution effects; displayed liquidity is not enforced in the same way as an exchange. Add independent stress assumptions.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S5",
+      "title": "OCC options disclosure landing page",
+      "url": "https://www.theocc.com/company-information/documents-and-archives/options-disclosure-document",
+      "scope": "Current disclosure availability and settlement-version information; full contract/broker-specific exercise review remains required. Landing page checked, not a complete ODD review.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S6",
+      "title": "OIC implied volatility",
+      "url": "https://www.optionseducation.org/videolibrary/implied-volatility-increase-or-decrease-advanced",
+      "scope": "Options require volatility exposure analysis alongside directional analysis. Video page checked; no claim to have watched the full video.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S7",
+      "title": "Bailey and L\u00f3pez de Prado: Deflated Sharpe Ratio",
+      "url": "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf",
+      "scope": "Multiple testing and non-normality can inflate apparent performance; disclose search history and use appropriate corrections.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S8",
+      "title": "Bailey et al.: Probability of Backtest Overfitting",
+      "url": "https://www.davidhbailey.com/dhbpapers/backtest-prob.pdf",
+      "scope": "Selecting a historical winner can produce poor out-of-sample performance; evaluate the selection process as well as the winning curve.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S9",
+      "title": "BLS 2026 release schedule",
+      "url": "https://www.bls.gov/schedule/2026/home.htm",
+      "scope": "Primary calendar endpoint for release verification; exact event/timezone must be rechecked before use.",
+      "checked_date": "2026-10-16"
+    },
+    {
+      "id": "S10",
+      "title": "BEA release schedule",
+      "url": "https://www.bea.gov/news/schedule",
+      "scope": "Primary GDP/PCE calendar endpoint; preserve observation/version and verified timezone rather than assume it.",
+      "checked_date": "2026-10-16"
+    }
+  ]
+}
