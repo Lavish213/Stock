@@ -26,6 +26,7 @@ from .options_replay import Response
 HOLIDAYS = set('2026-11-26 2026-12-25 2027-01-01 2027-01-18 2027-02-15 2027-03-26 2027-05-31 2027-06-18 2027-07-05 2027-09-06'.split())
 EARLY_CLOSE = {'2026-11-27','2026-12-24'}
 ET = ZoneInfo('America/New_York')
+REPLAY_START_DATE = date(2026, 10, 1)
 
 def session_clock(now):
     local=now.astimezone(ET);day=local.date()
@@ -175,7 +176,7 @@ def replay(output, days=365, initial=1000, seed=20261015, scenario_offset=0,
         # place_option_order, all risk checks, ExitState and ledger remain real.
         reached_half, reached_tenth = initial>=500, initial>=1000
         for i in range(days):
-            day=date(2026,10,1)+timedelta(days=i)
+            day=REPLAY_START_DATE+timedelta(days=i)
             clock.now=datetime.combine(day,datetime.min.time(),timezone.utc).replace(hour=15)
             x.today=day
             kind=['target','premium_stop','partial_entry','lost_ack','exit_outage','false_break',
