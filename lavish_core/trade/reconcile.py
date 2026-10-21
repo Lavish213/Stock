@@ -110,8 +110,8 @@ def _find_latest_entry_time(contract_symbol: str):
             "SELECT MIN(fills.ts) FROM orders JOIN fills ON fills.order_id=orders.id "
             "AND fills.side='buy' WHERE orders.id = ("
             "SELECT o.id FROM orders o WHERE o.symbol = ? AND o.side = 'buy' "
-            "AND (o.status IN ('filled','partially_filled') OR EXISTS "
-            "(SELECT 1 FROM fills f2 WHERE f2.order_id=o.id AND f2.side='buy')) "
+            "AND EXISTS "
+            "(SELECT 1 FROM fills f2 WHERE f2.order_id=o.id AND f2.side='buy') "
             "ORDER BY o.ts DESC LIMIT 1)",
             (contract_symbol,),
         )
