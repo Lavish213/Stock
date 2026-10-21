@@ -69,7 +69,34 @@ def test_reconcile_does_not_attach_old_intent_to_a_later_entry(store, monkeypatc
     symbol = "SPY261016C00770000"
     monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
     store.set_exit_intent(symbol, "her_stop", 90)
-    store.submit_order(symbol, "buy", 1, status="filled")
+    oid = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "1", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] is None
+    assert store.get_exit_intent(symbol) is None
+    assert store.get_kill_switch()[0]
+
+
+def test_reconcile_uses_delayed_fill_time_not_earlier_submission(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    oid = store.submit_order(symbol, "buy", 1, status="submitted")
+    store.set_exit_intent(symbol, "her_stop", 90)
+    store.log_fill(oid, symbol, "buy", 1, 1)
     monkeypatch.setattr(
         reconcile,
         "get_positions",
@@ -93,7 +120,8 @@ def test_reconcile_does_not_attach_old_intent_to_a_later_entry(store, monkeypatc
 def test_reconcile_keeps_intent_triggered_after_current_entry(store, monkeypatch):
     symbol = "SPY261016C00770000"
     monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
-    store.submit_order(symbol, "buy", 1, status="filled")
+    oid = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(oid, symbol, "buy", 1, 1)
     store.set_exit_intent(symbol, "her_stop", 90)
     monkeypatch.setattr(
         reconcile,
