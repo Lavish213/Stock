@@ -233,6 +233,11 @@ def reconcile_open_positions() -> int:
 
         target_underlying, stop_underlying = _find_original_target_stop(symbol)
         recovered_her_levels = target_underlying is not None or stop_underlying is not None
+        intent_store = HybridStore(DEFAULT_DB)
+        try:
+            exit_intent = intent_store.get_exit_intent(symbol)
+        finally:
+            intent_store.con.close()
 
         log.warning(
             "reconcile: found unmanaged open position %s (%s x%s, entry=%.2f, exp=%s) - "
@@ -273,6 +278,8 @@ def reconcile_open_positions() -> int:
                 target_underlying=target_underlying,
                 stop_underlying=stop_underlying,
                 on_exit=_on_exit,
+                resume_exit_reason=exit_intent["reason"] if exit_intent else None,
+                resume_underlying_price=exit_intent["underlying_price"] if exit_intent else None,
             )
         except Exception:
             unmark_watched(symbol)
