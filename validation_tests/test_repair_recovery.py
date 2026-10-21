@@ -139,6 +139,27 @@ def test_restart_quarantines_multiple_open_exit_journals(store):
  assert store.get_kill_switch()[0]
  submit.assert_not_called();lookup.assert_not_called()
 
+@pytest.mark.parametrize(
+ ('venue','client_id'),
+ [('live','live-exit'),('paper',None)],
+ ids=['different-venue','missing-client-id'],
+)
+def test_restart_rejects_exit_journal_with_untrusted_local_identity(store,venue,client_id):
+ oid=store.submit_order('AAPL','buy',1);store.log_fill(oid,'AAPL','buy',1,100)
+ close=store.submit_order(
+  'AAPL','sell',1,venue=venue,status='submission_unknown',
+  client_id=client_id,meta={'exit_state':True},
+ )
+ state=ExitState(1,db_path=store.db_path,symbol='AAPL',venue='paper')
+ submit=Mock(side_effect=AssertionError('cross-venue journal must never submit'))
+ lookup=Mock(side_effect=AssertionError('cross-venue journal must never be queried'))
+ result=attempt(state,submit,lookup,Mock(),Mock())
+ assert result=={'status':'fill_unverified','reason':'reconciliation_required'}
+ assert store.fetchall("SELECT status FROM orders WHERE id=?",(close,))==[('fill_unverified',)]
+ assert store.get_position('AAPL')['qty']==1
+ assert store.get_kill_switch()[0]
+ submit.assert_not_called();lookup.assert_not_called()
+
 def test_report_matches_entry_before_window_to_exit_inside_window(store,monkeypatch):
  from datetime import datetime,timezone,timedelta
  from lavish_core.reporting import track_record as report
