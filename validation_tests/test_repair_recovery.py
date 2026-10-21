@@ -120,7 +120,7 @@ def test_durable_exit_can_resume_after_partial_fill_and_restart(store):
  assert store.get_position('AAPL') is None;no_post.assert_not_called()
  assert store.fetchall("SELECT sum(qty) FROM fills WHERE side='sell'")[0][0]==5
 
-def test_restart_quarantines_multiple_open_exit_journals(store):
+def test_restart_quarantines_multiple_open_exit_journals(store,monkeypatch):
  oid=store.submit_order('AAPL','buy',2);store.log_fill(oid,'AAPL','buy',2,100)
  for client_id in ('exit-first','exit-second'):
   store.submit_order(
@@ -138,6 +138,15 @@ def test_restart_quarantines_multiple_open_exit_journals(store):
  assert store.get_position('AAPL')['qty']==2
  assert store.get_kill_switch()[0]
  submit.assert_not_called();lookup.assert_not_called()
+ broker_lookup=Mock(return_value={
+  'id':'broker-close','status':'filled','symbol':'AAPL','side':'sell',
+  'qty':2,'filled_qty':2,'filled_avg_price':110,'filled_fee':0,
+ })
+ monkeypatch.setattr(rc,'get_order_by_client_id',broker_lookup)
+ assert rc.reconcile_pending_orders(store)==0
+ assert store.get_position('AAPL')['qty']==2
+ assert not store.fetchall("SELECT 1 FROM fills WHERE side='sell'")
+ broker_lookup.assert_not_called()
 
 @pytest.mark.parametrize(
  ('venue','client_id'),
