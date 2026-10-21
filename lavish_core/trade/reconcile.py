@@ -165,6 +165,12 @@ def reconcile_pending_orders(store=None):
     resolved = 0
     try:
         for local in store.get_open_orders():
+            # ExitState owns its tagged closing-order recovery. In particular,
+            # a quarantined journal must not be revived here after ExitState
+            # has found an ambiguous set of closing orders.
+            if (local.get("meta", {}).get("exit_state")
+                    and local.get("status") == "fill_unverified"):
+                continue
             client_id = local.get("client_id")
             if not client_id or local.get("venue") not in ("paper", "live"):
                 continue
