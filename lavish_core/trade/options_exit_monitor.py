@@ -119,6 +119,8 @@ def watch_and_exit(
     target_underlying: Optional[float] = None,
     stop_underlying: Optional[float] = None,
     on_exit: Optional[Callable[[Dict[str, Any]], None]] = None,
+    resume_exit_reason: Optional[str] = None,
+    resume_underlying_price: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
     Blocking poll loop: watches both her stated underlying levels (if any)
@@ -208,9 +210,32 @@ def watch_and_exit(
         return {"status":"exited", "reason":reason, "underlying_price":underlying_price,
                 "option_price":outcome["price"], "filled_qty":outcome["filled_qty"], "order":outcome["order"], "ledger_recorded":outcome.get("ledger_recorded",False)}
 
+    allowed_resume_reasons = {
+        "her_target", "her_stop", "our_stop_loss", "our_trailing_stop",
+        "expiry_force_close", "max_hold_timeout",
+    }
+    if resume_exit_reason is not None and resume_exit_reason not in allowed_resume_reasons:
+        raise ValueError("Invalid resumed exit reason")
+
+    def _persist_intent(reason, underlying_price):
+        from lavish_core.db.hybrid_store import HybridStore
+        store = HybridStore(DEFAULT_DB)
+        try:
+            store.set_exit_intent(contract_symbol, reason, underlying_price)
+        finally:
+            store.con.close()
+
+    def _clear_intent():
+        from lavish_core.db.hybrid_store import HybridStore
+        store = HybridStore(DEFAULT_DB)
+        try:
+            store.clear_exit_intent(contract_symbol)
+        finally:
+            store.con.close()
+
     loop_errors = 0
-    latched_reason = None
-    latched_underlying_price = None
+    latched_reason = resume_exit_reason
+    latched_underlying_price = resume_underlying_price
     while time.time() < deadline:
         try:
             triggered_reason: Optional[str] = latched_reason
@@ -254,10 +279,17 @@ def watch_and_exit(
                 # Once an exit is requested, a recovered price (or an
                 # unavailable underlying feed) must not cancel retries of
                 # that same ExitState/order identity after a failed attempt.
-                latched_reason = triggered_reason
-                latched_underlying_price = underlying_price
+                if latched_reason is None:
+                    # Persist before contacting the broker. A crash after the
+                    # trigger but before/while submitting must not let a
+                    # recovered price silently cancel the requested close.
+                    _persist_intent(triggered_reason, underlying_price)
+                    latched_reason = triggered_reason
+                    latched_underlying_price = underlying_price
                 result = _exit(triggered_reason, underlying_price)
                 if result is not None:
+                    if result.get("status") == "exited":
+                        _clear_intent()
                     if on_exit:
                         on_exit(result)
                     return result
@@ -291,10 +323,15 @@ def watch_and_exit(
     # than returning a failure that would falsely read as "handled".
     log.warning("%s: max monitor window (%.1fh) reached; continuing %s exit.",
                 contract_symbol, MAX_MONITOR_HOURS, latched_reason or "max_hold_timeout")
+    if latched_reason is None:
+        _persist_intent("max_hold_timeout", latched_underlying_price)
+        latched_reason = "max_hold_timeout"
     while True:
         try:
             result = _exit(latched_reason or "max_hold_timeout", latched_underlying_price)
             if result is not None:
+                if result.get("status") == "exited":
+                    _clear_intent()
                 if on_exit:
                     on_exit(result)
                 return result

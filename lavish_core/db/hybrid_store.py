@@ -139,6 +139,12 @@ def _json(obj: Any) -> str:
 SCHEMA_SQL: List[str] = [
     "CREATE TABLE IF NOT EXISTS fill_events (event_id TEXT PRIMARY KEY, fill_id TEXT)",
     "CREATE TABLE IF NOT EXISTS risk_reservations (client_id TEXT PRIMARY KEY, symbol TEXT, qty DOUBLE, price DOUBLE, multiplier DOUBLE, created_at TIMESTAMP)",
+    """CREATE TABLE IF NOT EXISTS exit_intents (
+        symbol TEXT PRIMARY KEY,
+        reason TEXT,
+        underlying_price DOUBLE,
+        triggered_at TIMESTAMP
+    )""",
     # -- risk limits as K/V so SELECT name,value works everywhere
     """
     CREATE TABLE IF NOT EXISTS risk_limits (
@@ -440,6 +446,39 @@ class HybridStore:
             return False, ""
         enabled, reason = rows[0]
         return bool(enabled), str(reason or "")
+
+    def set_exit_intent(self, symbol: str, reason: str, underlying_price=None) -> None:
+        """Durably latch a triggered exit until a verified close clears it."""
+        allowed = {
+            "her_target", "her_stop", "our_stop_loss", "our_trailing_stop",
+            "expiry_force_close", "max_hold_timeout",
+        }
+        if reason not in allowed:
+            raise ValueError("Invalid exit intent reason")
+        price = (finite_number(underlying_price, positive=True)
+                 if underlying_price is not None else None)
+        with _positions_lock:
+            self.execute(
+                "INSERT INTO exit_intents(symbol, reason, underlying_price, triggered_at) "
+                "VALUES (?, ?, ?, ?) ON CONFLICT(symbol) DO UPDATE SET "
+                "reason=excluded.reason, underlying_price=excluded.underlying_price, "
+                "triggered_at=excluded.triggered_at",
+                (symbol.upper(), reason, price, _utcnow()),
+            )
+
+    def get_exit_intent(self, symbol: str) -> Optional[Dict[str, Any]]:
+        rows = self.fetchall(
+            "SELECT reason, underlying_price, triggered_at FROM exit_intents WHERE symbol=?",
+            (symbol.upper(),),
+        )
+        if not rows:
+            return None
+        reason, price, triggered_at = rows[0]
+        return {"reason": reason, "underlying_price": price, "triggered_at": triggered_at}
+
+    def clear_exit_intent(self, symbol: str) -> None:
+        with _positions_lock:
+            self.execute("DELETE FROM exit_intents WHERE symbol=?", (symbol.upper(),))
 
     def try_claim_signal(self, claim_key: str, window_seconds: float) -> bool:
         """
