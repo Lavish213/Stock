@@ -63,22 +63,63 @@ def parse_occ_symbol(symbol: str) -> Optional[Dict[str, Any]]:
     }
 
 
+def _find_current_entry_identity(contract_symbol: str):
+    """Return ``(first_fill_time, order_id)`` for the current long lifecycle."""
+    store = HybridStore(duckdb_path=str(DEFAULT_DB))
+    try:
+        rows = store.fetchall(
+            "SELECT ts, id, order_id, side, qty FROM fills "
+            "WHERE symbol=? ORDER BY ts, id",
+            (contract_symbol,),
+        )
+    finally:
+        store.con.close()
+    open_qty = 0.0
+    entry_time = None
+    entry_order_id = None
+    for fill_time, _, order_id, side, quantity in rows:
+        quantity = float(quantity)
+        if side == "buy":
+            if open_qty <= 0:
+                entry_time = fill_time
+                entry_order_id = order_id
+            open_qty += quantity
+        else:
+            open_qty = max(0.0, open_qty - quantity)
+            if open_qty == 0:
+                entry_time = None
+                entry_order_id = None
+    return entry_time, entry_order_id
+
+
 def _find_original_target_stop(contract_symbol: str) -> Tuple[Optional[float], Optional[float]]:
     """
-    Looks up the most recent 'buy' order for this contract to recover her
+    Looks up the order that started the current open lifecycle to recover her
     original stated target/stop (persisted in its meta by trade_handler.py).
     Returns (None, None) on any lookup failure or if the order predates
     this field being persisted - callers must treat that the same as
     "she didn't give one", not as an error.
     """
     try:
+        _, entry_order_id = _find_current_entry_identity(contract_symbol)
         store = HybridStore(duckdb_path=str(DEFAULT_DB))
-        rows = store.fetchall(
-            "SELECT meta FROM orders WHERE symbol = ? AND side = 'buy' "
-            "AND (status IN ('filled','partially_filled') OR EXISTS "
-            "(SELECT 1 FROM fills WHERE fills.order_id=orders.id AND fills.side='buy')) ORDER BY ts DESC LIMIT 1",
-            (contract_symbol,),
-        )
+        if entry_order_id is not None:
+            rows = store.fetchall(
+                "SELECT meta FROM orders WHERE id=? AND symbol=? AND side='buy'",
+                (entry_order_id, contract_symbol),
+            )
+        elif not store.fetchall("SELECT 1 FROM fills WHERE symbol=? LIMIT 1", (contract_symbol,)):
+            # Backward compatibility for legacy ledgers that recorded a filled
+            # order but predate persisted fill rows. Never use this fallback
+            # when any lifecycle history exists, where it could resurrect a
+            # prior position's levels.
+            rows = store.fetchall(
+                "SELECT meta FROM orders WHERE symbol=? AND side='buy' "
+                "AND status='filled' ORDER BY ts DESC LIMIT 1",
+                (contract_symbol,),
+            )
+        else:
+            return None, None
         if not rows:
             return None, None
         meta_raw = rows[0][0]
@@ -106,30 +147,10 @@ def _find_latest_entry_time(contract_symbol: str):
     exit is preserved rather than silently discarded.
     """
     try:
-        store = HybridStore(duckdb_path=str(DEFAULT_DB))
-        rows = store.fetchall(
-            "SELECT ts, side, qty FROM fills WHERE symbol=? ORDER BY ts, id",
-            (contract_symbol,),
-        )
-        open_qty = 0.0
-        entry_time = None
-        for fill_time, side, quantity in rows:
-            quantity = float(quantity)
-            if side == "buy":
-                if open_qty <= 0:
-                    entry_time = fill_time
-                open_qty += quantity
-            else:
-                open_qty = max(0.0, open_qty - quantity)
-                if open_qty == 0:
-                    entry_time = None
-        return entry_time
+        return _find_current_entry_identity(contract_symbol)[0]
     except Exception as e:
         log.warning("reconcile: could not recover entry time for %s: %s", contract_symbol, e)
         return None
-    finally:
-        if 'store' in locals():
-            store.con.close()
 
 
 def reconcile_pending_orders(store=None):
