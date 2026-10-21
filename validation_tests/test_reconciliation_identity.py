@@ -98,6 +98,21 @@ def test_stale_response_cannot_reopen_an_order_completed_during_lookup(store, mo
     assert store.fetchall('SELECT status FROM orders WHERE id=?', (oid,))[0][0] == 'filled'
     assert store.get_position('AAPL')['qty'] == 3
 
+def test_inflight_sell_reconcile_cannot_overrun_confirmed_inventory(store, monkeypatch):
+    oid = pending(store, 'sell')
+    def lookup(_):
+        other = store.submit_order('AAPL', 'sell', 2)
+        store.log_fill(other, 'AAPL', 'sell', 2, 105)
+        return dict(id='remote', symbol='AAPL', side='sell',
+                    client_order_id='recover', qty=3, status='filled',
+                    filled_qty=3, filled_avg_price=110, filled_fee=0)
+    monkeypatch.setattr(rc, 'get_order_by_client_id', lookup)
+    assert rc.reconcile_pending_orders(store) == 0
+    assert store.get_position('AAPL')['qty'] == 1
+    assert not store.fetchall('SELECT 1 FROM fills WHERE order_id=?', (oid,))
+    assert store.fetchall('SELECT status FROM orders WHERE id=?', (oid,))[0][0] == 'fill_unverified'
+    assert store.get_kill_switch()[0]
+
 def test_tradier_lookup_requests_tags_and_follows_all_pages(monkeypatch):
     monkeypatch.setattr(bt,'_check_keys',lambda:None)
     monkeypatch.setattr(bt,'_account_id',lambda:'test')
