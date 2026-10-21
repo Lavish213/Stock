@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -63,6 +64,196 @@ def test_reconcile_passes_durable_intent_but_positive_control_has_none(store, mo
     assert by_symbol[symbol]["resume_exit_reason"] == "our_stop_loss"
     assert by_symbol[symbol]["resume_underlying_price"] == 700
     assert by_symbol[control]["resume_exit_reason"] is None
+
+
+def test_reconcile_does_not_attach_old_intent_to_a_later_entry(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    oid = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "1", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] is None
+    assert store.get_exit_intent(symbol) is None
+    assert store.get_kill_switch()[0]
+
+
+def test_reconcile_uses_delayed_fill_time_not_earlier_submission(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    oid = store.submit_order(symbol, "buy", 1, status="submitted")
+    store.set_exit_intent(symbol, "her_stop", 90)
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "1", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] is None
+    assert store.get_exit_intent(symbol) is None
+    assert store.get_kill_switch()[0]
+
+
+def test_reconcile_keeps_intent_during_later_partial_fill_of_same_order(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    oid = store.submit_order(symbol, "buy", 2, status="partially_filled")
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "2", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] == "her_stop"
+    assert store.get_exit_intent(symbol)["reason"] == "her_stop"
+    assert not store.get_kill_switch()[0]
+
+
+def test_reconcile_keeps_intent_when_add_on_buy_extends_same_open_position(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    original = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(original, symbol, "buy", 1, 1)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    add_on = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(add_on, symbol, "buy", 1, 1)
+    # Make the lifecycle ordering explicit instead of relying on the database's
+    # timestamp precision during this fast synthetic mutation.
+    opened_at = datetime(2026, 10, 20, 14, tzinfo=timezone.utc)
+    store.execute("UPDATE orders SET ts=? WHERE id=?", (opened_at, original))
+    store.execute("UPDATE fills SET ts=? WHERE order_id=?", (opened_at, original))
+    store.execute(
+        "UPDATE exit_intents SET triggered_at=? WHERE symbol=?",
+        (opened_at + timedelta(minutes=1), symbol),
+    )
+    store.execute("UPDATE orders SET ts=? WHERE id=?", (opened_at + timedelta(minutes=2), add_on))
+    store.execute("UPDATE fills SET ts=? WHERE order_id=?", (opened_at + timedelta(minutes=2), add_on))
+    assert reconcile._find_latest_entry_time(symbol) == opened_at.replace(tzinfo=None)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "2", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] == "her_stop"
+    assert store.get_exit_intent(symbol)["reason"] == "her_stop"
+    assert not store.get_kill_switch()[0]
+
+
+def test_recovered_levels_come_from_order_that_started_current_open_lifecycle(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    original = store.submit_order(
+        symbol, "buy", 1, status="filled",
+        meta={"target_underlying": 780, "stop_underlying": 760},
+    )
+    store.log_fill(original, symbol, "buy", 1, 1)
+    add_on = store.submit_order(symbol, "buy", 1, status="filled", meta={})
+    store.log_fill(add_on, symbol, "buy", 1, 1)
+    store.submit_order(
+        symbol, "buy", 1, status="partially_filled",
+        meta={"target_underlying": 999, "stop_underlying": 998},
+    )
+
+    assert reconcile._find_original_target_stop(symbol) == (780, 760)
+
+
+def test_unfilled_newer_order_cannot_hide_confirmed_entry_from_stale_check(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    confirmed = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(confirmed, symbol, "buy", 1, 1)
+    store.submit_order(symbol, "buy", 1, status="partially_filled")
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "1", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] is None
+    assert store.get_exit_intent(symbol) is None
+    assert store.get_kill_switch()[0]
+
+
+def test_reconcile_keeps_intent_triggered_after_current_entry(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    oid = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "1", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] == "her_stop"
+    assert store.get_exit_intent(symbol)["reason"] == "her_stop"
+    assert not store.get_kill_switch()[0]
 
 
 def test_resumed_intent_closes_after_price_recovers_and_clears_journal(store, monkeypatch):
