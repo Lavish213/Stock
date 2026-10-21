@@ -96,26 +96,34 @@ def _find_original_target_stop(contract_symbol: str) -> Tuple[Optional[float], O
 
 
 def _find_latest_entry_time(contract_symbol: str):
-    """Return the latest confirmed local buy time for an option contract.
+    """Return the start of the current confirmed long-position lifecycle.
 
     Exit intents are keyed by OCC symbol, which can be reused after a prior
-    position closes.  The timestamp lets reconciliation distinguish an intent
-    belonging to that prior position from one belonging to the current entry.
+    position closes.  Replaying confirmed fills lets reconciliation distinguish
+    an intent belonging to that prior position from one belonging to the current
+    entry without mistaking a later add-on buy for a brand-new position.
     Lookup failure deliberately returns ``None`` so a possibly valid latched
     exit is preserved rather than silently discarded.
     """
     try:
         store = HybridStore(duckdb_path=str(DEFAULT_DB))
         rows = store.fetchall(
-            "SELECT MIN(fills.ts) FROM orders JOIN fills ON fills.order_id=orders.id "
-            "AND fills.side='buy' WHERE orders.id = ("
-            "SELECT o.id FROM orders o WHERE o.symbol = ? AND o.side = 'buy' "
-            "AND EXISTS "
-            "(SELECT 1 FROM fills f2 WHERE f2.order_id=o.id AND f2.side='buy') "
-            "ORDER BY o.ts DESC LIMIT 1)",
+            "SELECT ts, side, qty FROM fills WHERE symbol=? ORDER BY ts, id",
             (contract_symbol,),
         )
-        return rows[0][0] if rows and rows[0][0] is not None else None
+        open_qty = 0.0
+        entry_time = None
+        for fill_time, side, quantity in rows:
+            quantity = float(quantity)
+            if side == "buy":
+                if open_qty <= 0:
+                    entry_time = fill_time
+                open_qty += quantity
+            else:
+                open_qty = max(0.0, open_qty - quantity)
+                if open_qty == 0:
+                    entry_time = None
+        return entry_time
     except Exception as e:
         log.warning("reconcile: could not recover entry time for %s: %s", contract_symbol, e)
         return None
