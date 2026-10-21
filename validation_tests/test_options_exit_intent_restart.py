@@ -185,6 +185,24 @@ def test_reconcile_keeps_intent_when_add_on_buy_extends_same_open_position(store
     assert not store.get_kill_switch()[0]
 
 
+def test_recovered_levels_come_from_order_that_started_current_open_lifecycle(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    original = store.submit_order(
+        symbol, "buy", 1, status="filled",
+        meta={"target_underlying": 780, "stop_underlying": 760},
+    )
+    store.log_fill(original, symbol, "buy", 1, 1)
+    add_on = store.submit_order(symbol, "buy", 1, status="filled", meta={})
+    store.log_fill(add_on, symbol, "buy", 1, 1)
+    store.submit_order(
+        symbol, "buy", 1, status="partially_filled",
+        meta={"target_underlying": 999, "stop_underlying": 998},
+    )
+
+    assert reconcile._find_original_target_stop(symbol) == (780, 760)
+
+
 def test_unfilled_newer_order_cannot_hide_confirmed_entry_from_stale_check(store, monkeypatch):
     symbol = "SPY261016C00770000"
     monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
