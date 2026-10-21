@@ -117,6 +117,33 @@ def test_reconcile_uses_delayed_fill_time_not_earlier_submission(store, monkeypa
     assert store.get_kill_switch()[0]
 
 
+def test_reconcile_keeps_intent_during_later_partial_fill_of_same_order(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    oid = store.submit_order(symbol, "buy", 2, status="partially_filled")
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    store.log_fill(oid, symbol, "buy", 1, 1)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "2", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] == "her_stop"
+    assert store.get_exit_intent(symbol)["reason"] == "her_stop"
+    assert not store.get_kill_switch()[0]
+
+
 def test_reconcile_keeps_intent_triggered_after_current_entry(store, monkeypatch):
     symbol = "SPY261016C00770000"
     monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
