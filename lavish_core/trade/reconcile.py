@@ -107,13 +107,13 @@ def _find_latest_entry_time(contract_symbol: str):
     try:
         store = HybridStore(duckdb_path=str(DEFAULT_DB))
         rows = store.fetchall(
-            "SELECT ts FROM orders WHERE symbol = ? AND side = 'buy' "
-            "AND (status IN ('filled','partially_filled') OR EXISTS "
-            "(SELECT 1 FROM fills WHERE fills.order_id=orders.id AND fills.side='buy')) "
-            "ORDER BY ts DESC LIMIT 1",
+            "SELECT MAX(fills.ts) FROM orders JOIN fills ON fills.order_id=orders.id "
+            "AND fills.side='buy' WHERE orders.symbol = ? AND orders.side = 'buy' "
+            "AND (orders.status IN ('filled','partially_filled') OR EXISTS "
+            "(SELECT 1 FROM fills f2 WHERE f2.order_id=orders.id AND f2.side='buy'))",
             (contract_symbol,),
         )
-        return rows[0][0] if rows else None
+        return rows[0][0] if rows and rows[0][0] is not None else None
     except Exception as e:
         log.warning("reconcile: could not recover entry time for %s: %s", contract_symbol, e)
         return None
