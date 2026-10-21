@@ -95,6 +95,33 @@ def _find_original_target_stop(contract_symbol: str) -> Tuple[Optional[float], O
             store.con.close()
 
 
+def _find_latest_entry_time(contract_symbol: str):
+    """Return the latest confirmed local buy time for an option contract.
+
+    Exit intents are keyed by OCC symbol, which can be reused after a prior
+    position closes.  The timestamp lets reconciliation distinguish an intent
+    belonging to that prior position from one belonging to the current entry.
+    Lookup failure deliberately returns ``None`` so a possibly valid latched
+    exit is preserved rather than silently discarded.
+    """
+    try:
+        store = HybridStore(duckdb_path=str(DEFAULT_DB))
+        rows = store.fetchall(
+            "SELECT ts FROM orders WHERE symbol = ? AND side = 'buy' "
+            "AND (status IN ('filled','partially_filled') OR EXISTS "
+            "(SELECT 1 FROM fills WHERE fills.order_id=orders.id AND fills.side='buy')) "
+            "ORDER BY ts DESC LIMIT 1",
+            (contract_symbol,),
+        )
+        return rows[0][0] if rows else None
+    except Exception as e:
+        log.warning("reconcile: could not recover entry time for %s: %s", contract_symbol, e)
+        return None
+    finally:
+        if 'store' in locals():
+            store.con.close()
+
+
 def reconcile_pending_orders(store=None):
     """Resolve durable pending entries without ever issuing another POST.
 
@@ -236,6 +263,24 @@ def reconcile_open_positions() -> int:
         intent_store = HybridStore(DEFAULT_DB)
         try:
             exit_intent = intent_store.get_exit_intent(symbol)
+            entry_time = _find_latest_entry_time(symbol)
+            if (exit_intent and entry_time is not None
+                    and exit_intent["triggered_at"] < entry_time):
+                log.error(
+                    "reconcile: stale exit intent for %s predates the latest confirmed entry; "
+                    "clearing it and halting new entries while normal guardrails are restored.",
+                    symbol,
+                )
+                intent_store.clear_exit_intent(symbol)
+                intent_store.set_kill_switch(
+                    True, f"Stale exit intent superseded by newer entry: {symbol}",
+                )
+                post_discord(
+                    f"⚠️ Stale exit intent for {symbol} predates its latest confirmed entry. "
+                    "The old intent was quarantined, new entries were halted, and normal "
+                    "guardrails are being restored for the current position."
+                )
+                exit_intent = None
         finally:
             intent_store.con.close()
 
