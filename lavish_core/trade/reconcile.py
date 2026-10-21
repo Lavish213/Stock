@@ -210,6 +210,10 @@ def reconcile_pending_orders(store=None):
                     delta = cumulative-recorded
                     if delta < 0:
                         raise ValueError("Broker fill regressed")
+                    if delta > 0 and local["side"] == "sell":
+                        position = store.get_position(local["symbol"])
+                        if not position or delta > position["qty"]:
+                            raise ValueError("Sell fill exceeds confirmed inventory")
                     fee = finite_number(remote.get('filled_fee', recorded_fee), nonnegative=True) - recorded_fee
                     if fee < 0:
                         raise ValueError('Broker execution fee regressed')
