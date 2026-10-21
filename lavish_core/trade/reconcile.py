@@ -25,6 +25,7 @@ from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB, _positions_lock
 log = logging.getLogger("reconcile")
 
 RECONCILE_INTERVAL_SECONDS = float(os.getenv("RECONCILE_INTERVAL_SECONDS", "120"))
+QTY_TOLERANCE = 1e-12
 
 # OCC symbol: TICKER + YYMMDD + C/P + strike*1000 zero-padded to 8 digits
 _OCC_RE = re.compile(r"^([A-Z]+)(\d{6})([CP])(\d{8})$")
@@ -165,6 +166,12 @@ def reconcile_pending_orders(store=None):
     resolved = 0
     try:
         for local in store.get_open_orders():
+            # ExitState owns its tagged closing-order recovery. In particular,
+            # a quarantined journal must not be revived here after ExitState
+            # has found an ambiguous set of closing orders.
+            if (local.get("meta", {}).get("exit_state")
+                    and local.get("status") == "fill_unverified"):
+                continue
             client_id = local.get("client_id")
             if not client_id or local.get("venue") not in ("paper", "live"):
                 continue
@@ -192,6 +199,11 @@ def reconcile_pending_orders(store=None):
                     if current[0] in terminal:
                         continue
                     meta = json.loads(current[1] or '{}')
+                    # ExitState may have quarantined this journal while the
+                    # broker lookup was in flight. Recheck under the shared
+                    # lock so a stale sweep cannot override that decision.
+                    if current[0] == 'fill_unverified' and meta.get('exit_state'):
+                        continue
                     if meta.get('broker_id') and str(meta['broker_id']) != str(remote['id']):
                         raise ValueError('Broker order ID changed')
                     rows = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0),coalesce(sum(fee),0) FROM fills WHERE order_id=? AND side=?", (local["id"],local["side"]))
@@ -199,6 +211,17 @@ def reconcile_pending_orders(store=None):
                     delta = cumulative-recorded
                     if delta < 0:
                         raise ValueError("Broker fill regressed")
+                    if delta > 0 and local["side"] == "sell":
+                        position = store.get_position(local["symbol"])
+                        if (not position
+                                or delta - position["qty"] > QTY_TOLERANCE):
+                            raise ValueError("Sell fill exceeds confirmed inventory")
+                        # A cumulative broker quantity and the locally summed
+                        # fills can differ by binary-float residue. Close the
+                        # confirmed remainder, rather than writing a tiny
+                        # negative position, when that overrun is in tolerance.
+                        if delta > position["qty"]:
+                            delta = position["qty"]
                     fee = finite_number(remote.get('filled_fee', recorded_fee), nonnegative=True) - recorded_fee
                     if fee < 0:
                         raise ValueError('Broker execution fee regressed')

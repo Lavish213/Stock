@@ -28,20 +28,43 @@ class ExitState:
 
     def _start_journal(self):
         if self.db_path is None:
-            return
+            return True
         from lavish_core.db.hybrid_store import _positions_lock
         with _positions_lock:
             store = self._store()
             try:
-                for order in store.get_open_orders(self.symbol):
-                    if order["side"] == "sell" and order["meta"].get("exit_state"):
-                        self.journal_id = order["id"]
-                        self.client_id = order["client_id"]
-                        self.baseline_qty,self.baseline_notional = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0) FROM fills WHERE order_id=?",(self.journal_id,))[0]
-                        self.unknown = True
-                        self.adopted = True
-                        return
+                candidates = [
+                    order for order in store.get_open_orders(self.symbol)
+                    if order["side"] == "sell" and order["meta"].get("exit_state")
+                ]
+                ambiguous = (
+                    len(candidates) > 1
+                    or (
+                        len(candidates) == 1
+                        and (
+                            candidates[0]["venue"] != self.venue
+                            or not candidates[0]["client_id"]
+                        )
+                    )
+                )
+                if ambiguous:
+                    for order in candidates:
+                        store.set_order_status(order["id"], "fill_unverified")
+                    store.set_kill_switch(
+                        True,
+                        "Closing order identity ambiguous; broker reconciliation required",
+                    )
+                    return False
+                if candidates:
+                    order = candidates[0]
+                    self.journal_id = order["id"]
+                    self.client_id = order["client_id"]
+                    self.baseline_qty,self.baseline_notional = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0) FROM fills WHERE order_id=?",(self.journal_id,))[0]
+                    self.unknown = True
+                    self.adopted = True
+                    return True
                 self.journal_id = store.submit_order(self.symbol,"sell",self.remaining,venue=self.venue,status="pending_submit",client_id=self.client_id,meta={"exit_state":True})
+                return True
             finally:
                 store.con.close()
 
@@ -138,7 +161,8 @@ class ExitState:
                 return None
             self.client_id = self.retry_client_id or ('exit_' + uuid.uuid4().hex[:24])
             self.retry_client_id = None
-            self._start_journal()
+            if not self._start_journal():
+                return {'status':'fill_unverified','reason':'reconciliation_required'}
             if self.adopted:
                 return None
             try:

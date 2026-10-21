@@ -98,6 +98,39 @@ def test_stale_response_cannot_reopen_an_order_completed_during_lookup(store, mo
     assert store.fetchall('SELECT status FROM orders WHERE id=?', (oid,))[0][0] == 'filled'
     assert store.get_position('AAPL')['qty'] == 3
 
+def test_inflight_sell_reconcile_cannot_overrun_confirmed_inventory(store, monkeypatch):
+    oid = pending(store, 'sell')
+    def lookup(_):
+        other = store.submit_order('AAPL', 'sell', 2)
+        store.log_fill(other, 'AAPL', 'sell', 2, 105)
+        return dict(id='remote', symbol='AAPL', side='sell',
+                    client_order_id='recover', qty=3, status='filled',
+                    filled_qty=3, filled_avg_price=110, filled_fee=0)
+    monkeypatch.setattr(rc, 'get_order_by_client_id', lookup)
+    assert rc.reconcile_pending_orders(store) == 0
+    assert store.get_position('AAPL')['qty'] == 1
+    assert not store.fetchall('SELECT 1 FROM fills WHERE order_id=?', (oid,))
+    assert store.fetchall('SELECT status FROM orders WHERE id=?', (oid,))[0][0] == 'fill_unverified'
+    assert store.get_kill_switch()[0]
+
+def test_fractional_sell_inventory_comparison_tolerates_float_residue(store, monkeypatch):
+    for _ in range(8):
+        entry = store.submit_order('AAPL', 'buy', .1)
+        store.log_fill(entry, 'AAPL', 'buy', .1, 100)
+    oid = store.submit_order(
+        'AAPL', 'sell', .8, venue='paper', status='submission_unknown',
+        client_id='recover', meta={'broker_id': 'remote', 'source': 'test'},
+    )
+    store.log_fill(oid, 'AAPL', 'sell', .7, 100)
+    store.set_order_status(oid, 'submission_unknown')
+    remote = dict(id='remote', symbol='AAPL', side='sell',
+                  client_order_id='recover', qty=.8, status='filled',
+                  filled_qty=.8, filled_avg_price=100, filled_fee=0)
+    monkeypatch.setattr(rc, 'get_order_by_client_id', lambda _: remote)
+    assert rc.reconcile_pending_orders(store) == 1
+    assert store.get_position('AAPL') is None
+    assert not store.get_kill_switch()[0]
+
 def test_tradier_lookup_requests_tags_and_follows_all_pages(monkeypatch):
     monkeypatch.setattr(bt,'_check_keys',lambda:None)
     monkeypatch.setattr(bt,'_account_id',lambda:'test')
