@@ -37,12 +37,22 @@ class ExitState:
                     order for order in store.get_open_orders(self.symbol)
                     if order["side"] == "sell" and order["meta"].get("exit_state")
                 ]
-                if len(candidates) > 1:
+                ambiguous = (
+                    len(candidates) > 1
+                    or (
+                        len(candidates) == 1
+                        and (
+                            candidates[0]["venue"] != self.venue
+                            or not candidates[0]["client_id"]
+                        )
+                    )
+                )
+                if ambiguous:
                     for order in candidates:
                         store.set_order_status(order["id"], "fill_unverified")
                     store.set_kill_switch(
                         True,
-                        "Multiple unresolved closing orders; broker reconciliation required",
+                        "Closing order identity ambiguous; broker reconciliation required",
                     )
                     return False
                 if candidates:
