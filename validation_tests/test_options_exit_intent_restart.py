@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -124,6 +125,46 @@ def test_reconcile_keeps_intent_during_later_partial_fill_of_same_order(store, m
     store.log_fill(oid, symbol, "buy", 1, 1)
     store.set_exit_intent(symbol, "her_stop", 90)
     store.log_fill(oid, symbol, "buy", 1, 1)
+    monkeypatch.setattr(
+        reconcile,
+        "get_positions",
+        lambda: [{
+            "asset_class": "us_option", "side": "long", "symbol": symbol,
+            "qty": "2", "avg_entry_price": "1",
+        }],
+    )
+    monkeypatch.setattr(reconcile, "_find_original_target_stop", lambda _: (None, None))
+    launch = Mock()
+    monkeypatch.setattr(reconcile, "watch_and_exit_async", launch)
+    monkeypatch.setattr(reconcile, "post_discord", Mock())
+    reconcile._watched.clear()
+
+    assert reconcile.reconcile_open_positions() == 1
+    assert launch.call_args.kwargs["resume_exit_reason"] == "her_stop"
+    assert store.get_exit_intent(symbol)["reason"] == "her_stop"
+    assert not store.get_kill_switch()[0]
+
+
+def test_reconcile_keeps_intent_when_add_on_buy_extends_same_open_position(store, monkeypatch):
+    symbol = "SPY261016C00770000"
+    monkeypatch.setattr(reconcile, "DEFAULT_DB", store.db_path)
+    original = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(original, symbol, "buy", 1, 1)
+    store.set_exit_intent(symbol, "her_stop", 90)
+    add_on = store.submit_order(symbol, "buy", 1, status="filled")
+    store.log_fill(add_on, symbol, "buy", 1, 1)
+    # Make the lifecycle ordering explicit instead of relying on the database's
+    # timestamp precision during this fast synthetic mutation.
+    opened_at = datetime(2026, 10, 20, 14, tzinfo=timezone.utc)
+    store.execute("UPDATE orders SET ts=? WHERE id=?", (opened_at, original))
+    store.execute("UPDATE fills SET ts=? WHERE order_id=?", (opened_at, original))
+    store.execute(
+        "UPDATE exit_intents SET triggered_at=? WHERE symbol=?",
+        (opened_at + timedelta(minutes=1), symbol),
+    )
+    store.execute("UPDATE orders SET ts=? WHERE id=?", (opened_at + timedelta(minutes=2), add_on))
+    store.execute("UPDATE fills SET ts=? WHERE order_id=?", (opened_at + timedelta(minutes=2), add_on))
+    assert reconcile._find_latest_entry_time(symbol) == opened_at.replace(tzinfo=None)
     monkeypatch.setattr(
         reconcile,
         "get_positions",
