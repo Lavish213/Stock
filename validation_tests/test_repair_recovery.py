@@ -148,6 +148,33 @@ def test_restart_quarantines_multiple_open_exit_journals(store,monkeypatch):
  assert not store.fetchall("SELECT 1 FROM fills WHERE side='sell'")
  broker_lookup.assert_not_called()
 
+def test_inflight_generic_reconcile_honors_exit_quarantine(store,monkeypatch):
+ oid=store.submit_order('AAPL','buy',2);store.log_fill(oid,'AAPL','buy',2,100)
+ for client_id in ('exit-first','exit-second'):
+  store.submit_order(
+   'AAPL','sell',2,venue='paper',status='submission_unknown',
+   client_id=client_id,meta={'exit_state':True},
+  )
+ quarantined=False
+ def broker_lookup(_):
+  nonlocal quarantined
+  if not quarantined:
+   state=ExitState(2,db_path=store.db_path,symbol='AAPL')
+   result=attempt(state,Mock(),Mock(),Mock(),Mock())
+   assert result=={'status':'fill_unverified','reason':'reconciliation_required'}
+   quarantined=True
+  return {
+   'id':'broker-close','status':'filled','symbol':'AAPL','side':'sell',
+   'qty':2,'filled_qty':2,'filled_avg_price':110,'filled_fee':0,
+  }
+ monkeypatch.setattr(rc,'get_order_by_client_id',broker_lookup)
+ assert rc.reconcile_pending_orders(store)==0
+ assert store.get_position('AAPL')['qty']==2
+ assert not store.fetchall("SELECT 1 FROM fills WHERE side='sell'")
+ assert store.fetchall(
+  "SELECT status FROM orders WHERE side='sell' ORDER BY client_id"
+ )==[('fill_unverified',),('fill_unverified',)]
+
 @pytest.mark.parametrize(
  ('venue','client_id'),
  [('live','live-exit'),('paper',None)],
