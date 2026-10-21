@@ -120,6 +120,25 @@ def test_durable_exit_can_resume_after_partial_fill_and_restart(store):
  assert store.get_position('AAPL') is None;no_post.assert_not_called()
  assert store.fetchall("SELECT sum(qty) FROM fills WHERE side='sell'")[0][0]==5
 
+def test_restart_quarantines_multiple_open_exit_journals(store):
+ oid=store.submit_order('AAPL','buy',2);store.log_fill(oid,'AAPL','buy',2,100)
+ for client_id in ('exit-first','exit-second'):
+  store.submit_order(
+   'AAPL','sell',2,venue='paper',status='submission_unknown',
+   client_id=client_id,meta={'exit_state':True},
+  )
+ state=ExitState(2,db_path=store.db_path,symbol='AAPL')
+ submit=Mock(side_effect=AssertionError('ambiguous journals must never submit'))
+ lookup=Mock(side_effect=AssertionError('ambiguous journal identity must be reviewed'))
+ result=attempt(state,submit,lookup,Mock(),Mock())
+ assert result=={'status':'fill_unverified','reason':'reconciliation_required'}
+ assert store.fetchall(
+  "SELECT status FROM orders WHERE side='sell' ORDER BY client_id"
+ )==[('fill_unverified',),('fill_unverified',)]
+ assert store.get_position('AAPL')['qty']==2
+ assert store.get_kill_switch()[0]
+ submit.assert_not_called();lookup.assert_not_called()
+
 def test_report_matches_entry_before_window_to_exit_inside_window(store,monkeypatch):
  from datetime import datetime,timezone,timedelta
  from lavish_core.reporting import track_record as report
