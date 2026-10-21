@@ -25,6 +25,7 @@ from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB, _positions_lock
 log = logging.getLogger("reconcile")
 
 RECONCILE_INTERVAL_SECONDS = float(os.getenv("RECONCILE_INTERVAL_SECONDS", "120"))
+QTY_TOLERANCE = 1e-12
 
 # OCC symbol: TICKER + YYMMDD + C/P + strike*1000 zero-padded to 8 digits
 _OCC_RE = re.compile(r"^([A-Z]+)(\d{6})([CP])(\d{8})$")
@@ -212,8 +213,15 @@ def reconcile_pending_orders(store=None):
                         raise ValueError("Broker fill regressed")
                     if delta > 0 and local["side"] == "sell":
                         position = store.get_position(local["symbol"])
-                        if not position or delta > position["qty"]:
+                        if (not position
+                                or delta - position["qty"] > QTY_TOLERANCE):
                             raise ValueError("Sell fill exceeds confirmed inventory")
+                        # A cumulative broker quantity and the locally summed
+                        # fills can differ by binary-float residue. Close the
+                        # confirmed remainder, rather than writing a tiny
+                        # negative position, when that overrun is in tolerance.
+                        if delta > position["qty"]:
+                            delta = position["qty"]
                     fee = finite_number(remote.get('filled_fee', recorded_fee), nonnegative=True) - recorded_fee
                     if fee < 0:
                         raise ValueError('Broker execution fee regressed')
