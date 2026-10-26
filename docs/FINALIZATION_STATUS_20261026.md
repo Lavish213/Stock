@@ -78,7 +78,10 @@ a pinned NautilusTrader research-only differential harness afterward. Replay
 the same timestamped events through both engines, compare orders/fills/cash,
 stress latency/fees/partial liquidity, and investigate discrepancies. No new
 engine can supply missing historical quotes or authenticate creator timestamps.
-No new framework was installed or connected to a broker in this change.
+Follow-up preparation installed stable NautilusTrader 1.231.0 in an isolated
+research environment. Nine synthetic engine smoke variations passed; no broker
+was connected and no production dependency changed. See
+`research/nautilus/README.md` and its hashed evidence receipts.
 
 Sources:
 - https://nautilustrader.io/docs/latest/concepts/behavioral_models/
@@ -89,6 +92,14 @@ Sources:
 
 ## Validation
 
-Final results are recorded in the pull request with exact scope. All local
-tests block unmocked external I/O. Synthetic adapter calls are not broker orders.
+PR #35 candidate: a fresh verbose full-suite run completed with **3,518 passed,
+2 skipped in 183.28 seconds** (3,520 collected); GitHub CI run 40254258863 on
+`ef7d4122a648035a2b2f147eaa1b4feed3d80692` passed. The earlier invocation
+ended without a completion summary and remains incomplete; its precise cause
+is undetermined. A fresh pass does not retroactively turn that run into a pass.
+Focused context/ingestion/candle/entry/exit checks: 149 passed in 20.69 seconds
+(overlapping the full run). Nine optional Nautilus argument-guard tests passed
+separately after the full run was collected. These counts are not additive
+independent strategy samples. Changed-source Bandit and whitespace checks pass.
+All core tests block unmocked external I/O. Synthetic adapter calls are not broker orders.
 No account reset, halt bypass, budget change, live activation or deployment.

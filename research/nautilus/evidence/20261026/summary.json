@@ -1,0 +1,75 @@
+{
+  "synthetic": true,
+  "creator_replay": false,
+  "profitability_evidence": false,
+  "real_broker_orders": 0,
+  "expected_cases": 9,
+  "observed_cases": 9,
+  "passed": true,
+  "outcomes": [
+    {
+      "file": "q1-latency0.json",
+      "quantity": 1,
+      "latency_ns": 0,
+      "passed": true,
+      "sha256": "060aff0fa5b52bb166830ae39e1409be534c90b03d5d8b72568b940e7d37700a"
+    },
+    {
+      "file": "q1-latency100000000.json",
+      "quantity": 1,
+      "latency_ns": 100000000,
+      "passed": true,
+      "sha256": "9ab7407e4463ddc24f7c359a212b7584d993f41aee31f2d1c82813d7fdb96ff6"
+    },
+    {
+      "file": "q1-latency1500000000.json",
+      "quantity": 1,
+      "latency_ns": 1500000000,
+      "passed": true,
+      "sha256": "afb98f5ff37b61fab68fcd026767905938b62ce30b8646d209172e0ea49b0eb9"
+    },
+    {
+      "file": "q2-latency0.json",
+      "quantity": 2,
+      "latency_ns": 0,
+      "passed": true,
+      "sha256": "12f6cc0f83bff5fba3ee0a03a521cfeee1cc7dd7f4aa67b882a7b51d1bafd439"
+    },
+    {
+      "file": "q2-latency100000000.json",
+      "quantity": 2,
+      "latency_ns": 100000000,
+      "passed": true,
+      "sha256": "dba2c5f1bdb322ed861f0f707fd668bdbb139da518575e2e111fcf535c3ac25a"
+    },
+    {
+      "file": "q2-latency1500000000.json",
+      "quantity": 2,
+      "latency_ns": 1500000000,
+      "passed": true,
+      "sha256": "be1071e59a8309885ca3fd48b2e370521a808d582de211c9c13fd3aed2d7ae41"
+    },
+    {
+      "file": "q3-latency0.json",
+      "quantity": 3,
+      "latency_ns": 0,
+      "passed": true,
+      "sha256": "f59e482f39efba3f3b520897cb503265cfb3ea113db80bafd82de36d7f34c29b"
+    },
+    {
+      "file": "q3-latency100000000.json",
+      "quantity": 3,
+      "latency_ns": 100000000,
+      "passed": true,
+      "sha256": "de75f2d0259a4cfa638f48ec41b14eed912b24ec97d20023c2e71bfd80c01ff8"
+    },
+    {
+      "file": "q3-latency1500000000.json",
+      "quantity": 3,
+      "latency_ns": 1500000000,
+      "passed": true,
+      "sha256": "c4070dd8f0586eb6e16d3b884977740e17f0397081e8c9a68f7e9b5adcb0a0b4"
+    }
+  ],
+  "scope": "One invented options tape; nine parameter variations, not nine independent market samples"
+}
