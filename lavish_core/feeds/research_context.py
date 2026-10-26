@@ -27,6 +27,16 @@ def research_source(source: str) -> bool:
 
 def requires_confirmation(text: str) -> bool:
     """Literal source constraints; contract details cannot override them."""
+    text = ' '.join(text.split())
+    # These describe prerequisites, not evidence that a candle/retest actually
+    # happened. Never promote them from prose alone. In particular, "confirmed
+    # five-minute hold" on a setup card is not authenticated market data.
+    interval = r'(?:five|5)(?:[- ]minute|\s*m(?:in(?:ute)?s?)?)'
+    if re.search(
+            rf'\b{interval}\s+(?:(?:candle|bar)\s+)?(?:close[sd]?|hold)\b'
+            r'|\b(?:wait\s+for|only\s+enter\s+after|(?:entry|trade|setup)\s+(?:requires?|needs?))'
+            r'[^.!?]{0,80}\bretest\b', text, re.I):
+        return True
     return bool(re.search(
         r'\bwait(?:ing)?\s+for\s+(?:market\s+)?confirmation\b'
         r'|\bnot\s+(?:an?\s+)?automatic\s+entr(?:y|ies)\b'
@@ -80,6 +90,9 @@ def classify(text: str) -> dict:
     normalized = ' '.join(text.lower().split())
     if re.search(r'\b(?:take|sell|trim)\s+(?:\d+(?:\.\d+)?\s*%|half|a quarter)(?!\w)|\btake\s+\d+(?:\.\d+)?\s*%\s+(?:of\s+)?profits|\bride the rest\b', normalized):
         kind = 'position_management'
+    elif re.search(r'\b(?:setup|trade)\s+(?:(?:is|has\s+been)\s+)?(?:retired|invalidated|cancelled|canceled)\b'
+                   r'|\bnot\s+(?:a\s+)?new\s+entry\b', normalized):
+        kind = 'progress_update'
     elif requires_confirmation(normalized):
         kind = 'conditional_setup'
     elif re.search(r'\bwent\s+from\s+\$?\d+(?:\.\d+)?\s*(?:a\s+contract\s+)?to\s+\$?\d+(?:\.\d+)?\b|\bno\s+valid\s+(?:call|put|entry|trade)\b', normalized):
