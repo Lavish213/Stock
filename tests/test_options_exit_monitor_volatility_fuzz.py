@@ -16,8 +16,18 @@ from __future__ import annotations
 
 import random
 from unittest.mock import patch
+import pytest
 
 import lavish_core.trade.options_exit_monitor as oem
+from lavish_core.db.hybrid_store import HybridStore
+
+
+@pytest.fixture(autouse=True)
+def isolated_monitor_ledger(tmp_path, monkeypatch):
+    db_path = tmp_path / "options-fuzz.duckdb"
+    store = HybridStore(db_path)
+    store.con.close()
+    monkeypatch.setattr(oem, "DEFAULT_DB", db_path)
 
 
 class _FakeClock:
@@ -88,6 +98,12 @@ def _run_case(premiums, entry_price, option_side="call", max_hold_hours=0.02, ca
     # about the value of.
     strike_suffix = f"{abs(hash(case_id)) % 10**8:08d}"
     contract_symbol = f"ZZZQ260101C{strike_suffix}"
+    store = HybridStore(oem.DEFAULT_DB)
+    try:
+        oid = store.submit_order(contract_symbol, "buy", 1)
+        store.log_fill(oid, contract_symbol, "buy", 1, entry_price)
+    finally:
+        store.con.close()
     clock = _FakeClock(step=oem.POLL_INTERVAL_SEC)
 
     def fake_place_option_order(contract_symbol, side, qty, order_type="limit", limit_price=None, client_order_id=None):

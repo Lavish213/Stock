@@ -31,7 +31,8 @@ def requires_confirmation(text: str) -> bool:
     # These describe prerequisites, not evidence that a candle/retest actually
     # happened. Never promote them from prose alone. In particular, "confirmed
     # five-minute hold" on a setup card is not authenticated market data.
-    interval = r'(?:five|5)(?:[- ]minute|\s*m(?:in(?:ute)?s?)?)'
+    interval = (r'(?:\d{1,3}|one|two|three|four|five|six|ten|fifteen|thirty|sixty)'
+                r'(?:[- ](?:minutes?|hours?)|\s*(?:m(?:in(?:ute)?s?)?|h(?:ours?)?))')
     if re.search(
             rf'\b{interval}\s+(?:(?:candle|bar)\s+)?(?:close[sd]?|hold)\b'
             r'|\b(?:wait\s+for|only\s+enter\s+after|(?:entry|trade|setup)\s+(?:requires?|needs?))'

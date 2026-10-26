@@ -26,7 +26,10 @@ def _real_store(tmp_path, monkeypatch):
     # since this exercises the actual DB read/write round trip
     # watch_and_exit_active performs on a confirmed fill.
     db_path = tmp_path / "test.duckdb"
-    HybridStore(duckdb_path=db_path)
+    store = HybridStore(duckdb_path=db_path)
+    oid = store.submit_order("AAPL", "buy", 10)
+    store.log_fill(oid, "AAPL", "buy", 10, 150)
+    store.con.close()
     monkeypatch.setattr(eem, "DEFAULT_DB", db_path)
 
 

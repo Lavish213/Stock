@@ -2,6 +2,8 @@
 from lavish_core.utils.safety import finite_number
 import uuid
 
+QTY_TOLERANCE = 1e-12
+
 class ExitState:
     def __init__(self, qty, *, db_path=None, symbol=None, venue="paper"):
         self.db_path = db_path
@@ -54,6 +56,16 @@ class ExitState:
                         True,
                         "Closing order identity ambiguous; broker reconciliation required",
                     )
+                    return False
+                position = store.get_position(self.symbol)
+                if (not position
+                        or self.remaining - finite_number(position["qty"], positive=True) > QTY_TOLERANCE):
+                    # Another close/trim may have finished since this worker
+                    # captured its plan. Never send the stale quantity to the
+                    # broker, even when the old journal is now terminal.
+                    for order in candidates:
+                        store.set_order_status(order["id"], "fill_unverified")
+                    store.set_kill_switch(True, "Exit plan exceeds confirmed inventory; reconciliation required")
                     return False
                 if candidates:
                     order = candidates[0]
@@ -121,6 +133,14 @@ class ExitState:
                 if not cumulative and fee > 0:
                     raise ValueError("Fee without an execution")
                 if delta > 0:
+                    position = store.get_position(self.symbol)
+                    if (not position
+                            or delta - finite_number(position["qty"], positive=True) > QTY_TOLERANCE):
+                        raise ValueError("Exit fill exceeds confirmed inventory")
+                    # As in generic reconciliation, tolerate only bounded
+                    # binary-float residue; never persist a negative position.
+                    if delta > position["qty"]:
+                        delta = position["qty"]
                     average = finite_number(order.get("filled_avg_price"),positive=True)
                     incremental = finite_number((cumulative*average-notional)/delta,positive=True)
                     store.log_fill(self.journal_id,self.symbol,"sell",delta,incremental,fee=fee,venue=self.venue,event_id=f"reconcile:{order['id']}:{cumulative}")

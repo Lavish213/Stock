@@ -8,8 +8,23 @@
 from __future__ import annotations
 
 from unittest.mock import patch
+import pytest
 
 import lavish_core.trade.options_exit_monitor as oem
+from lavish_core.db.hybrid_store import HybridStore
+
+
+@pytest.fixture(autouse=True)
+def confirmed_holding(tmp_path, monkeypatch):
+    db_path = tmp_path / "options-monitor.duckdb"
+    store = HybridStore(db_path)
+    try:
+        symbol = "TSLA260101C00100000"
+        oid = store.submit_order(symbol, "buy", 1)
+        store.log_fill(oid, symbol, "buy", 1, 10)
+    finally:
+        store.con.close()
+    monkeypatch.setattr(oem, "DEFAULT_DB", db_path)
 
 
 def _no_sleep(*a, **k):

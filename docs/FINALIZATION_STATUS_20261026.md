@@ -44,7 +44,7 @@ required precisely to expose this kind of false confidence.
 | Code baseline / integration | Partial | Review and merge repair stack in dependency order; CI and full offline suite on final integrated commit |
 | Parser / context safety | Partial, new repair tested | Current scoped regressions; extend exact source-shaped fixtures and retain positive dispatch tests |
 | Conditional promotion | Open | Explicit per-setup policy, point-in-time closed bars, invalidation/deadline/replacement tests through production ingestion |
-| Creator close / trim ownership | Open | Atomic position-lifecycle ownership; integer contract feasibility, duplicate/restart/cancel-fill race tests |
+| Creator close / trim ownership | Partial hardening, orchestration open | Stale exit quantities and overrun fills are now rejected; full source-directed lifecycle ownership, integer trim semantics and orchestration still required |
 | Ingestion authentication | Partial | Browser-readable member content does not establish an authenticated persistent publisher; verify actual delivery identity privately |
 | Creator YTD coverage | Incomplete | Post/comment/version inventory with readable/locked/missing dispositions; unknown original publication times remain null |
 | Market data | Offline mechanics only | Authorized current and historical quote entitlement, contract identity, timestamps, stale-data and market-session observations |
@@ -109,3 +109,48 @@ guard also accepts the actual 3,520-case completed JUnit record. This prevents
 an early zero-exit/truncated run being called complete; it does not diagnose
 the unknown cause of the earlier incomplete invocation.
 No account reset, halt bypass, budget change, live activation or deployment.
+
+## Additional checklist pass: confirmed inventory and timeframe constraints
+
+Three new synthetic exit mutations failed before repair: an old two-unit exit
+submitted after inventory was reduced to zero/one, and a two-unit fill arriving
+after another path sold one unit was recorded as a successful close. ExitState
+now checks confirmed inventory before creating/adopting a journal and, under
+the shared position lock, before booking any new fill. Overruns quarantine the
+journal and halt entries for reconciliation; bounded 1e-12 float residue is
+clamped to the confirmed remainder. Valid trim-then-runner closes, partial
+restart recovery and fractional closes remain positive controls.
+
+This does not guarantee broker-side coordination with every external/manual
+order, nor bind an old worker to a newly reopened position of the same symbol.
+It is a reproduced inventory-safety repair, not completion of creator close/trim
+automation. Never automatically retry a quarantined overrun or clear its halt.
+
+The first broad run with this guard had 19 failing legacy monitor tests because
+their claimed holdings were never seeded in the ledger. Their fixtures now
+record synthetic entry fills in isolated journals. No assertions were weakened
+and no production guard was disabled. The four monitor groups plus new inventory
+cases then passed 25 tests in 33.44s. Six explicit non-five-minute hold variants
+also reproduced unsafe immediate dispatch; timeframe detection now retains
+literal minute/hour prerequisites for review without inventing a hold policy.
+The overlapping focused context/recovery set passed 155 tests in 3.89s.
+
+### Remaining items cannot be marked complete
+
+- Production conditional promotion and creator close/trim orchestration are
+  still engineering work, not merely missing account access. Conservative
+  rejection is not autonomous following and is not scored as such.
+- Browser membership access is not a persistent authenticated alert publisher;
+  source version/timestamp and locked-post gaps remain explicit.
+- Previously requested simulation allocations are not authorization to set
+  actual execution limits. Keep paper/live gates blocked pending an explicit
+  applicable operator risk plan and evidence-bound approval.
+- The intended persistent host, source delivery, notification delivery and real
+  restart/recovery must be observed there. A temporary coding runtime does not
+  supply that evidence.
+- Authentic quote/fill latency and prospective evaluation require authorized
+  observations over time. Do not relabel invented tapes or a consumed holdout.
+
+The code is reviewable in a dedicated stacked repair PR; no merges, deployments
+or broker orders are implied by this update. Exact final validation is recorded
+in that PR after completion.
