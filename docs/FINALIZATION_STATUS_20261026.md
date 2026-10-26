@@ -102,4 +102,10 @@ Focused context/ingestion/candle/entry/exit checks: 149 passed in 20.69 seconds
 separately after the full run was collected. These counts are not additive
 independent strategy samples. Changed-source Bandit and whitespace checks pass.
 All core tests block unmocked external I/O. Synthetic adapter calls are not broker orders.
+An additional CI evidence guard now requires the JUnit testcase count to equal
+the separately collected count, rejects missing/duplicate/error outcomes, and
+requires at least one executed pass. Twelve synthetic guard tests pass; the
+guard also accepts the actual 3,520-case completed JUnit record. This prevents
+an early zero-exit/truncated run being called complete; it does not diagnose
+the unknown cause of the earlier incomplete invocation.
 No account reset, halt bypass, budget change, live activation or deployment.
