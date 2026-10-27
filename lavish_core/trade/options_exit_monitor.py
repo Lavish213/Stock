@@ -121,6 +121,7 @@ def watch_and_exit(
     on_exit: Optional[Callable[[Dict[str, Any]], None]] = None,
     resume_exit_reason: Optional[str] = None,
     resume_underlying_price: Optional[float] = None,
+    position_epoch=...,
 ) -> Dict[str, Any]:
     """
     Blocking poll loop: watches both her stated underlying levels (if any)
@@ -137,7 +138,7 @@ def watch_and_exit(
     high_water_pct = 0.0
     trailing_active = False
     consecutive_failures = 0
-    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=contract_symbol,venue=os.getenv("TRADE_MODE","paper"))
+    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=contract_symbol,venue=os.getenv("TRADE_MODE","paper"),position_epoch=position_epoch)
 
     log.info(
         "Watching %s (%s x%s, entry=%.2f) via underlying %s: her_target=%s her_stop=%s "
@@ -221,7 +222,7 @@ def watch_and_exit(
         from lavish_core.db.hybrid_store import HybridStore
         store = HybridStore(DEFAULT_DB)
         try:
-            store.set_exit_intent(contract_symbol, reason, underlying_price)
+            store.set_exit_intent(contract_symbol, reason, underlying_price, position_epoch=exit_state.position_epoch)
         finally:
             store.con.close()
 
@@ -229,7 +230,7 @@ def watch_and_exit(
         from lavish_core.db.hybrid_store import HybridStore
         store = HybridStore(DEFAULT_DB)
         try:
-            store.clear_exit_intent(contract_symbol)
+            store.clear_exit_intent(contract_symbol, position_epoch=exit_state.position_epoch)
         finally:
             store.con.close()
 
@@ -353,4 +354,4 @@ def watch_and_exit_async(*args, **kwargs) -> threading.Thread:
     """Fire-and-forget version of watch_and_exit() for callers that can't block."""
     from lavish_core.utils.exit_supervisor import start_exit_worker
     symbol = kwargs.get('contract_symbol', args[1] if len(args)>1 else None)
-    return start_exit_worker(watch_and_exit, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=8)
+    return start_exit_worker(watch_and_exit, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=8, bind_position_epoch=True)

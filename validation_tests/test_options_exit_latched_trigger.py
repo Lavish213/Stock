@@ -4,11 +4,21 @@ import pytest
 from lavish_core.trade import options_exit_monitor as monitor
 
 
+def owned_mock_state(store, monkeypatch, attempt):
+    symbol = 'SPY261016C00770000'
+    entry = store.submit_order(symbol, 'buy', 1)
+    store.log_fill(entry, symbol, 'buy', 1, 1.)
+    monkeypatch.setattr(monitor, 'DEFAULT_DB', store.db_path)
+    epoch = store.get_position_epoch(symbol)
+    monkeypatch.setattr(monitor, 'ExitState', lambda *a, **k: SimpleNamespace(
+        pending=None, unknown=False, attempt=attempt, position_epoch=epoch))
+
+
 @pytest.mark.parametrize('level,first,field,reason', [
     (95, 90, 'stop_underlying', 'her_stop'),
     (105, 110, 'target_underlying', 'her_target'),
 ])
-def test_failed_exit_remains_requested_after_underlying_recovers(monkeypatch, level, first, field, reason):
+def test_failed_exit_remains_requested_after_underlying_recovers(store, monkeypatch, level, first, field, reason):
     clock = iter(range(100))
     monkeypatch.setattr(monitor, 'time', SimpleNamespace(time=lambda:next(clock), sleep=lambda _:None))
     monkeypatch.setattr(monitor, 'MAX_MONITOR_HOURS', 3/3600)
@@ -16,13 +26,13 @@ def test_failed_exit_remains_requested_after_underlying_recovers(monkeypatch, le
     monkeypatch.setattr(monitor, '_option_limit_price', lambda _:1.)
     monkeypatch.setattr(monitor, 'post_discord', Mock())
     attempt = Mock(side_effect=[None, dict(status='exited',price=1.,filled_qty=1,order={},ledger_recorded=True)])
-    monkeypatch.setattr(monitor, 'ExitState', lambda *a,**k:SimpleNamespace(attempt=attempt))
+    owned_mock_state(store, monkeypatch, attempt)
     result = monitor.watch_and_exit('SPY','SPY261016C00770000',1,'call',1.,**{field:level})
     assert result['reason'] == reason
     assert attempt.call_count == 2
 
 
-def test_latched_exit_does_not_depend_on_recovering_underlying_feed(monkeypatch):
+def test_latched_exit_does_not_depend_on_recovering_underlying_feed(store, monkeypatch):
     clock = iter(range(100))
     monkeypatch.setattr(monitor, 'time', SimpleNamespace(time=lambda:next(clock), sleep=lambda _:None))
     monkeypatch.setattr(monitor, 'MAX_MONITOR_HOURS', 3/3600)
@@ -31,7 +41,7 @@ def test_latched_exit_does_not_depend_on_recovering_underlying_feed(monkeypatch)
     monkeypatch.setattr(monitor, '_option_limit_price', lambda _:1.)
     monkeypatch.setattr(monitor, 'post_discord', Mock())
     attempt = Mock(side_effect=[None, dict(status='exited',price=1.,filled_qty=1,order={},ledger_recorded=True)])
-    monkeypatch.setattr(monitor, 'ExitState', lambda *a,**k:SimpleNamespace(attempt=attempt))
+    owned_mock_state(store, monkeypatch, attempt)
     result = monitor.watch_and_exit('SPY','SPY261016C00770000',1,'call',1.,stop_underlying=95)
     assert result['reason'] == 'her_stop'
     assert quotes.call_count == 1
@@ -87,7 +97,7 @@ def test_quote_outage_can_resolve_cancel_but_cannot_submit_replacement():
     assert state.remaining == 1 and state.pending is None and not state.unknown
 
 
-def test_quote_exception_without_existing_order_cannot_attempt_exit(monkeypatch):
+def test_quote_exception_without_existing_order_cannot_attempt_exit(store, monkeypatch):
     clock = iter(range(100))
     monkeypatch.setattr(monitor, 'time', SimpleNamespace(time=lambda:next(clock), sleep=lambda _:None))
     monkeypatch.setattr(monitor, 'MAX_MONITOR_HOURS', 3/3600)
@@ -95,8 +105,7 @@ def test_quote_exception_without_existing_order_cannot_attempt_exit(monkeypatch)
     monkeypatch.setattr(monitor, 'post_discord', Mock())
     attempt = Mock(return_value=dict(status='exited', price=1., filled_qty=1,
                                     order={}, ledger_recorded=True))
-    monkeypatch.setattr(monitor, 'ExitState', lambda *a, **k:SimpleNamespace(
-        pending=None, unknown=False, attempt=attempt))
+    owned_mock_state(store, monkeypatch, attempt)
     calls = []
     def quote(_):
         calls.append(None)

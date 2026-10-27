@@ -5,7 +5,7 @@ import uuid
 QTY_TOLERANCE = 1e-12
 
 class ExitState:
-    def __init__(self, qty, *, db_path=None, symbol=None, venue="paper"):
+    def __init__(self, qty, *, db_path=None, symbol=None, venue="paper", position_epoch=...):
         self.db_path = db_path
         self.symbol = symbol
         self.venue = venue
@@ -23,6 +23,19 @@ class ExitState:
         self.pending = None
         self.client_id = None
         self.unknown = False
+        self.position_epoch = position_epoch
+        if db_path is not None and position_epoch is ...:
+            from lavish_core.db.hybrid_store import _positions_lock
+            with _positions_lock:
+                store = self._store()
+                try:
+                    self.position_epoch = store.get_position_epoch(symbol)
+                finally:
+                    store.con.close()
+
+    def _owns_position(self, store):
+        return bool(self.position_epoch and self.position_epoch is not ...
+                    and store.get_position_epoch(self.symbol) == self.position_epoch)
 
     def _store(self):
         from lavish_core.db.hybrid_store import HybridStore
@@ -39,6 +52,9 @@ class ExitState:
                     order for order in store.get_open_orders(self.symbol)
                     if order["side"] == "sell" and order["meta"].get("exit_state")
                 ]
+                if not self._owns_position(store):
+                    store.set_kill_switch(True, "Exit worker position lifecycle mismatch; reconciliation required")
+                    return False
                 ambiguous = (
                     len(candidates) > 1
                     or (
@@ -46,6 +62,8 @@ class ExitState:
                         and (
                             candidates[0]["venue"] != self.venue
                             or not candidates[0]["client_id"]
+                            or candidates[0]["status"] == "fill_unverified"
+                            or candidates[0]["meta"].get("position_epoch") != self.position_epoch
                         )
                     )
                 )
@@ -75,7 +93,7 @@ class ExitState:
                     self.unknown = True
                     self.adopted = True
                     return True
-                self.journal_id = store.submit_order(self.symbol,"sell",self.remaining,venue=self.venue,status="pending_submit",client_id=self.client_id,meta={"exit_state":True})
+                self.journal_id = store.submit_order(self.symbol,"sell",self.remaining,venue=self.venue,status="pending_submit",client_id=self.client_id,meta={"exit_state":True,"position_epoch":self.position_epoch})
                 return True
             finally:
                 store.con.close()
@@ -116,6 +134,13 @@ class ExitState:
             cumulative = finite_number(order.get("filled_qty") or 0, nonnegative=True)
             store = self._store()
             try:
+                if not self._owns_position(store):
+                    raise ValueError("Exit snapshot position lifecycle mismatch")
+                journal = store.fetchall("SELECT status,meta FROM orders WHERE id=?", (self.journal_id,))[0]
+                import json
+                if (journal[0] == "fill_unverified"
+                        or json.loads(journal[1] or '{}').get('position_epoch') != self.position_epoch):
+                    raise ValueError("Closing journal ownership unverified")
                 requested = store.fetchall("SELECT qty FROM orders WHERE id=?",(self.journal_id,))[0][0]
                 if cumulative > requested:
                     raise ValueError("Exit quantity exceeds request")
@@ -159,6 +184,16 @@ class ExitState:
         executions reduce that remaining quantity and contribute to the
         final weighted fill price.
         """
+        if self.db_path is not None:
+            from lavish_core.db.hybrid_store import _positions_lock
+            with _positions_lock:
+                store = self._store()
+                try:
+                    owns_position = self._owns_position(store)
+                finally:
+                    store.con.close()
+            if not owns_position:
+                return self._quarantine_identity()
         if self.unknown:
             try:
                 remote = lookup(self.client_id)

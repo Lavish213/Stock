@@ -4,7 +4,7 @@ import threading
 
 log = logging.getLogger(__name__)
 
-def start_exit_worker(target, args, kwargs, *, symbol, db_path, callback_index):
+def start_exit_worker(target, args, kwargs, *, symbol, db_path, callback_index, bind_position_epoch=False):
     args = list(args)
     kwargs = dict(kwargs)
     callback = args[callback_index] if len(args) > callback_index else kwargs.get('on_exit')
@@ -29,6 +29,21 @@ def start_exit_worker(target, args, kwargs, *, symbol, db_path, callback_index):
             halt()
         if callback is not None:
             callback(result)
+
+    if bind_position_epoch and 'position_epoch' not in kwargs:
+        # Capture before scheduling the thread, not after a delayed start
+        # could observe a different position with the same symbol/quantity.
+        try:
+            from lavish_core.db.hybrid_store import HybridStore, _positions_lock
+            with _positions_lock:
+                store = HybridStore(db_path)
+                try:
+                    kwargs['position_epoch'] = store.get_position_epoch(symbol)
+                finally:
+                    store.con.close()
+        except Exception:
+            halt()
+            raise
 
     if len(args) > callback_index:
         args[callback_index] = notify

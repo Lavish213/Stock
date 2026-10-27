@@ -204,6 +204,10 @@ def reconcile_pending_orders(store=None):
                     # lock so a stale sweep cannot override that decision.
                     if current[0] == 'fill_unverified' and meta.get('exit_state'):
                         continue
+                    if meta.get('exit_state') and (
+                            not meta.get('position_epoch')
+                            or meta['position_epoch'] != store.get_position_epoch(local['symbol'])):
+                        raise ValueError('Closing journal position lifecycle mismatch')
                     if meta.get('broker_id') and str(meta['broker_id']) != str(remote['id']):
                         raise ValueError('Broker order ID changed')
                     rows = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0),coalesce(sum(fee),0) FROM fills WHERE order_id=? AND side=?", (local["id"],local["side"]))

@@ -24,6 +24,8 @@ def test_exit_intent_round_trip_and_validation(store):
 
 def test_trigger_is_durable_before_broker_attempt(store, monkeypatch):
     symbol = "SPY261016C00770000"
+    entry = store.submit_order(symbol, "buy", 1)
+    store.log_fill(entry, symbol, "buy", 1, 1)
     monkeypatch.setattr(monitor, "DEFAULT_DB", store.db_path)
     monkeypatch.setattr(monitor, "time", _fast_clock())
     monkeypatch.setattr(monitor, "MAX_MONITOR_HOURS", 3 / 3600)
@@ -32,7 +34,8 @@ def test_trigger_is_durable_before_broker_attempt(store, monkeypatch):
     monkeypatch.setattr(monitor, "post_discord", Mock())
     attempt = Mock(side_effect=KeyboardInterrupt("synthetic process death"))
     monkeypatch.setattr(
-        monitor, "ExitState", lambda *a, **k: SimpleNamespace(pending=None, unknown=False, attempt=attempt)
+        monitor, "ExitState", lambda *a, **k: SimpleNamespace(pending=None, unknown=False, attempt=attempt,
+                                                             position_epoch=store.get_position_epoch(symbol))
     )
     with pytest.raises(KeyboardInterrupt):
         monitor.watch_and_exit("SPY", symbol, 1, "call", 1, stop_underlying=95)
@@ -258,6 +261,8 @@ def test_reconcile_keeps_intent_triggered_after_current_entry(store, monkeypatch
 
 def test_resumed_intent_closes_after_price_recovers_and_clears_journal(store, monkeypatch):
     symbol = "SPY261016C00770000"
+    entry = store.submit_order(symbol, "buy", 1)
+    store.log_fill(entry, symbol, "buy", 1, 1)
     store.set_exit_intent(symbol, "her_stop", 90)
     monkeypatch.setattr(monitor, "DEFAULT_DB", store.db_path)
     monkeypatch.setattr(monitor, "time", _fast_clock())
@@ -268,7 +273,8 @@ def test_resumed_intent_closes_after_price_recovers_and_clears_journal(store, mo
     monkeypatch.setattr(monitor, "post_discord", Mock())
     attempt = Mock(return_value={"status": "exited", "price": 1, "filled_qty": 1, "order": {}})
     monkeypatch.setattr(
-        monitor, "ExitState", lambda *a, **k: SimpleNamespace(pending=None, unknown=False, attempt=attempt)
+        monitor, "ExitState", lambda *a, **k: SimpleNamespace(pending=None, unknown=False, attempt=attempt,
+                                                             position_epoch=store.get_position_epoch(symbol))
     )
     result = monitor.watch_and_exit(
         "SPY", symbol, 1, "call", 1,

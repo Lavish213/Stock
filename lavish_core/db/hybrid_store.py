@@ -137,6 +137,7 @@ def _json(obj: Any) -> str:
 # =============================================================================
 
 SCHEMA_SQL: List[str] = [
+    "CREATE TABLE IF NOT EXISTS position_epochs (symbol TEXT PRIMARY KEY, epoch TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS fill_events (event_id TEXT PRIMARY KEY, fill_id TEXT)",
     "CREATE TABLE IF NOT EXISTS risk_reservations (client_id TEXT PRIMARY KEY, symbol TEXT, qty DOUBLE, price DOUBLE, multiplier DOUBLE, created_at TIMESTAMP)",
     """CREATE TABLE IF NOT EXISTS exit_intents (
@@ -447,7 +448,7 @@ class HybridStore:
         enabled, reason = rows[0]
         return bool(enabled), str(reason or "")
 
-    def set_exit_intent(self, symbol: str, reason: str, underlying_price=None) -> None:
+    def set_exit_intent(self, symbol: str, reason: str, underlying_price=None, *, position_epoch=...) -> None:
         """Durably latch a triggered exit until a verified close clears it."""
         allowed = {
             "her_target", "her_stop", "our_stop_loss", "our_trailing_stop",
@@ -458,6 +459,9 @@ class HybridStore:
         price = (finite_number(underlying_price, positive=True)
                  if underlying_price is not None else None)
         with _positions_lock:
+            if position_epoch is not ... and (not position_epoch or self.get_position_epoch(symbol) != position_epoch):
+                self.set_kill_switch(True, "Stale worker cannot latch exit intent for another lifecycle")
+                return
             self.execute(
                 "INSERT INTO exit_intents(symbol, reason, underlying_price, triggered_at) "
                 "VALUES (?, ?, ?, ?) ON CONFLICT(symbol) DO UPDATE SET "
@@ -476,8 +480,12 @@ class HybridStore:
         reason, price, triggered_at = rows[0]
         return {"reason": reason, "underlying_price": price, "triggered_at": triggered_at}
 
-    def clear_exit_intent(self, symbol: str) -> None:
+    def clear_exit_intent(self, symbol: str, *, position_epoch=...) -> None:
         with _positions_lock:
+            if position_epoch is not ...:
+                rows = self.fetchall("SELECT epoch FROM position_epochs WHERE symbol=?", (symbol.upper(),))
+                if not position_epoch or not rows or rows[0][0] != position_epoch:
+                    return
             self.execute("DELETE FROM exit_intents WHERE symbol=?", (symbol.upper(),))
 
     def try_claim_signal(self, claim_key: str, window_seconds: float) -> bool:
@@ -706,6 +714,12 @@ class HybridStore:
         with _positions_lock:
             now = _utcnow()
             delta = qty if side == "buy" else -qty
+            current = self.get_position(symbol)
+            if side == "buy" and (not current or current["qty"] <= 0) and (not current or current["qty"] + qty > 0):
+                # Part of log_fill's transaction: only a new long lifecycle
+                # receives a new identity. Scale-ins and trims retain it.
+                self.execute("INSERT INTO position_epochs VALUES (?,?) ON CONFLICT(symbol) DO UPDATE SET epoch=excluded.epoch",
+                             (symbol, uuid.uuid4().hex))
 
             if side == "buy":
                 # Re-averages: the new cost basis blends the existing
@@ -748,6 +762,12 @@ class HybridStore:
             return None
         q, ap = rows[0]
         return {"qty": float(q), "avg_price": float(ap)}
+
+    def get_position_epoch(self, symbol: str) -> Optional[str]:
+        """Return confirmed long lifecycle identity; never invent legacy ownership."""
+        rows = self.fetchall("SELECT e.epoch FROM position_epochs e JOIN positions p ON e.symbol=p.symbol WHERE p.symbol=? AND p.qty>0",
+                             (symbol.upper(),))
+        return rows[0][0] if rows else None
 
     def get_open_orders(self, symbol: Optional[str] = None) -> List[Dict[str, Any]]:
         sql = "SELECT id, ts, symbol, side, qty, order_type, limit_price, tif, venue, status, client_id, meta FROM orders WHERE status IN ('submitted','accepted','new','pending_new','pending_cancel','partially_filled','pending_submit','submission_unknown','fill_unverified')"

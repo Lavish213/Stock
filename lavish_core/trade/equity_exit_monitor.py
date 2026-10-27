@@ -157,6 +157,7 @@ def watch_and_exit_active(
     stop_loss: Optional[float] = None,
     venue: str = "paper",
     on_exit: Optional[Callable[[Dict[str, Any]], None]] = None,
+    position_epoch=...,
 ) -> Dict[str, Any]:
     """
     Active equity exit monitor for brokers with no native bracket/OCO
@@ -174,7 +175,7 @@ def watch_and_exit_active(
     """
     deadline = time.time() + MAX_MONITOR_HOURS * 3600
     consecutive_failures = 0
-    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=symbol,venue=venue)
+    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=symbol,venue=venue,position_epoch=position_epoch)
     log.info("Watching active equity exit for %s x%s (entry=%.2f) target=%s stop=%s",
               symbol, qty, entry_price, take_profit, stop_loss)
 
@@ -276,4 +277,4 @@ def watch_and_exit_active_async(*args, **kwargs) -> threading.Thread:
     """Fire-and-forget version of watch_and_exit_active() for callers that can't block."""
     from lavish_core.utils.exit_supervisor import start_exit_worker
     symbol = kwargs.get('symbol', args[0] if args else None)
-    return start_exit_worker(watch_and_exit_active, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=6)
+    return start_exit_worker(watch_and_exit_active, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=6, bind_position_epoch=True)

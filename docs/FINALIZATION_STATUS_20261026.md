@@ -1,5 +1,8 @@
 # End-to-end finalization status — 2026-10-26
 
+Latest disposition: see [October 27 checklist](FINALIZATION_STATUS_20261027.md).
+This October 26 document is retained as historical evidence, not current closure.
+
 ## Verdict
 
 NOT end-to-end complete. No new execution authorization, deployment or risk
