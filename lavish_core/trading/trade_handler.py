@@ -729,6 +729,7 @@ def _finish_option_entry(
             target_underlying=float(target_hint) if target_hint is not None else None,
             stop_underlying=float(stop_hint) if stop_hint is not None else None,
             on_exit=_on_exit,
+            position_epoch=store.get_entry_epoch(oid),
         )
     except Exception:
         unmark_watched(contract['symbol'])
@@ -1062,6 +1063,7 @@ def _finish_equity_entry(
                     order_id=out["order_id"], symbol=sym, qty=qty,
                     entry_price=entry_price, leg_ids=leg_ids, venue=TRADE_MODE,
                     on_exit=equity_finished,
+                    position_epoch=out.get('position_epoch'),
                 )
             else:
                 unmark_watched(sym)
@@ -1073,6 +1075,7 @@ def _finish_equity_entry(
                 symbol=sym, qty=qty, entry_price=entry_price,
                 take_profit=take_profit, stop_loss=stop_loss, venue=TRADE_MODE,
                 on_exit=equity_finished,
+                position_epoch=out.get('position_epoch'),
             )
 
     # A broker-side failure inside place_trade (unreachable, request error)

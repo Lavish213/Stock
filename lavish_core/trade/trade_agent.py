@@ -514,7 +514,8 @@ def place_trade(
         )
         LOG.info("DRY FILL %s %s×%s @ %.2f (order=%s fill=%s)",
                  side.upper(), qty, symbol, price, oid, fid)
-        return {"status": "filled", "order_id": oid, "fill_id": fid, "price": price}
+        return {"status": "filled", "order_id": oid, "fill_id": fid, "price": price,
+                "position_epoch": store.get_entry_epoch(oid)}
 
     # ── REAL BROKER ─────────────────────────────────────────────
     if mode in ("paper", "live"):
@@ -660,6 +661,7 @@ def place_trade(
                 "client_order_id": client_ord_id,
                 "filled_qty": filled_qty,
                 "filled_avg_price": filled_avg_price,
+                "position_epoch": store.get_entry_epoch(oid),
                 # Bracket orders (take_profit/stop_loss set) come back with
                 # child leg orders under broker_resp["legs"] - the caller
                 # needs their IDs to watch for which leg eventually fills

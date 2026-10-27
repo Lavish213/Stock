@@ -1,0 +1,2722 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "period": "2026-10-01 through 2027-09-30",
+  "limitations": [
+    "Toy uncalibrated European call quotes, not authentic SPY contracts",
+    "Weekday-only calendar: holidays and early closes not modeled",
+    "Independent daily spot resets; not a continuous historical price series",
+    "Production entry parser; synthetic account and exit adapter",
+    "Drawdown uses closed balances, not intratrade mark-to-market",
+    "No automatic learning, production execution or strategy promotion",
+    "10% day loss and three-loss pause thresholds remain simulation assumptions"
+  ],
+  "summary": [
+    {
+      "initial": 100,
+      "delay_seconds": 0,
+      "trials": 20,
+      "profitable": 0,
+      "median": 6.4,
+      "worst": 2.8,
+      "best": 14.8,
+      "trades": 90
+    },
+    {
+      "initial": 100,
+      "delay_seconds": 60,
+      "trials": 20,
+      "profitable": 0,
+      "median": 6.8,
+      "worst": 1.5,
+      "best": 14.6,
+      "trades": 87
+    },
+    {
+      "initial": 100,
+      "delay_seconds": 180,
+      "trials": 20,
+      "profitable": 0,
+      "median": 8.15,
+      "worst": 1.8,
+      "best": 14.2,
+      "trades": 86
+    },
+    {
+      "initial": 100,
+      "delay_seconds": 360,
+      "trials": 20,
+      "profitable": 0,
+      "median": 100.0,
+      "worst": 100.0,
+      "best": 100.0,
+      "trades": 0
+    },
+    {
+      "initial": 1000,
+      "delay_seconds": 0,
+      "trials": 20,
+      "profitable": 0,
+      "median": 553.85,
+      "worst": 341.5,
+      "best": 656.4,
+      "trades": 505
+    },
+    {
+      "initial": 1000,
+      "delay_seconds": 60,
+      "trials": 20,
+      "profitable": 0,
+      "median": 539.2249999999999,
+      "worst": 307.8,
+      "best": 778.1,
+      "trades": 508
+    },
+    {
+      "initial": 1000,
+      "delay_seconds": 180,
+      "trials": 20,
+      "profitable": 0,
+      "median": 563.0,
+      "worst": 326.2,
+      "best": 779.5,
+      "trades": 491
+    },
+    {
+      "initial": 1000,
+      "delay_seconds": 360,
+      "trials": 20,
+      "profitable": 0,
+      "median": 1000.0,
+      "worst": 1000.0,
+      "best": 1000.0,
+      "trades": 0
+    }
+  ],
+  "outcomes": [
+    {
+      "seed": 20261015,
+      "initial": 100,
+      "delay": 0,
+      "final": 3.0,
+      "trades": 6,
+      "fees": 13.0,
+      "realized_max_drawdown": 0.97,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 227,
+        "unaffordable_contract": 28
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 100,
+      "delay": 60,
+      "final": 5.2,
+      "trades": 4,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.948,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 227,
+        "unaffordable_contract": 30
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 100,
+      "delay": 180,
+      "final": 5.9,
+      "trades": 4,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.941,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 227,
+        "unaffordable_contract": 29
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 1000,
+      "delay": 0,
+      "final": 508.2,
+      "trades": 25,
+      "fees": 72.8,
+      "realized_max_drawdown": 0.4918,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "not_spy_call": 227,
+        "unaffordable_contract": 9
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 1000,
+      "delay": 60,
+      "final": 461.8,
+      "trades": 24,
+      "fees": 70.2,
+      "realized_max_drawdown": 0.5382,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 227,
+        "unaffordable_contract": 10
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 1000,
+      "delay": 180,
+      "final": 467.0,
+      "trades": 22,
+      "fees": 65.0,
+      "realized_max_drawdown": 0.5329999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 22,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 227,
+        "unaffordable_contract": 11
+      }
+    },
+    {
+      "seed": 20261015,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 100,
+      "delay": 0,
+      "final": 6.5,
+      "trades": 2,
+      "fees": 6.5,
+      "realized_max_drawdown": 0.935,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 223,
+        "unaffordable_contract": 36
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 100,
+      "delay": 60,
+      "final": 1.5,
+      "trades": 2,
+      "fees": 6.5,
+      "realized_max_drawdown": 0.985,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 223,
+        "unaffordable_contract": 36
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 100,
+      "delay": 180,
+      "final": 3.8,
+      "trades": 2,
+      "fees": 5.2,
+      "realized_max_drawdown": 0.962,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 223,
+        "unaffordable_contract": 36
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 1000,
+      "delay": 0,
+      "final": 341.5,
+      "trades": 21,
+      "fees": 58.5,
+      "realized_max_drawdown": 0.6585,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 21,
+        "not_spy_call": 223,
+        "unaffordable_contract": 17
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 1000,
+      "delay": 60,
+      "final": 307.8,
+      "trades": 22,
+      "fees": 57.2,
+      "realized_max_drawdown": 0.6921999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 22,
+        "not_spy_call": 223,
+        "unaffordable_contract": 16
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 1000,
+      "delay": 180,
+      "final": 326.2,
+      "trades": 23,
+      "fees": 59.8,
+      "realized_max_drawdown": 0.6738,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "not_spy_call": 223,
+        "unaffordable_contract": 15
+      }
+    },
+    {
+      "seed": 20261016,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 100,
+      "delay": 0,
+      "final": 6.6,
+      "trades": 6,
+      "fees": 23.4,
+      "realized_max_drawdown": 0.9777177582714383,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 228,
+        "unaffordable_contract": 27
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 100,
+      "delay": 60,
+      "final": 6.8,
+      "trades": 6,
+      "fees": 18.2,
+      "realized_max_drawdown": 0.9650385604113111,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 228,
+        "unaffordable_contract": 27
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 100,
+      "delay": 180,
+      "final": 4.1,
+      "trades": 6,
+      "fees": 16.9,
+      "realized_max_drawdown": 0.977158774373259,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 228,
+        "unaffordable_contract": 27
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 1000,
+      "delay": 0,
+      "final": 386.7,
+      "trades": 26,
+      "fees": 79.3,
+      "realized_max_drawdown": 0.666548828988069,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "not_spy_call": 228,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 1000,
+      "delay": 60,
+      "final": 457.4,
+      "trades": 27,
+      "fees": 80.6,
+      "realized_max_drawdown": 0.596893558702604,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 27,
+        "not_spy_call": 228,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 1000,
+      "delay": 180,
+      "final": 517.2,
+      "trades": 28,
+      "fees": 85.8,
+      "realized_max_drawdown": 0.5476609541454377,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 28,
+        "not_spy_call": 228,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261017,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 100,
+      "delay": 0,
+      "final": 5.6,
+      "trades": 3,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.944,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 3,
+        "not_spy_call": 225,
+        "unaffordable_contract": 33
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 100,
+      "delay": 60,
+      "final": 12.9,
+      "trades": 2,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.871,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 225,
+        "unaffordable_contract": 34
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 100,
+      "delay": 180,
+      "final": 9.6,
+      "trades": 1,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.904,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 1,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 225,
+        "unaffordable_contract": 34
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 1000,
+      "delay": 0,
+      "final": 427.2,
+      "trades": 30,
+      "fees": 98.8,
+      "realized_max_drawdown": 0.5862,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 30,
+        "not_spy_call": 225,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 1000,
+      "delay": 60,
+      "final": 438.2,
+      "trades": 30,
+      "fees": 98.8,
+      "realized_max_drawdown": 0.5731999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 30,
+        "not_spy_call": 225,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 1000,
+      "delay": 180,
+      "final": 443.9,
+      "trades": 28,
+      "fees": 100.1,
+      "realized_max_drawdown": 0.5595,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 28,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 225,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261018,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 100,
+      "delay": 0,
+      "final": 4.9,
+      "trades": 7,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.951,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 7,
+        "not_spy_call": 229,
+        "unaffordable_contract": 25
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 100,
+      "delay": 60,
+      "final": 14.2,
+      "trades": 6,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.858,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 229,
+        "unaffordable_contract": 26
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 100,
+      "delay": 180,
+      "final": 8.6,
+      "trades": 6,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.9216757741347905,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 229,
+        "unaffordable_contract": 26
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 1000,
+      "delay": 0,
+      "final": 618.7,
+      "trades": 23,
+      "fees": 53.3,
+      "realized_max_drawdown": 0.4121,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "not_spy_call": 229,
+        "unaffordable_contract": 9
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 1000,
+      "delay": 60,
+      "final": 737.2,
+      "trades": 23,
+      "fees": 59.8,
+      "realized_max_drawdown": 0.3134,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "not_spy_call": 229,
+        "unaffordable_contract": 9
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 1000,
+      "delay": 180,
+      "final": 622.6,
+      "trades": 24,
+      "fees": 62.4,
+      "realized_max_drawdown": 0.46851223760198013,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 229,
+        "unaffordable_contract": 8
+      }
+    },
+    {
+      "seed": 20261019,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 100,
+      "delay": 0,
+      "final": 5.3,
+      "trades": 5,
+      "fees": 11.7,
+      "realized_max_drawdown": 0.9588189588189588,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "not_spy_call": 233,
+        "unaffordable_contract": 23
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 100,
+      "delay": 60,
+      "final": 4.4,
+      "trades": 6,
+      "fees": 15.6,
+      "realized_max_drawdown": 0.9730722154222766,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 233,
+        "unaffordable_contract": 22
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 100,
+      "delay": 180,
+      "final": 5.7,
+      "trades": 6,
+      "fees": 14.3,
+      "realized_max_drawdown": 0.9530477759472817,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 233,
+        "unaffordable_contract": 22
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 1000,
+      "delay": 0,
+      "final": 553.5,
+      "trades": 15,
+      "fees": 45.5,
+      "realized_max_drawdown": 0.47176047438514634,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 15,
+        "not_spy_call": 233,
+        "unaffordable_contract": 13
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 1000,
+      "delay": 60,
+      "final": 564.0,
+      "trades": 17,
+      "fees": 52.0,
+      "realized_max_drawdown": 0.517302990408125,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 17,
+        "not_spy_call": 233,
+        "unaffordable_contract": 11
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 1000,
+      "delay": 180,
+      "final": 559.0,
+      "trades": 17,
+      "fees": 52.0,
+      "realized_max_drawdown": 0.5140982964558449,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 17,
+        "not_spy_call": 233,
+        "unaffordable_contract": 11
+      }
+    },
+    {
+      "seed": 20261020,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 100,
+      "delay": 0,
+      "final": 3.2,
+      "trades": 2,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.968,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 232,
+        "unaffordable_contract": 27
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 100,
+      "delay": 60,
+      "final": 11.2,
+      "trades": 2,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.888,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 232,
+        "unaffordable_contract": 27
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 100,
+      "delay": 180,
+      "final": 5.6,
+      "trades": 2,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.944,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "invalidated_before_entry": 2,
+        "not_spy_call": 232,
+        "unaffordable_contract": 25
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 1000,
+      "delay": 0,
+      "final": 586.8,
+      "trades": 24,
+      "fees": 83.2,
+      "realized_max_drawdown": 0.4132,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 232,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 1000,
+      "delay": 60,
+      "final": 606.9,
+      "trades": 24,
+      "fees": 87.1,
+      "realized_max_drawdown": 0.3931,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 232,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 1000,
+      "delay": 180,
+      "final": 614.3,
+      "trades": 21,
+      "fees": 76.7,
+      "realized_max_drawdown": 0.38570000000000004,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 21,
+        "invalidated_before_entry": 2,
+        "not_spy_call": 232,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261021,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 100,
+      "delay": 0,
+      "final": 2.8,
+      "trades": 3,
+      "fees": 5.2,
+      "realized_max_drawdown": 0.972,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 3,
+        "not_spy_call": 229,
+        "unaffordable_contract": 29
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 100,
+      "delay": 60,
+      "final": 6.8,
+      "trades": 2,
+      "fees": 5.2,
+      "realized_max_drawdown": 0.9319999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 229,
+        "unaffordable_contract": 30
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 100,
+      "delay": 180,
+      "final": 7.1,
+      "trades": 2,
+      "fees": 3.9,
+      "realized_max_drawdown": 0.929,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 229,
+        "unaffordable_contract": 30
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 1000,
+      "delay": 0,
+      "final": 480.1,
+      "trades": 27,
+      "fees": 81.9,
+      "realized_max_drawdown": 0.5306,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 27,
+        "not_spy_call": 229,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 1000,
+      "delay": 60,
+      "final": 434.8,
+      "trades": 28,
+      "fees": 83.2,
+      "realized_max_drawdown": 0.5799,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 28,
+        "not_spy_call": 229,
+        "unaffordable_contract": 4
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 1000,
+      "delay": 180,
+      "final": 534.5,
+      "trades": 28,
+      "fees": 84.5,
+      "realized_max_drawdown": 0.5328999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 28,
+        "not_spy_call": 229,
+        "unaffordable_contract": 4
+      }
+    },
+    {
+      "seed": 20261022,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 100,
+      "delay": 0,
+      "final": 12.4,
+      "trades": 6,
+      "fees": 28.6,
+      "realized_max_drawdown": 0.9526898130484548,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 231,
+        "unaffordable_contract": 24
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 100,
+      "delay": 60,
+      "final": 5.5,
+      "trades": 5,
+      "fees": 19.5,
+      "realized_max_drawdown": 0.9728126544735541,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "not_spy_call": 231,
+        "unaffordable_contract": 25
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 100,
+      "delay": 180,
+      "final": 8.4,
+      "trades": 4,
+      "fees": 15.6,
+      "realized_max_drawdown": 0.9296482412060302,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 231,
+        "unaffordable_contract": 25
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 1000,
+      "delay": 0,
+      "final": 554.2,
+      "trades": 26,
+      "fees": 85.8,
+      "realized_max_drawdown": 0.5497527544027068,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "not_spy_call": 231,
+        "unaffordable_contract": 4
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 1000,
+      "delay": 60,
+      "final": 571.1,
+      "trades": 25,
+      "fees": 81.9,
+      "realized_max_drawdown": 0.5344280141522271,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "not_spy_call": 231,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 1000,
+      "delay": 180,
+      "final": 417.1,
+      "trades": 21,
+      "fees": 68.9,
+      "realized_max_drawdown": 0.5908377476947224,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 21,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 231,
+        "unaffordable_contract": 8
+      }
+    },
+    {
+      "seed": 20261023,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 100,
+      "delay": 0,
+      "final": 4.9,
+      "trades": 4,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.951,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 225,
+        "unaffordable_contract": 32
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 100,
+      "delay": 60,
+      "final": 7.3,
+      "trades": 5,
+      "fees": 11.7,
+      "realized_max_drawdown": 0.927,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "not_spy_call": 225,
+        "unaffordable_contract": 31
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 100,
+      "delay": 180,
+      "final": 7.0,
+      "trades": 6,
+      "fees": 13.0,
+      "realized_max_drawdown": 0.9299999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "invalidated_before_entry": 2,
+        "not_spy_call": 225,
+        "unaffordable_contract": 28
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 1000,
+      "delay": 0,
+      "final": 620.8,
+      "trades": 30,
+      "fees": 83.2,
+      "realized_max_drawdown": 0.4264,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 30,
+        "not_spy_call": 225,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 1000,
+      "delay": 60,
+      "final": 612.35,
+      "trades": 28,
+      "fees": 78.65,
+      "realized_max_drawdown": 0.4495,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 28,
+        "not_spy_call": 225,
+        "unaffordable_contract": 8
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 1000,
+      "delay": 180,
+      "final": 545.9,
+      "trades": 27,
+      "fees": 87.1,
+      "realized_max_drawdown": 0.5012,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 27,
+        "invalidated_before_entry": 2,
+        "not_spy_call": 225,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261024,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 100,
+      "delay": 0,
+      "final": 14.8,
+      "trades": 8,
+      "fees": 18.2,
+      "realized_max_drawdown": 0.862581244196843,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 8,
+        "not_spy_call": 230,
+        "unaffordable_contract": 23
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 100,
+      "delay": 60,
+      "final": 6.1,
+      "trades": 8,
+      "fees": 16.9,
+      "realized_max_drawdown": 0.9411764705882353,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 8,
+        "not_spy_call": 230,
+        "unaffordable_contract": 23
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 100,
+      "delay": 180,
+      "final": 14.2,
+      "trades": 4,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.8693652253909844,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "invalidated_before_entry": 3,
+        "not_spy_call": 230,
+        "unaffordable_contract": 24
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 1000,
+      "delay": 0,
+      "final": 576.85,
+      "trades": 24,
+      "fees": 59.15,
+      "realized_max_drawdown": 0.4342066091098542,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 230,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 1000,
+      "delay": 60,
+      "final": 538.05,
+      "trades": 26,
+      "fees": 66.95,
+      "realized_max_drawdown": 0.4639334462488792,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "not_spy_call": 230,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 1000,
+      "delay": 180,
+      "final": 623.35,
+      "trades": 23,
+      "fees": 65.65,
+      "realized_max_drawdown": 0.40720729652027365,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "invalidated_before_entry": 3,
+        "not_spy_call": 230,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261025,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 100,
+      "delay": 0,
+      "final": 10.0,
+      "trades": 8,
+      "fees": 26.0,
+      "realized_max_drawdown": 0.9380037197768134,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 8,
+        "not_spy_call": 231,
+        "unaffordable_contract": 22
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 100,
+      "delay": 60,
+      "final": 3.4,
+      "trades": 9,
+      "fees": 28.6,
+      "realized_max_drawdown": 0.9786163522012579,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 9,
+        "not_spy_call": 231,
+        "unaffordable_contract": 21
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 100,
+      "delay": 180,
+      "final": 1.8,
+      "trades": 10,
+      "fees": 57.2,
+      "realized_max_drawdown": 0.9948615472452184,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 10,
+        "invalidated_before_entry": 2,
+        "not_spy_call": 231,
+        "unaffordable_contract": 18
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 1000,
+      "delay": 0,
+      "final": 622.1,
+      "trades": 24,
+      "fees": 81.9,
+      "realized_max_drawdown": 0.45213562307353583,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 231,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 1000,
+      "delay": 60,
+      "final": 583.5,
+      "trades": 24,
+      "fees": 84.5,
+      "realized_max_drawdown": 0.469786460699682,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 24,
+        "not_spy_call": 231,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 1000,
+      "delay": 180,
+      "final": 702.0,
+      "trades": 22,
+      "fees": 78.0,
+      "realized_max_drawdown": 0.3959731543624161,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 22,
+        "invalidated_before_entry": 2,
+        "not_spy_call": 231,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261026,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 100,
+      "delay": 0,
+      "final": 8.9,
+      "trades": 6,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.9424692954104719,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 223,
+        "unaffordable_contract": 32
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 100,
+      "delay": 60,
+      "final": 4.9,
+      "trades": 7,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.9674850696748507,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 7,
+        "not_spy_call": 223,
+        "unaffordable_contract": 31
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 100,
+      "delay": 180,
+      "final": 10.85,
+      "trades": 6,
+      "fees": 7.15,
+      "realized_max_drawdown": 0.9244954766875435,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 223,
+        "unaffordable_contract": 32
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 1000,
+      "delay": 0,
+      "final": 550.0,
+      "trades": 31,
+      "fees": 78.0,
+      "realized_max_drawdown": 0.4785246989665308,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 31,
+        "not_spy_call": 223,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 1000,
+      "delay": 60,
+      "final": 540.4,
+      "trades": 30,
+      "fees": 80.6,
+      "realized_max_drawdown": 0.485676215856096,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 30,
+        "not_spy_call": 223,
+        "unaffordable_contract": 8
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 1000,
+      "delay": 180,
+      "final": 592.75,
+      "trades": 32,
+      "fees": 94.25,
+      "realized_max_drawdown": 0.4388696928101481,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 32,
+        "not_spy_call": 223,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261027,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 100,
+      "delay": 0,
+      "final": 12.9,
+      "trades": 2,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.871,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 228,
+        "unaffordable_contract": 31
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 100,
+      "delay": 60,
+      "final": 12.6,
+      "trades": 4,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.874,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 228,
+        "unaffordable_contract": 29
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 100,
+      "delay": 180,
+      "final": 7.9,
+      "trades": 4,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.921,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 228,
+        "unaffordable_contract": 29
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 1000,
+      "delay": 0,
+      "final": 542.1,
+      "trades": 26,
+      "fees": 68.9,
+      "realized_max_drawdown": 0.4756,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "not_spy_call": 228,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 1000,
+      "delay": 60,
+      "final": 598.1,
+      "trades": 25,
+      "fees": 68.9,
+      "realized_max_drawdown": 0.4236,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "not_spy_call": 228,
+        "unaffordable_contract": 8
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 1000,
+      "delay": 180,
+      "final": 567.0,
+      "trades": 23,
+      "fees": 65.0,
+      "realized_max_drawdown": 0.43300000000000005,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "not_spy_call": 228,
+        "unaffordable_contract": 10
+      }
+    },
+    {
+      "seed": 20261028,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 100,
+      "delay": 0,
+      "final": 5.9,
+      "trades": 5,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.941,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "not_spy_call": 224,
+        "unaffordable_contract": 32
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 100,
+      "delay": 60,
+      "final": 13.1,
+      "trades": 2,
+      "fees": 3.9,
+      "realized_max_drawdown": 0.869,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 224,
+        "unaffordable_contract": 35
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 100,
+      "delay": 180,
+      "final": 7.2,
+      "trades": 6,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.9279999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 224,
+        "unaffordable_contract": 30
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 1000,
+      "delay": 0,
+      "final": 485.3,
+      "trades": 30,
+      "fees": 76.7,
+      "realized_max_drawdown": 0.5146999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 30,
+        "not_spy_call": 224,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 1000,
+      "delay": 60,
+      "final": 533.4,
+      "trades": 31,
+      "fees": 80.6,
+      "realized_max_drawdown": 0.4666,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 31,
+        "not_spy_call": 224,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 1000,
+      "delay": 180,
+      "final": 578.7,
+      "trades": 30,
+      "fees": 79.3,
+      "realized_max_drawdown": 0.4230423940149626,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 30,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 224,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261029,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 100,
+      "delay": 0,
+      "final": 14.2,
+      "trades": 2,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.858,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 229,
+        "unaffordable_contract": 30
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 100,
+      "delay": 60,
+      "final": 6.2,
+      "trades": 2,
+      "fees": 7.8,
+      "realized_max_drawdown": 0.938,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "not_spy_call": 229,
+        "unaffordable_contract": 30
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 100,
+      "delay": 180,
+      "final": 8.9,
+      "trades": 2,
+      "fees": 9.1,
+      "realized_max_drawdown": 0.911,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 2,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 229,
+        "unaffordable_contract": 29
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 1000,
+      "delay": 0,
+      "final": 415.2,
+      "trades": 25,
+      "fees": 72.8,
+      "realized_max_drawdown": 0.5848,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "not_spy_call": 229,
+        "unaffordable_contract": 7
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 1000,
+      "delay": 60,
+      "final": 370.6,
+      "trades": 26,
+      "fees": 75.4,
+      "realized_max_drawdown": 0.6294,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "not_spy_call": 229,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 1000,
+      "delay": 180,
+      "final": 391.6,
+      "trades": 25,
+      "fees": 75.4,
+      "realized_max_drawdown": 0.6084,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 229,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261030,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 100,
+      "delay": 0,
+      "final": 3.2,
+      "trades": 6,
+      "fees": 20.8,
+      "realized_max_drawdown": 0.9766081871345029,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 229,
+        "unaffordable_contract": 26
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 100,
+      "delay": 60,
+      "final": 12.7,
+      "trades": 6,
+      "fees": 14.3,
+      "realized_max_drawdown": 0.8825161887141536,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 6,
+        "not_spy_call": 229,
+        "unaffordable_contract": 26
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 100,
+      "delay": 180,
+      "final": 11.0,
+      "trades": 4,
+      "fees": 13.0,
+      "realized_max_drawdown": 0.9149922720247295,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 229,
+        "unaffordable_contract": 28
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 1000,
+      "delay": 0,
+      "final": 590.45,
+      "trades": 22,
+      "fees": 69.55,
+      "realized_max_drawdown": 0.4646872166817769,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 22,
+        "not_spy_call": 229,
+        "unaffordable_contract": 10
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 1000,
+      "delay": 60,
+      "final": 491.1,
+      "trades": 21,
+      "fees": 55.9,
+      "realized_max_drawdown": 0.5128459478226366,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 21,
+        "not_spy_call": 229,
+        "unaffordable_contract": 11
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 1000,
+      "delay": 180,
+      "final": 533.4,
+      "trades": 23,
+      "fees": 54.6,
+      "realized_max_drawdown": 0.4818340781037498,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "not_spy_call": 229,
+        "unaffordable_contract": 9
+      }
+    },
+    {
+      "seed": 20261031,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 100,
+      "delay": 0,
+      "final": 6.8,
+      "trades": 1,
+      "fees": 5.2,
+      "realized_max_drawdown": 0.9319999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 1,
+        "not_spy_call": 228,
+        "unaffordable_contract": 32
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 100,
+      "delay": 60,
+      "final": 6.8,
+      "trades": 1,
+      "fees": 5.2,
+      "realized_max_drawdown": 0.9319999999999999,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 1,
+        "not_spy_call": 228,
+        "unaffordable_contract": 32
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 100,
+      "delay": 180,
+      "final": 10.8,
+      "trades": 1,
+      "fees": 5.2,
+      "realized_max_drawdown": 0.892,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 1,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 228,
+        "unaffordable_contract": 31
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 1000,
+      "delay": 0,
+      "final": 645.1,
+      "trades": 27,
+      "fees": 68.9,
+      "realized_max_drawdown": 0.3549,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 27,
+        "not_spy_call": 228,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 1000,
+      "delay": 60,
+      "final": 619.45,
+      "trades": 27,
+      "fees": 69.55,
+      "realized_max_drawdown": 0.3819,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 27,
+        "not_spy_call": 228,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 1000,
+      "delay": 180,
+      "final": 589.8,
+      "trades": 26,
+      "fees": 70.2,
+      "realized_max_drawdown": 0.41948818897637796,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 228,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261032,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 100,
+      "delay": 0,
+      "final": 7.5,
+      "trades": 3,
+      "fees": 6.5,
+      "realized_max_drawdown": 0.925,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 3,
+        "not_spy_call": 230,
+        "unaffordable_contract": 28
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 100,
+      "delay": 60,
+      "final": 14.6,
+      "trades": 4,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.854,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 230,
+        "unaffordable_contract": 27
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 100,
+      "delay": 180,
+      "final": 12.0,
+      "trades": 5,
+      "fees": 13.0,
+      "realized_max_drawdown": 0.8900091659028414,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "invalidated_before_entry": 3,
+        "not_spy_call": 230,
+        "unaffordable_contract": 23
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 1000,
+      "delay": 0,
+      "final": 656.4,
+      "trades": 23,
+      "fees": 54.6,
+      "realized_max_drawdown": 0.3721,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "not_spy_call": 230,
+        "unaffordable_contract": 8
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 1000,
+      "delay": 60,
+      "final": 778.1,
+      "trades": 25,
+      "fees": 68.9,
+      "realized_max_drawdown": 0.27670000000000006,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "not_spy_call": 230,
+        "unaffordable_contract": 6
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 1000,
+      "delay": 180,
+      "final": 779.5,
+      "trades": 23,
+      "fees": 58.5,
+      "realized_max_drawdown": 0.2930333960955307,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 23,
+        "invalidated_before_entry": 3,
+        "not_spy_call": 230,
+        "unaffordable_contract": 5
+      }
+    },
+    {
+      "seed": 20261033,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 100,
+      "delay": 0,
+      "final": 6.3,
+      "trades": 5,
+      "fees": 11.7,
+      "realized_max_drawdown": 0.937,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "not_spy_call": 232,
+        "unaffordable_contract": 24
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 100,
+      "delay": 60,
+      "final": 2.5,
+      "trades": 4,
+      "fees": 6.5,
+      "realized_max_drawdown": 0.975,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 4,
+        "not_spy_call": 232,
+        "unaffordable_contract": 25
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 100,
+      "delay": 180,
+      "final": 12.6,
+      "trades": 5,
+      "fees": 10.4,
+      "realized_max_drawdown": 0.8741258741258742,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 5,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 232,
+        "unaffordable_contract": 23
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 100,
+      "delay": 360,
+      "final": 100.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 1000,
+      "delay": 0,
+      "final": 588.6,
+      "trades": 26,
+      "fees": 62.4,
+      "realized_max_drawdown": 0.49460000000000004,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 26,
+        "not_spy_call": 232,
+        "unaffordable_contract": 3
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 1000,
+      "delay": 60,
+      "final": 513.0,
+      "trades": 25,
+      "fees": 52.0,
+      "realized_max_drawdown": 0.5548,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "not_spy_call": 232,
+        "unaffordable_contract": 4
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 1000,
+      "delay": 180,
+      "final": 674.6,
+      "trades": 25,
+      "fees": 62.4,
+      "realized_max_drawdown": 0.44499999999999995,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "closed_session": 104,
+        "entered": 25,
+        "invalidated_before_entry": 1,
+        "not_spy_call": 232,
+        "unaffordable_contract": 3
+      }
+    },
+    {
+      "seed": 20261034,
+      "initial": 1000,
+      "delay": 360,
+      "final": 1000.0,
+      "trades": 0,
+      "fees": 0,
+      "realized_max_drawdown": 0,
+      "cash_error": 0,
+      "real_orders": 0,
+      "statuses": {
+        "stale_or_future": 365
+      }
+    }
+  ]
+}

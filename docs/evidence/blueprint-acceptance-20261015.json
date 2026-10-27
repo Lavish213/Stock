@@ -1,0 +1,114 @@
+{
+  "synthetic": true,
+  "real_orders": 0,
+  "profitability_evidence": false,
+  "scope": "Five deliberately selected acceptance probes; not a statistical field error rate",
+  "probes": [
+    {
+      "name": "single_target_option_entry",
+      "passed": true
+    },
+    {
+      "name": "recap_is_not_entry",
+      "passed": true
+    },
+    {
+      "name": "strong_volume_positive_entry",
+      "passed": true
+    },
+    {
+      "name": "weak_volume_must_not_confirm_under_blueprint",
+      "passed": false,
+      "actual": {
+        "confirmed": true,
+        "reason": "wick_breakout_volume_unavailable",
+        "price": 102.0,
+        "bar": {
+          "o": 100.0,
+          "h": 103.0,
+          "l": 99.0,
+          "c": 102.0,
+          "v": 1.0,
+          "t": "2026-10-15T04:46:00+00:00"
+        }
+      }
+    },
+    {
+      "name": "multiple_targets_preserved_under_blueprint",
+      "passed": false,
+      "actual": null
+    }
+  ],
+  "passed": 3,
+  "gaps": 2,
+  "baseline_parser_signal": {
+    "source": "synthetic_creator",
+    "action": "BUY",
+    "ticker": "SPY",
+    "side": "CALL",
+    "strike": 780.0,
+    "expiry": "2026-10-16",
+    "confidence": 0.85,
+    "target_hint": 785.0,
+    "stop_hint": 765.0,
+    "note": "BTO SPY 780 CALL exp 2026-10-16 target 785 stop 765",
+    "amount_usd": null
+  },
+  "baseline_schema_presence": {
+    "ticker": true,
+    "side": true,
+    "strike": true,
+    "expiry": true,
+    "asset_class": false,
+    "underlying_spot": false,
+    "dte": false,
+    "premium": false,
+    "breakeven": false,
+    "breakeven_move_pct": false,
+    "entry_trigger": false,
+    "targets": false,
+    "stop_hint": true
+  },
+  "default_premium_stop_pct": 0.5,
+  "blueprint_premium_stop_pct": 0.3,
+  "integer_scaling": [
+    {
+      "contracts": 1,
+      "exact_80_20_possible": false,
+      "take_profit_quantity": "0.8",
+      "runner_quantity": "0.2"
+    },
+    {
+      "contracts": 2,
+      "exact_80_20_possible": false,
+      "take_profit_quantity": "1.6",
+      "runner_quantity": "0.4"
+    },
+    {
+      "contracts": 3,
+      "exact_80_20_possible": false,
+      "take_profit_quantity": "2.4",
+      "runner_quantity": "0.6"
+    },
+    {
+      "contracts": 4,
+      "exact_80_20_possible": false,
+      "take_profit_quantity": "3.2",
+      "runner_quantity": "0.8"
+    },
+    {
+      "contracts": 5,
+      "exact_80_20_possible": true,
+      "take_profit_quantity": "4.0",
+      "runner_quantity": "1.0"
+    },
+    {
+      "contracts": 10,
+      "exact_80_20_possible": true,
+      "take_profit_quantity": "8.0",
+      "runner_quantity": "2.0"
+    }
+  ],
+  "automatic_learning": "Not verified or activated; losses do not authorize model promotion",
+  "production_changes": false
+}

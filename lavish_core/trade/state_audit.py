@@ -13,7 +13,10 @@ def audit_state(store,broker_positions,*,halt_on_mismatch=True):
             remote[symbol.upper()]=qty
         local={symbol:finite_number(qty) for symbol,qty in store.fetchall('SELECT symbol,qty FROM positions')}
         for symbol in sorted(remote.keys()|local.keys()):
-            if abs(remote.get(symbol,0)-local.get(symbol,0))>1e-8:discrepancies.append(dict(symbol=symbol,broker_qty=remote.get(symbol,0),ledger_qty=local.get(symbol,0)))
+            if abs(remote.get(symbol,0)-local.get(symbol,0))>1e-8:
+                discrepancies.append(dict(symbol=symbol,broker_qty=remote.get(symbol,0),ledger_qty=local.get(symbol,0)))
+                if halt_on_mismatch:
+                    store.revoke_position_epoch(symbol)
     except (KeyError,ValueError,TypeError):discrepancies.append(dict(error='Invalid broker or ledger position data'))
     unresolved=store.get_open_orders();reasons=[]
     if discrepancies:reasons.append('broker_position_mismatch')

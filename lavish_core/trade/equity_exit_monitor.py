@@ -25,7 +25,7 @@ from typing import Optional, Dict, Any, Callable, List
 
 from lavish_core.trade.broker import get_order, latest_quote, place_order, cancel_order
 from lavish_core.trade.circuit_breaker import record_trade_outcome
-from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB
+from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB, _positions_lock
 from lavish_core.utils.alerts import post_discord
 from lavish_core.trade.exit_state import ExitState
 from lavish_core.trade.broker import get_order_by_client_id
@@ -57,6 +57,7 @@ def watch_bracket(
     leg_ids: List[str],
     venue: str = "paper",
     on_exit: Optional[Callable[[Dict[str, Any]], None]] = None,
+    position_epoch=...,
 ) -> Dict[str, Any]:
     """
     Blocking poll loop over a bracket order's take_profit/stop_loss child
@@ -68,6 +69,19 @@ def watch_bracket(
     if not leg_ids:
         log.warning("watch_bracket called for %s with no leg ids - nothing to watch.", symbol)
         return {"status": "no_legs"}
+
+    ownership = HybridStore(str(DEFAULT_DB))
+    try:
+        # A direct/restarted watcher binds the original entry receipt, not
+        # whichever same-symbol position exists at restart time.
+        entry_epoch = ownership.get_entry_epoch(order_id)
+        if position_epoch is ...:
+            position_epoch = entry_epoch
+        if not position_epoch or position_epoch != entry_epoch:
+            ownership.set_kill_switch(True, 'Bracket entry ownership unverified')
+            return {'status': 'fill_unverified'}
+    finally:
+        ownership.con.close()
 
     deadline = time.time() + MAX_MONITOR_HOURS * 3600
     log.info("Watching equity bracket exit for %s x%s (entry=%.2f) legs=%s", symbol, qty, entry_price, leg_ids)
@@ -118,10 +132,17 @@ def watch_bracket(
                 pnl = (exit_price - entry_price) * filled_qty - fee
                 store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
                 try:
-                    applied = store.log_fill(order_id=order_id, symbol=symbol, side="sell",
-                                    qty=filled_qty, price=exit_price, fee=fee, venue=venue, event_id=f"equity-exit:{leg_id}")
-                    if applied is not None:
-                        record_trade_outcome(store, pnl)
+                    with _positions_lock:
+                        duplicate = store.fetchall('SELECT 1 FROM fill_events WHERE event_id=?', (f'equity-exit:{leg_id}',))
+                        if not duplicate:
+                            held = store.get_position(symbol)
+                            if (store.get_position_epoch(symbol) != position_epoch
+                                    or not held or filled_qty - held['qty'] > 1e-12):
+                                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
+                        applied = store.log_fill(order_id=order_id, symbol=symbol, side="sell",
+                                        qty=filled_qty, price=exit_price, fee=fee, venue=venue, event_id=f"equity-exit:{leg_id}")
+                        if applied is not None:
+                            record_trade_outcome(store, pnl)
                 finally:
                     store.con.close()
                 log.info("Equity bracket exit: %s closed via %s leg, entry=%.2f exit=%.2f pnl=%.2f",

@@ -666,6 +666,14 @@ class HybridStore:
                 self.execute("INSERT INTO fills VALUES (?,?,?,?,?,?,?,?,?)", (fid,_utcnow(),order_id,symbol.upper(),side.lower(),qty,price,fee,venue))
                 self.set_order_status(order_id,"filled")
                 self._apply_fill_to_position(symbol.upper(),side.lower(),qty,price)
+                if side.lower() == 'buy':
+                    # Bind the entry receipt in the same transaction as the
+                    # position, not later when a worker happens to start.
+                    rows = self.fetchall('SELECT meta FROM orders WHERE id=?', (order_id,))
+                    if rows:
+                        meta = json.loads(rows[0][0] or '{}')
+                        meta.setdefault('position_epoch', self.get_position_epoch(symbol))
+                        self.execute('UPDATE orders SET meta=? WHERE id=?', (json.dumps(meta), order_id))
                 if event_id:
                     self.execute("INSERT INTO fill_events VALUES (?,?)", (event_id,fid))
                 if reservation_client_id:
@@ -768,6 +776,17 @@ class HybridStore:
         rows = self.fetchall("SELECT e.epoch FROM position_epochs e JOIN positions p ON e.symbol=p.symbol WHERE p.symbol=? AND p.qty>0",
                              (symbol.upper(),))
         return rows[0][0] if rows else None
+
+    def get_entry_epoch(self, order_id: str) -> Optional[str]:
+        """Read the immutable entry-to-monitor handoff, never today's position."""
+        rows = self.fetchall("SELECT meta FROM orders WHERE id=? AND side='buy'", (order_id,))
+        return json.loads(rows[0][0] or '{}').get('position_epoch') if rows else None
+
+    def revoke_position_epoch(self, symbol: str) -> None:
+        """Quarantine observed external state changes without inventing fills."""
+        with _positions_lock:
+            self.execute('DELETE FROM position_epochs WHERE symbol=?', (symbol.upper(),))
+            self.set_kill_switch(True, 'Position ownership revoked; broker reconciliation required')
 
     def get_open_orders(self, symbol: Optional[str] = None) -> List[Dict[str, Any]]:
         sql = "SELECT id, ts, symbol, side, qty, order_type, limit_price, tif, venue, status, client_id, meta FROM orders WHERE status IN ('submitted','accepted','new','pending_new','pending_cancel','partially_filled','pending_submit','submission_unknown','fill_unverified')"
