@@ -33,6 +33,15 @@ def requires_confirmation(text: str) -> bool:
     # five-minute hold" on a setup card is not authenticated market data.
     interval = (r'(?:\d{1,3}|one|two|three|four|five|six|ten|fifteen|thirty|sixty)'
                 r'(?:[- ](?:minutes?|hours?)|\s*(?:m(?:in(?:ute)?s?)?|h(?:ours?)?))')
+    # Duration may follow the hold/level instead of preceding it. Require
+    # explicit prerequisite language so an ordinary planned holding period
+    # is not mistaken for an entry confirmation rule.
+    if re.search(
+            r'\b(?:wait\s+for|only\s+enter\s+after|(?:entry|trade|setup)\s+(?:requires?|needs?))'
+            r'\b[^.!?]{0,40}\bhold(?:s|ing)?\s+'
+            rf'(?:(?:above|below|over|under)\s+\$?\d+(?:\.\d+)?\s+)?for\s+{interval}\b',
+            text, re.I):
+        return True
     if re.search(
             rf'\b{interval}\s+(?:(?:candle|bar)\s+)?(?:close[sd]?|hold)\b'
             r'|\b(?:wait\s+for|only\s+enter\s+after|(?:entry|trade|setup)\s+(?:requires?|needs?))'
