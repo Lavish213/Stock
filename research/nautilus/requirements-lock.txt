@@ -1,0 +1,17 @@
+# Observed Linux x86_64 / CPython 3.12 smoke environment, 2026-10-26.
+# Optional research only; not production dependencies.
+click==8.5.0
+fsspec==2026.2.0
+msgspec==0.22.0
+nautilus_trader==1.231.0
+numpy==2.5.4
+pandas==3.1.0
+portion==2.6.3
+pyarrow==26.0.0
+python-dateutil==3.0.0
+pytz==2026.5
+six==1.17.0
+sortedcontainers==2.4.0
+tqdm==4.70.1
+tzdata==2026.5
+uvloop==0.22.1

@@ -119,6 +119,9 @@ def watch_and_exit(
     target_underlying: Optional[float] = None,
     stop_underlying: Optional[float] = None,
     on_exit: Optional[Callable[[Dict[str, Any]], None]] = None,
+    resume_exit_reason: Optional[str] = None,
+    resume_underlying_price: Optional[float] = None,
+    position_epoch=...,
 ) -> Dict[str, Any]:
     """
     Blocking poll loop: watches both her stated underlying levels (if any)
@@ -135,7 +138,7 @@ def watch_and_exit(
     high_water_pct = 0.0
     trailing_active = False
     consecutive_failures = 0
-    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=contract_symbol,venue=os.getenv("TRADE_MODE","paper"))
+    exit_state = ExitState(qty,db_path=DEFAULT_DB,symbol=contract_symbol,venue=os.getenv("TRADE_MODE","paper"),position_epoch=position_epoch)
 
     log.info(
         "Watching %s (%s x%s, entry=%.2f) via underlying %s: her_target=%s her_stop=%s "
@@ -166,9 +169,22 @@ def watch_and_exit(
         not be.
         """
         nonlocal consecutive_failures
-        limit_price = _option_limit_price(contract_symbol)
+        # Order-status recovery does not require a new executable quote.
+        # Never submit a replacement without one, even after cancellation.
+        in_flight = getattr(exit_state, "pending", None) is not None or getattr(exit_state, "unknown", False)
+        try:
+            limit_price = _option_limit_price(contract_symbol)
+        except Exception as exc:
+            if not in_flight:
+                raise
+            # A quote transport/configuration fault must not prevent status
+            # lookup of an order that may already have filled. Lookup itself
+            # retains its normal failure handling; this grants no submit path.
+            limit_price = None
+            log.warning("%s: option quote failed (%s); reconciling existing exit only",
+                        contract_symbol, type(exc).__name__)
 
-        if limit_price == 0.0:
+        if limit_price == 0.0 and not in_flight:
             # A zero bid can recover; only an expired contract can settle.
             from lavish_core.trade.reconcile import parse_occ_symbol
             parsed = parse_occ_symbol(contract_symbol)
@@ -179,12 +195,13 @@ def watch_and_exit(
             return {"status":"settlement_unverified", "reason":f"{reason}_worthless_requires_broker_confirmation", "underlying_price":underlying_price,
                     "option_price":None, "quoted_bid":0.0, "order":None}
 
-        if limit_price is None:
+        if limit_price is None and not in_flight:
             return None
         outcome = exit_state.attempt(
             lambda remaining, client_id: place_option_order(contract_symbol=contract_symbol, side="sell", qty=remaining, order_type="limit", limit_price=limit_price, client_order_id=client_id),
             get_order_by_client_id, get_order, cancel_order, EXIT_FILL_POLL_ATTEMPTS,
-            lambda: time.sleep(EXIT_FILL_POLL_INTERVAL_SEC))
+            lambda: time.sleep(EXIT_FILL_POLL_INTERVAL_SEC),
+            **({"allow_submit": False} if limit_price is None or limit_price == 0.0 else {}))
         if outcome is None:
             consecutive_failures += 1
             _alert_failure(reason,"Closing order unresolved; retaining its identity")
@@ -194,14 +211,39 @@ def watch_and_exit(
         return {"status":"exited", "reason":reason, "underlying_price":underlying_price,
                 "option_price":outcome["price"], "filled_qty":outcome["filled_qty"], "order":outcome["order"], "ledger_recorded":outcome.get("ledger_recorded",False)}
 
+    allowed_resume_reasons = {
+        "her_target", "her_stop", "our_stop_loss", "our_trailing_stop",
+        "expiry_force_close", "max_hold_timeout",
+    }
+    if resume_exit_reason is not None and resume_exit_reason not in allowed_resume_reasons:
+        raise ValueError("Invalid resumed exit reason")
+
+    def _persist_intent(reason, underlying_price):
+        from lavish_core.db.hybrid_store import HybridStore
+        store = HybridStore(DEFAULT_DB)
+        try:
+            store.set_exit_intent(contract_symbol, reason, underlying_price, position_epoch=exit_state.position_epoch)
+        finally:
+            store.con.close()
+
+    def _clear_intent():
+        from lavish_core.db.hybrid_store import HybridStore
+        store = HybridStore(DEFAULT_DB)
+        try:
+            store.clear_exit_intent(contract_symbol, position_epoch=exit_state.position_epoch)
+        finally:
+            store.con.close()
+
     loop_errors = 0
+    latched_reason = resume_exit_reason
+    latched_underlying_price = resume_underlying_price
     while time.time() < deadline:
         try:
-            triggered_reason: Optional[str] = None
-            underlying_price = latest_quote(underlying_symbol)
+            triggered_reason: Optional[str] = latched_reason
+            underlying_price = latched_underlying_price if latched_reason else latest_quote(underlying_symbol)
 
             # --- her stated levels (checked first - this is the call being copied) ---
-            if underlying_price is not None:
+            if triggered_reason is None and underlying_price is not None:
                 if is_call:
                     if target_underlying is not None and underlying_price >= target_underlying:
                         triggered_reason = "her_target"
@@ -235,8 +277,20 @@ def watch_and_exit(
                     triggered_reason = "expiry_force_close"
 
             if triggered_reason:
+                # Once an exit is requested, a recovered price (or an
+                # unavailable underlying feed) must not cancel retries of
+                # that same ExitState/order identity after a failed attempt.
+                if latched_reason is None:
+                    # Persist before contacting the broker. A crash after the
+                    # trigger but before/while submitting must not let a
+                    # recovered price silently cancel the requested close.
+                    _persist_intent(triggered_reason, underlying_price)
+                    latched_reason = triggered_reason
+                    latched_underlying_price = underlying_price
                 result = _exit(triggered_reason, underlying_price)
                 if result is not None:
+                    if result.get("status") == "exited":
+                        _clear_intent()
                     if on_exit:
                         on_exit(result)
                     return result
@@ -268,12 +322,17 @@ def watch_and_exit(
     # than abandon the position unmanaged. This one must actually succeed:
     # keep retrying past the deadline (which has already been spent) rather
     # than returning a failure that would falsely read as "handled".
-    log.warning("%s: max hold time (%.1fh) reached with no other exit - forcing close.",
-                contract_symbol, MAX_MONITOR_HOURS)
+    log.warning("%s: max monitor window (%.1fh) reached; continuing %s exit.",
+                contract_symbol, MAX_MONITOR_HOURS, latched_reason or "max_hold_timeout")
+    if latched_reason is None:
+        _persist_intent("max_hold_timeout", latched_underlying_price)
+        latched_reason = "max_hold_timeout"
     while True:
         try:
-            result = _exit("max_hold_timeout")
+            result = _exit(latched_reason or "max_hold_timeout", latched_underlying_price)
             if result is not None:
+                if result.get("status") == "exited":
+                    _clear_intent()
                 if on_exit:
                     on_exit(result)
                 return result
@@ -295,4 +354,4 @@ def watch_and_exit_async(*args, **kwargs) -> threading.Thread:
     """Fire-and-forget version of watch_and_exit() for callers that can't block."""
     from lavish_core.utils.exit_supervisor import start_exit_worker
     symbol = kwargs.get('contract_symbol', args[1] if len(args)>1 else None)
-    return start_exit_worker(watch_and_exit, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=8)
+    return start_exit_worker(watch_and_exit, args, kwargs, symbol=symbol, db_path=DEFAULT_DB, callback_index=8, bind_position_epoch=True)

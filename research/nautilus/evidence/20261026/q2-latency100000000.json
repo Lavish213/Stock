@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "real_broker_orders": 0,
+  "creator_replay": false,
+  "profitability_evidence": false,
+  "production_configuration_changed": false,
+  "engine": "nautilus_trader",
+  "engine_version": "1.231.0",
+  "observed_at": "2026-10-26T01:33:43.853391+00:00",
+  "latency_ns": 100000000,
+  "quantity": 2,
+  "quote_count": 12,
+  "fills": [
+    {
+      "side": "BUY",
+      "filled_qty": "2",
+      "avg_px": "1.03",
+      "commissions": "['1.30 USD']",
+      "ts_last": "2026-10-20 13:30:01+00:00",
+      "timestamp_ns": 1792503001000000000
+    },
+    {
+      "side": "SELL",
+      "filled_qty": "2",
+      "avg_px": "1.06",
+      "commissions": "['1.30 USD']",
+      "ts_last": "2026-10-20 13:30:06+00:00",
+      "timestamp_ns": 1792503006000000000
+    }
+  ],
+  "final_cash": 1003.4,
+  "independently_expected_cash": 1003.4,
+  "flat": true,
+  "checks": {
+    "two_fills": true,
+    "flat": true,
+    "cash_conserved": true,
+    "correct_sides": true,
+    "whole_quantity": true,
+    "no_early_fills": true
+  },
+  "passed": true,
+  "limitations": [
+    "Invented fixed tape and entry/exit events; not the production parser or strategy",
+    "Deep synthetic top-of-book liquidity; no calibrated queue or partial-fill behavior",
+    "Fees, capital and latency are lab assumptions, not approved paper/live limits"
+  ]
+}

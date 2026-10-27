@@ -1,0 +1,2 @@
+# Separate Python 3.12 environment only. Never include in production requirements.
+nautilus_trader==1.231.0

@@ -58,7 +58,8 @@ def _streaming_quote(prices):
 @pytest.fixture(autouse=True)
 def _real_store(tmp_path, monkeypatch):
     db_path = tmp_path / "test.duckdb"
-    HybridStore(duckdb_path=db_path)
+    store = HybridStore(duckdb_path=db_path)
+    store.con.close()
     monkeypatch.setattr(eem, "DEFAULT_DB", db_path)
     # Short monitor window (minutes, not the real 12h default) so every
     # fuzz case that never hits target/stop still terminates fast via the
@@ -67,6 +68,12 @@ def _real_store(tmp_path, monkeypatch):
 
 
 def _run_case(prices, entry_price, take_profit, stop_loss, symbol="FUZZ"):
+    store = HybridStore(duckdb_path=eem.DEFAULT_DB)
+    try:
+        oid = store.submit_order(symbol, "buy", 10)
+        store.log_fill(oid, symbol, "buy", 10, entry_price)
+    finally:
+        store.con.close()
     clock = _FakeClock(step=eem.POLL_INTERVAL_SEC)
 
     def fake_place_order(symbol, side, qty, type_="market", time_in_force="day", client_order_id=None):

@@ -25,6 +25,7 @@ from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB, _positions_lock
 log = logging.getLogger("reconcile")
 
 RECONCILE_INTERVAL_SECONDS = float(os.getenv("RECONCILE_INTERVAL_SECONDS", "120"))
+QTY_TOLERANCE = 1e-12
 
 # OCC symbol: TICKER + YYMMDD + C/P + strike*1000 zero-padded to 8 digits
 _OCC_RE = re.compile(r"^([A-Z]+)(\d{6})([CP])(\d{8})$")
@@ -63,22 +64,63 @@ def parse_occ_symbol(symbol: str) -> Optional[Dict[str, Any]]:
     }
 
 
+def _find_current_entry_identity(contract_symbol: str):
+    """Return ``(first_fill_time, order_id)`` for the current long lifecycle."""
+    store = HybridStore(duckdb_path=str(DEFAULT_DB))
+    try:
+        rows = store.fetchall(
+            "SELECT ts, id, order_id, side, qty FROM fills "
+            "WHERE symbol=? ORDER BY ts, id",
+            (contract_symbol,),
+        )
+    finally:
+        store.con.close()
+    open_qty = 0.0
+    entry_time = None
+    entry_order_id = None
+    for fill_time, _, order_id, side, quantity in rows:
+        quantity = float(quantity)
+        if side == "buy":
+            if open_qty <= 0:
+                entry_time = fill_time
+                entry_order_id = order_id
+            open_qty += quantity
+        else:
+            open_qty = max(0.0, open_qty - quantity)
+            if open_qty == 0:
+                entry_time = None
+                entry_order_id = None
+    return entry_time, entry_order_id
+
+
 def _find_original_target_stop(contract_symbol: str) -> Tuple[Optional[float], Optional[float]]:
     """
-    Looks up the most recent 'buy' order for this contract to recover her
+    Looks up the order that started the current open lifecycle to recover her
     original stated target/stop (persisted in its meta by trade_handler.py).
     Returns (None, None) on any lookup failure or if the order predates
     this field being persisted - callers must treat that the same as
     "she didn't give one", not as an error.
     """
     try:
+        _, entry_order_id = _find_current_entry_identity(contract_symbol)
         store = HybridStore(duckdb_path=str(DEFAULT_DB))
-        rows = store.fetchall(
-            "SELECT meta FROM orders WHERE symbol = ? AND side = 'buy' "
-            "AND (status IN ('filled','partially_filled') OR EXISTS "
-            "(SELECT 1 FROM fills WHERE fills.order_id=orders.id AND fills.side='buy')) ORDER BY ts DESC LIMIT 1",
-            (contract_symbol,),
-        )
+        if entry_order_id is not None:
+            rows = store.fetchall(
+                "SELECT meta FROM orders WHERE id=? AND symbol=? AND side='buy'",
+                (entry_order_id, contract_symbol),
+            )
+        elif not store.fetchall("SELECT 1 FROM fills WHERE symbol=? LIMIT 1", (contract_symbol,)):
+            # Backward compatibility for legacy ledgers that recorded a filled
+            # order but predate persisted fill rows. Never use this fallback
+            # when any lifecycle history exists, where it could resurrect a
+            # prior position's levels.
+            rows = store.fetchall(
+                "SELECT meta FROM orders WHERE symbol=? AND side='buy' "
+                "AND status='filled' ORDER BY ts DESC LIMIT 1",
+                (contract_symbol,),
+            )
+        else:
+            return None, None
         if not rows:
             return None, None
         meta_raw = rows[0][0]
@@ -95,6 +137,23 @@ def _find_original_target_stop(contract_symbol: str) -> Tuple[Optional[float], O
             store.con.close()
 
 
+def _find_latest_entry_time(contract_symbol: str):
+    """Return the start of the current confirmed long-position lifecycle.
+
+    Exit intents are keyed by OCC symbol, which can be reused after a prior
+    position closes.  Replaying confirmed fills lets reconciliation distinguish
+    an intent belonging to that prior position from one belonging to the current
+    entry without mistaking a later add-on buy for a brand-new position.
+    Lookup failure deliberately returns ``None`` so a possibly valid latched
+    exit is preserved rather than silently discarded.
+    """
+    try:
+        return _find_current_entry_identity(contract_symbol)[0]
+    except Exception as e:
+        log.warning("reconcile: could not recover entry time for %s: %s", contract_symbol, e)
+        return None
+
+
 def reconcile_pending_orders(store=None):
     """Resolve durable pending entries without ever issuing another POST.
 
@@ -107,6 +166,12 @@ def reconcile_pending_orders(store=None):
     resolved = 0
     try:
         for local in store.get_open_orders():
+            # ExitState owns its tagged closing-order recovery. In particular,
+            # a quarantined journal must not be revived here after ExitState
+            # has found an ambiguous set of closing orders.
+            if (local.get("meta", {}).get("exit_state")
+                    and local.get("status") == "fill_unverified"):
+                continue
             client_id = local.get("client_id")
             if not client_id or local.get("venue") not in ("paper", "live"):
                 continue
@@ -134,6 +199,15 @@ def reconcile_pending_orders(store=None):
                     if current[0] in terminal:
                         continue
                     meta = json.loads(current[1] or '{}')
+                    # ExitState may have quarantined this journal while the
+                    # broker lookup was in flight. Recheck under the shared
+                    # lock so a stale sweep cannot override that decision.
+                    if current[0] == 'fill_unverified' and meta.get('exit_state'):
+                        continue
+                    if meta.get('exit_state') and (
+                            not meta.get('position_epoch')
+                            or meta['position_epoch'] != store.get_position_epoch(local['symbol'])):
+                        raise ValueError('Closing journal position lifecycle mismatch')
                     if meta.get('broker_id') and str(meta['broker_id']) != str(remote['id']):
                         raise ValueError('Broker order ID changed')
                     rows = store.fetchall("SELECT coalesce(sum(qty),0),coalesce(sum(qty*price),0),coalesce(sum(fee),0) FROM fills WHERE order_id=? AND side=?", (local["id"],local["side"]))
@@ -141,6 +215,17 @@ def reconcile_pending_orders(store=None):
                     delta = cumulative-recorded
                     if delta < 0:
                         raise ValueError("Broker fill regressed")
+                    if delta > 0 and local["side"] == "sell":
+                        position = store.get_position(local["symbol"])
+                        if (not position
+                                or delta - position["qty"] > QTY_TOLERANCE):
+                            raise ValueError("Sell fill exceeds confirmed inventory")
+                        # A cumulative broker quantity and the locally summed
+                        # fills can differ by binary-float residue. Close the
+                        # confirmed remainder, rather than writing a tiny
+                        # negative position, when that overrun is in tolerance.
+                        if delta > position["qty"]:
+                            delta = position["qty"]
                     fee = finite_number(remote.get('filled_fee', recorded_fee), nonnegative=True) - recorded_fee
                     if fee < 0:
                         raise ValueError('Broker execution fee regressed')
@@ -233,6 +318,29 @@ def reconcile_open_positions() -> int:
 
         target_underlying, stop_underlying = _find_original_target_stop(symbol)
         recovered_her_levels = target_underlying is not None or stop_underlying is not None
+        intent_store = HybridStore(DEFAULT_DB)
+        try:
+            exit_intent = intent_store.get_exit_intent(symbol)
+            entry_time = _find_latest_entry_time(symbol)
+            if (exit_intent and entry_time is not None
+                    and exit_intent["triggered_at"] < entry_time):
+                log.error(
+                    "reconcile: stale exit intent for %s predates the latest confirmed entry; "
+                    "clearing it and halting new entries while normal guardrails are restored.",
+                    symbol,
+                )
+                intent_store.clear_exit_intent(symbol)
+                intent_store.set_kill_switch(
+                    True, f"Stale exit intent superseded by newer entry: {symbol}",
+                )
+                post_discord(
+                    f"⚠️ Stale exit intent for {symbol} predates its latest confirmed entry. "
+                    "The old intent was quarantined, new entries were halted, and normal "
+                    "guardrails are being restored for the current position."
+                )
+                exit_intent = None
+        finally:
+            intent_store.con.close()
 
         log.warning(
             "reconcile: found unmanaged open position %s (%s x%s, entry=%.2f, exp=%s) - "
@@ -273,6 +381,8 @@ def reconcile_open_positions() -> int:
                 target_underlying=target_underlying,
                 stop_underlying=stop_underlying,
                 on_exit=_on_exit,
+                resume_exit_reason=exit_intent["reason"] if exit_intent else None,
+                resume_underlying_price=exit_intent["underlying_price"] if exit_intent else None,
             )
         except Exception:
             unmark_watched(symbol)

@@ -108,7 +108,9 @@ class AlertInbox:
             finally:store.con.close()
         if state=='expired':return state
         try:
-            callback(text=text,source='private-alert-feed',note='feed:'+identity)
+            # Preserve transport identity in the research journal's source
+            # namespace. created_at is sender time, NOT creator publication.
+            callback(text=text,source='private-alert-feed',note='feed:'+identity,post_id=identity)
             state='dispatched';reason=None
         except Exception:
             state='review_required';reason='dispatch_error'

@@ -1,0 +1,16 @@
+{
+  "validation": "offline validation_tests directory",
+  "tests": 3183,
+  "failures": 0,
+  "errors": 0,
+  "seconds": 126.11,
+  "focused_passed": 387,
+  "edge_lab_tests": 29,
+  "bandit_issues": 0,
+  "real_orders": 0,
+  "production_rules_changed": false,
+  "source_sha256": {
+    "lavish_core/validation/options_edge_lab.py": "612b6580b1e8fc0ee9e5e43d63618e1c70e0d57be18e15bc1af989c7d46a176c",
+    "validation_tests/test_options_edge_lab.py": "993ea64d42334d442b0dabd8d1354bccede50a1aeabfde8ada0ebbbf06959f54"
+  }
+}

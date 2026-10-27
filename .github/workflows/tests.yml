@@ -39,7 +39,9 @@ jobs:
       - name: Run entire repository suite including trading validation
         run: |
           mkdir -p validation/ci
+          python -m pytest --collect-only -q > validation/ci/collection.txt
           python -m pytest -q --junitxml=validation/ci/pytest.xml --cov=lavish_core --cov=ml --cov-branch --cov-report=json:validation/ci/coverage.json
+          python scripts/verify_pytest_completion.py --collection validation/ci/collection.txt --junit validation/ci/pytest.xml
       - name: Block medium and high security scan findings
         run: python -m bandit -r lavish_core ml -ll -f json -o validation/ci/bandit.json
       - name: Import and configuration preflight with dummy credentials

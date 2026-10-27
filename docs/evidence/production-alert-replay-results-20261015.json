@@ -1,0 +1,732 @@
+{
+  "synthetic": true,
+  "profitability_evidence": false,
+  "real_orders": 0,
+  "trace_sha256": "0148e977b33d56ace3785377619296787f0b8c65314056a509d9cbe1847ea9f7",
+  "trace_gzip_sha256": "138117ca2fdbaace9ba17bae16fd5f4ebdcdb169af66b4d9897deca2674b10ea",
+  "calendar_source": "https://www.nyse.com/trade/hours-calendars",
+  "annual": {
+    "100": {
+      "calendar_days": 365,
+      "market_open_days": 251,
+      "initial": 100.0,
+      "scenario_final_cash": 69.7,
+      "entries": 17,
+      "recoveries": 4,
+      "creator_exit_gaps": 3,
+      "cash_errors": 0,
+      "position_mismatches": 0,
+      "duplicate_entries": 0,
+      "forgeries_rejected": 365,
+      "stale_rejected": 22,
+      "exits": {
+        "her_target": 13,
+        "our_stop_loss": 3,
+        "her_stop": 1
+      },
+      "by_kind": {
+        "conditional": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "creator_close": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "creator_close_lifecycle": {
+          "alerts": 23,
+          "entered": 3
+        },
+        "creator_trim_lifecycle": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "exit_outage": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "false_break": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "lost_ack": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "partial_entry": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "partial_exit_restart": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "premium_stop": {
+          "alerts": 23,
+          "entered": 3
+        },
+        "restart": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "stale": {
+          "alerts": 22,
+          "entered": 0
+        },
+        "structural_stop": {
+          "alerts": 22,
+          "entered": 1
+        },
+        "target": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "trim": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "wrong_contract": {
+          "alerts": 22,
+          "entered": 0
+        }
+      }
+    },
+    "1000": {
+      "calendar_days": 365,
+      "market_open_days": 251,
+      "initial": 1000.0,
+      "scenario_final_cash": 1178.6,
+      "entries": 18,
+      "recoveries": 4,
+      "creator_exit_gaps": 3,
+      "cash_errors": 0,
+      "position_mismatches": 0,
+      "duplicate_entries": 0,
+      "forgeries_rejected": 365,
+      "stale_rejected": 22,
+      "exits": {
+        "her_target": 14,
+        "our_stop_loss": 3,
+        "her_stop": 1
+      },
+      "by_kind": {
+        "conditional": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "creator_close": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "creator_close_lifecycle": {
+          "alerts": 23,
+          "entered": 3
+        },
+        "creator_trim_lifecycle": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "exit_outage": {
+          "alerts": 23,
+          "entered": 3
+        },
+        "false_break": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "lost_ack": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "partial_entry": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "partial_exit_restart": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "premium_stop": {
+          "alerts": 23,
+          "entered": 3
+        },
+        "restart": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "stale": {
+          "alerts": 22,
+          "entered": 0
+        },
+        "structural_stop": {
+          "alerts": 22,
+          "entered": 1
+        },
+        "target": {
+          "alerts": 23,
+          "entered": 2
+        },
+        "trim": {
+          "alerts": 23,
+          "entered": 0
+        },
+        "wrong_contract": {
+          "alerts": 22,
+          "entered": 0
+        }
+      }
+    }
+  },
+  "isolated_probes": [
+    {
+      "kind": "target",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_d8ffc0d1fd204640ab06643f",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "premium_stop",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "our_stop_loss",
+          "underlying_price": 770,
+          "option_price": 0.04,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.04,
+            "client_order_id": "exit_81ba6da8b63f4269babead7b",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.04,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.04,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "partial_entry",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_edd3d5e5acec4142839a817a",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 1,
+          "price": 0.1,
+          "fee": 0.65
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 7,
+          "price": 0.1,
+          "fee": 4.55
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "lost_ack",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_0041760eef2a4bb6a6c171fb",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "exit_outage",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_591346e9f48044f4930c070c",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 3,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "false_break",
+      "entry_orders": 0,
+      "exit_results": [],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 0,
+      "fills": [],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "conditional",
+      "entry_orders": 0,
+      "exit_results": [],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 0,
+      "fills": [],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "trim",
+      "entry_orders": 0,
+      "exit_results": [],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 0,
+      "fills": [],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "creator_close",
+      "entry_orders": 0,
+      "exit_results": [],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 0,
+      "fills": [],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "restart",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_12e308cbdf394ab0a97cd889",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 1,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "creator_trim_lifecycle",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_977c06c2e0bd47ecae5004ab",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": true,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "creator_close_lifecycle",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_3f6a58fdac2a46c6a87cbab4",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": true,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "partial_exit_restart",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_target",
+          "underlying_price": 776,
+          "option_price": 0.12,
+          "filled_qty": 7.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_9f4c368d518a4aa5b60b2ddb",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 1,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 1,
+          "price": 0.12,
+          "fee": 0.65
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 7,
+          "price": 0.12,
+          "fee": 4.55
+        }
+      ],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "structural_stop",
+      "entry_orders": 1,
+      "exit_results": [
+        {
+          "status": "exited",
+          "reason": "her_stop",
+          "underlying_price": 764,
+          "option_price": 0.12,
+          "filled_qty": 8.0,
+          "order": {
+            "id": "sim-2",
+            "symbol": "SPY261008C00770000",
+            "side": "sell",
+            "qty": 8,
+            "limit_price": 0.12,
+            "client_order_id": "exit_8250ec0003e14562b86bdf9e",
+            "status": "filled",
+            "filled_qty": 8,
+            "filled_avg_price": 0.12,
+            "filled_fee": 5.2
+          },
+          "ledger_recorded": true
+        }
+      ],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 2,
+      "fills": [
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "BUY",
+          "qty": 8,
+          "price": 0.1,
+          "fee": 5.2
+        },
+        {
+          "symbol": "SPY261008C00770000",
+          "side": "SELL",
+          "qty": 8,
+          "price": 0.12,
+          "fee": 5.2
+        }
+      ],
+      "cash_error": -0.0,
+      "position_match": true
+    },
+    {
+      "kind": "stale",
+      "entry_orders": 0,
+      "exit_results": [],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 0,
+      "fills": [],
+      "cash_error": 0.0,
+      "position_match": true
+    },
+    {
+      "kind": "wrong_contract",
+      "entry_orders": 0,
+      "exit_results": [],
+      "recovered_monitors": 0,
+      "creator_exit_gap": false,
+      "order_submit_attempts": 0,
+      "fills": [],
+      "cash_error": 0.0,
+      "position_match": true
+    }
+  ]
+}

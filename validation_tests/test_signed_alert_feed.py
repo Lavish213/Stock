@@ -81,9 +81,24 @@ def test_request_rate_is_bounded(inbox):
 def test_execute_queue_dispatches_once_and_records_receipt_not_fill(inbox,monkeypatch):
     monkeypatch.setenv('ALERT_FEED_EXECUTE','true');assert request(inbox)[1]['status']=='queued'
     callback=Mock();assert inbox.dispatch_once(callback,execute=True,now=NOW)=='dispatched'
-    callback.assert_called_once_with(text='watch only SPY',source='private-alert-feed',note='feed:event-1')
+    callback.assert_called_once_with(text='watch only SPY',source='private-alert-feed',note='feed:event-1',post_id='event-1')
     assert inbox.dispatch_once(callback,execute=True,now=NOW) is None
     assert request(inbox)[1]['status']=='dispatched'
+
+def test_transport_identity_survives_actual_research_journal(inbox,monkeypatch,tmp_path):
+    from lavish_core.feeds.research_context import ResearchJournal
+    from lavish_core.trading.alert_handler import handle_alert_text
+    path=tmp_path/'research.sqlite'
+    monkeypatch.setenv('RESEARCH_CONTEXT_DB',str(path))
+    monkeypatch.setenv('ALERT_FEED_EXECUTE','true')
+    assert request(inbox)[0]==202
+    assert inbox.dispatch_once(handle_alert_text,execute=True,now=NOW)=='dispatched'
+    records=ResearchJournal(path).as_of('2099-01-01T00:00:00Z')
+    assert len(records)==1
+    assert records[0]['post_id']=='event-1'
+    assert records[0]['source']=='private-alert-feed'
+    # Sender creation time is not authenticated creator publication time.
+    assert records[0]['published_at'] is None
 
 def test_stale_queued_alert_is_not_dispatched(inbox,monkeypatch):
     monkeypatch.setenv('ALERT_FEED_EXECUTE','true');request(inbox)

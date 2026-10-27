@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import sqlite3
 from datetime import datetime, timezone
@@ -24,24 +25,109 @@ def research_source(source: str) -> bool:
     return bool(re.search(r'reddit|wallstreetbets|(?:^|\W)wsb(?:$|\W)', source, re.I))
 
 
+def requires_confirmation(text: str) -> bool:
+    """Literal source constraints; contract details cannot override them."""
+    text = ' '.join(text.split())
+    # These describe prerequisites, not evidence that a candle/retest actually
+    # happened. Never promote them from prose alone. In particular, "confirmed
+    # five-minute hold" on a setup card is not authenticated market data.
+    interval = (r'(?:\d{1,3}|one|two|three|four|five|six|ten|fifteen|thirty|sixty)'
+                r'(?:[- ](?:minutes?|hours?)|\s*(?:m(?:in(?:ute)?s?)?|h(?:ours?)?))')
+    # Duration may follow the hold/level instead of preceding it. Require
+    # explicit prerequisite language so an ordinary planned holding period
+    # is not mistaken for an entry confirmation rule.
+    if re.search(
+            r'\b(?:wait\s+for|only\s+enter\s+after|(?:entry|trade|setup)\s+(?:requires?|needs?))'
+            r'\b[^.!?]{0,40}\bhold(?:s|ing)?\s+'
+            rf'(?:(?:above|below|over|under)\s+\$?\d+(?:\.\d+)?\s+)?for\s+{interval}\b',
+            text, re.I):
+        return True
+    if re.search(
+            rf'\b{interval}\s+(?:(?:candle|bar)\s+)?(?:close[sd]?|hold)\b'
+            r'|\b(?:wait\s+for|only\s+enter\s+after|(?:entry|trade|setup)\s+(?:requires?|needs?))'
+            r'[^.!?]{0,80}\bretest\b', text, re.I):
+        return True
+    return bool(re.search(
+        r'\bwait(?:ing)?\s+for\s+(?:market\s+)?confirmation\b'
+        r'|\bnot\s+(?:an?\s+)?automatic\s+entr(?:y|ies)\b'
+        r'|\b(?:entry|trade|setup)s?\s+(?:requires?|needs?)\s+(?:market\s+)?confirmation\b'
+        r'|\bonly\s+enter\s+(?:trades?\s+)?(?:based\s+on|with)\s+(?:market\s+)?confirmation\b', text, re.I))
+
+
+def condition_metadata(text: str) -> tuple[dict | None, str | None]:
+    """Retain literal trigger levels for review; never choose a hold policy.
+
+    A quoted zone and a measurable confirmation policy are different facts.
+    Unknown duration/volume rules stay unknown, and contradictory conditions
+    cannot silently collapse into the first level mentioned.
+    """
+    number = r'[-+]?(?:\d+(?:\.\d+)?|\.\d+)'
+    candidates = []
+    for match in re.finditer(
+            rf'\bbreak\s+and\s+hold\s+(above|below)\s*\$?({number})(?!\w|\.\d)', text, re.I):
+        value = float(match[2])
+        if not math.isfinite(value) or value <= 0:
+            return None, 'invalid_condition_level'
+        candidates.append({'direction': match[1].lower(), 'level': value})
+    pattern = (
+        rf'\breclaim\s+(?:the\s+)?\$?(?P<low>{number})\s*(?:[-–—]|to)\s*'
+        rf'\$?(?P<high>{number})(?!\w|\.\d)\s*(?:(?:range|zone|area)\s*)?'
+        rf'(?:(?:and|then)\s+)?hold\s+above\b(?:\s+\$?(?P<hold>{number})(?!\w|\.\d))?'
+    )
+    for match in re.finditer(pattern, text, re.I):
+        low, high = float(match['low']), float(match['high'])
+        if not all(math.isfinite(x) for x in (low, high)) or not 0 < low < high:
+            return None, 'invalid_reclaim_zone'
+        if match['hold'] is not None and float(match['hold']) != high:
+            return None, 'ambiguous_reclaim_threshold'
+        if match['hold'] is None:
+            tail = text[match.end():].lstrip()
+            if tail and not re.match(
+                    r'^(?:[.;,]|(?:this|the)\s+(?:area|range|zone)\b|(?:with|and|for)\b)', tail, re.I):
+                return None, 'unresolved_reclaim_threshold'
+        candidates.append(dict(direction='above', level=high, zone_low=low,
+            zone_high=high, trigger_type='reclaim_and_hold', hold_duration=None,
+            buyers_confirmation_requested=bool(re.search(r'\bbuyers?\s+stepping\s+in\b', text, re.I)),
+            volume_policy=None, review_required=True))
+    unique = {json.dumps(candidate, sort_keys=True): candidate for candidate in candidates}
+    if len(unique) > 1:
+        return None, 'multiple_conditions_require_review'
+    return next(iter(unique.values()), None), None
+
+
 def classify(text: str) -> dict:
     """Return a review tag, never an execution decision."""
     normalized = ' '.join(text.lower().split())
-    if re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
+    if re.search(r'\b(?:take|sell|trim)\s+(?:\d+(?:\.\d+)?\s*%|half|a quarter)(?!\w)|\btake\s+\d+(?:\.\d+)?\s*%\s+(?:of\s+)?profits|\bride the rest\b', normalized):
+        kind = 'position_management'
+    elif re.search(r'\b(?:setup|trade)\s+(?:(?:is|has\s+been)\s+)?(?:retired|invalidated|cancelled|canceled)\b'
+                   r'|\bnot\s+(?:a\s+)?new\s+entry\b', normalized):
         kind = 'progress_update'
-    elif re.search(r'\b(?:buy|sell|exit|close)\s+\$?[a-z]{1,6}\s+(?:now|here)\b|\bbto\b', normalized) and not re.search(r'\b(?:if|when|once|tomorrow|break and hold|only above|only below)\b', normalized):
+    elif requires_confirmation(normalized):
+        kind = 'conditional_setup'
+    elif re.search(r'\bwent\s+from\s+\$?\d+(?:\.\d+)?\s*(?:a\s+contract\s+)?to\s+\$?\d+(?:\.\d+)?\b|\bno\s+valid\s+(?:call|put|entry|trade)\b', normalized):
+        # Retrospective performance and failed-trigger reports remain context
+        # even when an adjacent screenshot supplies a complete contract.
+        kind = 'progress_update'
+    elif re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
+        kind = 'progress_update'
+    elif re.search(r'\b(?:buy|sell|exit|close)\s+\$?[a-z]{1,6}\s+(?:now|here)\b|\bbto\b', normalized) and not re.search(r'\b(?:if|when|once|tomorrow|break and hold|reclaim.*hold|only above|only below)\b', normalized):
         kind = 'instruction_candidate'
     elif re.search(r'\b(?:cpi|inflation|jobs report|employment situation|payrolls|ppi|fomc|fed|beige book|gdp|jobless claims)\b', normalized):
         kind = 'macro_context'
-    elif re.search(r'\b(?:break and hold|break.*above|buy.*(?:when|if|above|below)|watch(?:ing|list)?|set ?up)\b', normalized):
+    elif re.search(r'\b(?:break and hold|reclaim.*hold|break.*above|buy.*(?:when|if|above|below)|watch(?:ing|list)?|set ?up)\b', normalized):
         kind = 'conditional_setup'
+    elif re.search(r'\bwhales?\b|\b(?:unusual|institutional) (?:options? )?flow\b', normalized):
+        kind = 'flow_context'
     elif re.search(r'\b(?:buy|buying|bto|sell|selling|stc|entry|exit|close|closing)\b', normalized):
         kind = 'instruction_candidate'
     else:
         kind = 'research_note'
-    condition = re.search(r'break\s+and\s+hold\s+(above|below)\s*\$?(\d+(?:\.\d+)?)', normalized)
-    return {'kind': kind, 'condition': {'direction': condition[1], 'level': float(condition[2])} if condition else None,
-            'execution_authorized': False}
+    condition, error = condition_metadata(normalized)
+    result = {'kind': kind, 'condition': condition, 'execution_authorized': False}
+    if error:
+        result['condition_error'] = error
+    return result
 
 
 class ResearchJournal:
