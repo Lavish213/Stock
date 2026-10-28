@@ -133,7 +133,28 @@ def watch_bracket(
                 store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
                 try:
                     with _positions_lock:
-                        duplicate = store.fetchall('SELECT 1 FROM fill_events WHERE event_id=?', (f'equity-exit:{leg_id}',))
+                        duplicate = store.fetchall(
+                            'SELECT f.id,f.order_id,f.symbol,f.side,f.qty,f.price,f.fee '
+                            'FROM fill_events e LEFT JOIN fills f ON f.id=e.fill_id WHERE e.event_id=?',
+                            (f'equity-exit:{leg_id}',))
+                        if duplicate:
+                            fid, original, instrument, side, amount, price, recorded_fee = duplicate[0]
+                            if (original != order_id or instrument != symbol.upper() or side != 'sell'
+                                    or amount != filled_qty or price is None
+                                    or abs(price - exit_price) > 1e-8):
+                                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
+                            # Sparse snapshots preserve confirmed fees; a supplied
+                            # cumulative fee may increase but must never regress.
+                            fee = finite_number(leg.get('filled_fee', recorded_fee), nonnegative=True)
+                            if fee < recorded_fee:
+                                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
+                            if fee > recorded_fee:
+                                store.set_kill_switch(True, 'Native bracket fee changed; outcome reconciliation required')
+                                store.execute('UPDATE fills SET fee=? WHERE id=?', (fee, fid))
+                                # Do not count this correction as another trade or
+                                # silently reuse the old loss-streak outcome.
+                                return _finish({'status': 'fee_reconciled_review_required',
+                                                'leg_id': leg_id, 'fee_delta': fee - recorded_fee})
                         if not duplicate:
                             held = store.get_position(symbol)
                             if (store.get_position_epoch(symbol) != position_epoch
@@ -145,6 +166,7 @@ def watch_bracket(
                             record_trade_outcome(store, pnl)
                 finally:
                     store.con.close()
+                pnl = (exit_price - entry_price) * filled_qty - fee
                 log.info("Equity bracket exit: %s closed via %s leg, entry=%.2f exit=%.2f pnl=%.2f",
                           symbol, leg.get("type", "?"), entry_price, exit_price, pnl)
                 return _finish({"status": "exited", "leg_id": leg_id, "leg_type": leg.get("type"),
