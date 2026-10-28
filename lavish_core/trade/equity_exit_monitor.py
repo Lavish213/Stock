@@ -29,7 +29,7 @@ from lavish_core.db.hybrid_store import HybridStore, DEFAULT_DB, _positions_lock
 from lavish_core.utils.alerts import post_discord
 from lavish_core.trade.exit_state import ExitState
 from lavish_core.trade.broker import get_order_by_client_id
-from lavish_core.utils.safety import finite_number
+from lavish_core.trade.native_bracket_receipt import book_receipt
 
 log = logging.getLogger("equity_exit_monitor")
 
@@ -68,6 +68,11 @@ def watch_bracket(
     """
     if not leg_ids:
         log.warning("watch_bracket called for %s with no leg ids - nothing to watch.", symbol)
+        store = HybridStore(str(DEFAULT_DB))
+        try:
+            store.set_kill_switch(True, 'Native bracket legs missing; protection unverified')
+        finally:
+            store.con.close()
         return {"status": "no_legs"}
 
     ownership = HybridStore(str(DEFAULT_DB))
@@ -120,59 +125,41 @@ def watch_bracket(
             status = leg.get("status", "unknown")
             last_status[leg_id] = status
 
-            if status == "filled":
-                try:
-                    exit_price = finite_number(leg.get("filled_avg_price"), positive=True)
-                    filled_qty = finite_number(leg.get("filled_qty"), positive=True)
-                    fee = finite_number(leg.get('filled_fee', 0), nonnegative=True)
-                    if filled_qty != qty:
-                        raise ValueError("Filled bracket exit does not match watched quantity")
-                except ValueError:
-                    return _finish({"status":"fill_unverified", "leg_id":leg_id})
-                pnl = (exit_price - entry_price) * filled_qty - fee
+            if status in ('filled', 'partially_filled', 'canceled', 'expired', 'rejected'):
                 store = HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
                 try:
                     with _positions_lock:
-                        duplicate = store.fetchall(
-                            'SELECT f.id,f.order_id,f.symbol,f.side,f.qty,f.price,f.fee '
-                            'FROM fill_events e LEFT JOIN fills f ON f.id=e.fill_id WHERE e.event_id=?',
-                            (f'equity-exit:{leg_id}',))
-                        if duplicate:
-                            fid, original, instrument, side, amount, price, recorded_fee = duplicate[0]
-                            if (original != order_id or instrument != symbol.upper() or side != 'sell'
-                                    or amount != filled_qty or price is None
-                                    or abs(price - exit_price) > 1e-8):
-                                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
-                            # Sparse snapshots preserve confirmed fees; a supplied
-                            # cumulative fee may increase but must never regress.
-                            fee = finite_number(leg.get('filled_fee', recorded_fee), nonnegative=True)
-                            if fee < recorded_fee:
-                                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
-                            if fee > recorded_fee:
-                                store.set_kill_switch(True, 'Native bracket fee changed; outcome reconciliation required')
-                                store.execute('UPDATE fills SET fee=? WHERE id=?', (fee, fid))
-                                # Do not count this correction as another trade or
-                                # silently reuse the old loss-streak outcome.
-                                return _finish({'status': 'fee_reconciled_review_required',
-                                                'leg_id': leg_id, 'fee_delta': fee - recorded_fee})
-                        if not duplicate:
-                            held = store.get_position(symbol)
-                            if (store.get_position_epoch(symbol) != position_epoch
-                                    or not held or filled_qty - held['qty'] > 1e-12):
-                                return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
-                        applied = store.log_fill(order_id=order_id, symbol=symbol, side="sell",
-                                        qty=filled_qty, price=exit_price, fee=fee, venue=venue, event_id=f"equity-exit:{leg_id}")
-                        if applied is not None:
+                        receipt = book_receipt(store, order_id=order_id, symbol=symbol, quantity=qty,
+                            epoch=position_epoch, leg_id=leg_id, leg=leg, venue=venue)
+                        if receipt['review_required']:
+                            return _finish({'status': 'fee_reconciled_review_required',
+                                            'leg_id': leg_id, 'fee_delta': receipt['fee_delta']})
+                        if status != 'filled':
+                            continue
+                        exit_price = receipt['notional'] / qty
+                        pnl = receipt['notional'] - entry_price * qty - receipt['fee']
+                        if receipt['newly_recorded'] and store.try_claim_outcome(f'native-bracket-outcome:{order_id}'):
                             record_trade_outcome(store, pnl)
+                except ValueError:
+                    return _finish({'status': 'fill_unverified', 'leg_id': leg_id})
                 finally:
                     store.con.close()
-                pnl = (exit_price - entry_price) * filled_qty - fee
                 log.info("Equity bracket exit: %s closed via %s leg, entry=%.2f exit=%.2f pnl=%.2f",
                           symbol, leg.get("type", "?"), entry_price, exit_price, pnl)
                 return _finish({"status": "exited", "leg_id": leg_id, "leg_type": leg.get("type"),
                                 "exit_price": exit_price, "pnl": pnl})
 
         if all(s in _TERMINAL_NO_FILL for s in last_status.values()):
+            store = HybridStore(str(DEFAULT_DB))
+            try:
+                executed = store.fetchall(
+                    "SELECT coalesce(sum(f.qty),0) FROM fill_events e JOIN fills f ON f.id=e.fill_id "
+                    "WHERE f.order_id=? AND substr(e.event_id,1,12)='equity-exit:'", (order_id,))[0][0]
+            finally:
+                store.con.close()
+            if executed:
+                return _finish({'status': 'partial_fill_review_required', 'filled_qty': executed,
+                                'leg_statuses': dict(last_status)})
             log.warning("equity_exit_monitor: every tracked leg for %s ended without filling (%s) - "
                         "position may have closed some other way; no exit fill recorded.", symbol, last_status)
             return _finish({"status": "no_fill", "leg_statuses": dict(last_status)})
