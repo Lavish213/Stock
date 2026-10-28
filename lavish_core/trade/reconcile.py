@@ -411,9 +411,9 @@ def _recover_equity_position(position):
         entry = finite_number(position.get('avg_entry_price'), positive=True)
         rows = store.fetchall("SELECT id,qty,venue,meta FROM orders WHERE symbol=? AND side='buy' "
                               "AND status='filled' ORDER BY ts DESC LIMIT 1", (symbol,))
-        if not rows or rows[0][1] != qty:
+        if not rows:
             raise ValueError('Equity ownership or original quantity unverified')
-        oid, _, venue, raw_meta = rows[0]
+        oid, original_qty, venue, raw_meta = rows[0]
         confirmed = store.fetchall("SELECT coalesce(sum(CASE WHEN side='buy' THEN qty ELSE -qty END),0) "
                                   "FROM fills WHERE order_id=?", (oid,))[0][0]
         if confirmed != qty:
@@ -423,9 +423,18 @@ def _recover_equity_position(position):
             raise ValueError('Equity venue unverified')
         kwargs = dict(symbol=symbol, qty=qty, entry_price=entry, venue=venue)
         if SUPPORTS_NATIVE_BRACKETS:
+            held = store.get_position(symbol)
+            epoch = store.get_entry_epoch(oid)
+            buys = store.fetchall("SELECT coalesce(sum(qty),0) FROM fills WHERE order_id=? AND side='buy'", (oid,))[0][0]
+            if (not held or held['qty'] != qty or not epoch
+                    or epoch != store.get_position_epoch(symbol)
+                    or buys != original_qty or qty > original_qty):
+                raise ValueError('Native bracket remaining ownership unverified')
             parent = get_order(meta['broker_id'])
             if (not isinstance(parent, dict) or str(parent.get('id')) != str(meta['broker_id'])
-                    or ('symbol' in parent and parent['symbol'] != symbol)):
+                    or ('symbol' in parent and parent['symbol'] != symbol)
+                    or ('side' in parent and parent['side'] != 'buy')
+                    or ('qty' in parent and finite_number(parent['qty'], positive=True) != original_qty)):
                 raise ValueError('Equity bracket parent identity unverified')
             legs = parent.get('legs')
             if not isinstance(legs, list) or not legs:
@@ -433,9 +442,14 @@ def _recover_equity_position(position):
             leg_ids = [leg['id'] for leg in legs if isinstance(leg, dict) and leg.get('id')]
             if len(leg_ids) != len(legs) or len(set(leg_ids)) != len(leg_ids):
                 raise ValueError('Invalid equity bracket legs')
-            kwargs.update(order_id=oid, leg_ids=leg_ids)
+            # Child receipts stay cumulative against the ORIGINAL bracket
+            # quantity, not today's remaining inventory. The watcher books
+            # only the unrecorded delta and verifies current lifecycle again.
+            kwargs.update(order_id=oid, leg_ids=leg_ids, qty=original_qty, position_epoch=epoch)
             launch = watch_bracket_async
         else:
+            if original_qty != qty:
+                raise ValueError('Active equity exit quantity changed; review required')
             target = finite_number(meta.get('take_profit'), positive=True)
             stop = finite_number(meta.get('stop_loss'), positive=True)
             if not stop < entry < target:
