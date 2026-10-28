@@ -93,3 +93,53 @@ def test_partial_receipt_cannot_be_applied_to_reopened_lifecycle(store,native):
     store.log_fill(new,'AAPL','buy',2,100)
     assert native([receipt('filled',2,111,.25)])['status']=='fill_unverified'
     assert store.get_position('AAPL')['qty']==2
+
+
+@pytest.mark.parametrize('fault',[None,'parent_qty','parent_side','revoked_epoch','remaining_mismatch'])
+def test_startup_recovery_uses_original_bracket_quantity_after_partial(store,monkeypatch,fault):
+    from unittest.mock import Mock
+    from lavish_core.trade import reconcile as rc
+    oid=store.submit_order('AAPL','buy',2,venue='paper',meta={'broker_id':'parent'})
+    store.log_fill(oid,'AAPL','buy',2,100)
+    monkeypatch.setattr(em,'DEFAULT_DB',store.db_path)
+    monkeypatch.setattr(rc,'DEFAULT_DB',store.db_path)
+    monkeypatch.setattr(rc,'_watched',set())
+    monkeypatch.setattr(rc,'SUPPORTS_NATIVE_BRACKETS',True)
+    monkeypatch.setattr(em,'get_order',lambda _:receipt('canceled',1))
+    em.watch_bracket(oid,'AAPL',2,100,['leg'])
+    parent={'id':'parent','symbol':'AAPL','side':'buy','qty':2,'legs':[{'id':'leg'}]}
+    if fault=='parent_qty':parent['qty']=1
+    if fault=='parent_side':parent['side']='sell'
+    if fault=='revoked_epoch':store.revoke_position_epoch('AAPL')
+    if fault=='remaining_mismatch':store.execute("UPDATE positions SET qty=2 WHERE symbol='AAPL'")
+    monkeypatch.setattr(rc,'get_order',lambda _:parent)
+    launch=Mock();monkeypatch.setattr(em,'watch_bracket_async',launch)
+    position=dict(symbol='AAPL',qty=1,avg_entry_price=100)
+    assert rc._recover_equity_position(position)==(0 if fault else 1)
+    if fault:
+        launch.assert_not_called()
+        assert store.get_kill_switch()[0]
+        return
+    assert launch.call_args.kwargs['qty']==2
+    assert store.get_position('AAPL')['qty']==1
+    assert store.get_kill_switch()[0]
+
+
+def test_startup_to_real_watcher_books_only_remaining_delta(store,monkeypatch):
+    from lavish_core.trade import reconcile as rc
+    oid=store.submit_order('AAPL','buy',2,venue='paper',meta={'broker_id':'parent'})
+    store.log_fill(oid,'AAPL','buy',2,100)
+    monkeypatch.setattr(em,'DEFAULT_DB',store.db_path)
+    monkeypatch.setattr(rc,'DEFAULT_DB',store.db_path)
+    monkeypatch.setattr(rc,'_watched',set())
+    monkeypatch.setattr(rc,'SUPPORTS_NATIVE_BRACKETS',True)
+    monkeypatch.setattr(em,'get_order',lambda _:receipt('canceled',1))
+    em.watch_bracket(oid,'AAPL',2,100,['leg'])
+    monkeypatch.setattr(em,'get_order',lambda _:receipt('filled',2,111,.25))
+    monkeypatch.setattr(rc,'get_order',lambda _:{'id':'parent','symbol':'AAPL','legs':[{'id':'leg'}]})
+    monkeypatch.setattr(em,'watch_bracket_async',lambda **kwargs:em.watch_bracket(**kwargs))
+    assert rc._recover_equity_position(dict(symbol='AAPL',qty=1,avg_entry_price=100))==1
+    assert store.get_position('AAPL') is None
+    assert store.fetchall("SELECT sum(qty),sum(qty*price),sum(fee) FROM fills WHERE side='sell'")==[(2.,222.,.25)]
+    assert 'AAPL' not in rc._watched
+    assert store.get_kill_switch()[0]
