@@ -23,6 +23,27 @@ def test_synthetic_ordinary_runner_discussion_is_not_management():
     assert classify('A runner can be volatile around earnings.')['kind'] == 'research_note'
 
 
+def test_observed_creator_weekly_hit_claim_is_progress_not_fill_evidence():
+    # Observed current author reply 229493533 on Patreon post 173653784.
+    # Publication/edit clocks unavailable; not an original-version replay.
+    result = classify('Yes you received Sndk trades this week which hit.')
+    assert result == dict(kind='progress_update', condition=None, execution_authorized=False)
+
+
+@pytest.mark.parametrize('text', [
+    'I shared SNDK trades this week that hit.',
+    'We posted trades this week which hit.',
+])
+def test_synthetic_weekly_hit_paraphrases_stay_nonexecuting(text):
+    assert classify(text) == dict(kind='progress_update', condition=None, execution_authorized=False)
+
+
+def test_synthetic_weekly_watch_is_not_a_past_hit_claim():
+    result = classify('Watch SNDK trades this week for new entries.')
+    assert result['kind'] == 'conditional_setup'
+    assert result['execution_authorized'] is False
+
+
 @pytest.mark.parametrize('text,kind', [
     ('GOOGL $350C, October 9. Break and hold above $346.', 'conditional_setup'),
     ('JPM is at the second target', 'progress_update'),
