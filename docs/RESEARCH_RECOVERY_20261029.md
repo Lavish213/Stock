@@ -82,3 +82,74 @@ superiority and tested ORB/VWAP lost. Consumed 2025–Oct2026 evaluation is
 not a fresh holdout. No retuning, promotion or option-profit inference.
 Explicit paper limits, persistent authenticated ingestion/deployment,
 authentic creator replay and operational readiness remain unverified.
+
+## Integration and source follow-up — observed 2026-10-29T15:20:31Z
+
+Observation is 08:20:31 PDT, not original publication/edit time. PR #45
+head fc40fc7eb3156d085ceb7554e9392d6dc9881a9e passed CI 40890301783
+(suite, compilation/dependencies, security gate, dummy preflight). Reviewed
+tree matched local ceffbdba835c0d662f91dd5e40f2ed73851995b2. Normal merge,
+expected-head protected, produced default 46f10765e4b2f8db90fa9f72f4ca3e7043035eb8.
+No independent human approval or protection override is claimed.
+
+Combined default full local suite: 3618 passed, 2 skipped, zero failures in
+259.08 seconds. Skips are Unix datagram notification tests unavailable in
+this environment, confirmed by targeted tests/test_sd_notify.py rerun
+(3 passed, 2 skipped). Do not equate them with deployed notification success.
+Post-merge CI 40899778095 was still running at observation.
+
+### Newly accessible author progress claim
+
+Pinned accessible post 173653784 now shows six comments. Member 229490441
+asks about this week's trades; author reply 229493533 says:
+
+> Yes you received Sndk trades this week which hit.
+
+Source post: https://www.patreon.com/Thestockalleyy/posts/patreon-app-show-173653784
+
+Visible reply age was 29min. Exact original publication and edit timestamps
+are null; no clock is inferred. This is an observed current-version creator
+claim, not authenticated targets/contracts, fills, fees, slippage or returns.
+Do not identify it as the same historical version as the user's screenshot.
+
+The merged classifier reproduced research_note for this excerpt. Narrowly
+recognize past received/shared/posted trade-hit reports as progress_update.
+No execution authorization, amount, position binding or profitability fields
+are added. New tests separate one actually observed excerpt from three
+synthetic mutations (two past-report positives, one future-watch negative).
+This source-label sample is not an authentic trade replay.
+
+Candidate focused suite: 468 passed in 31.66 seconds, zero failures/skips.
+Four added checks are one observed-source label and three synthetic cases;
+remaining population is inherited and mixed, not 468 independent source
+samples. No authenticated historical quote/fill case was added.
+
+### Current bounded coverage
+
+Signed-in Patreon still works. Accessible 173541201 retains ten comments,
+author 229257237 newsletter unchanged, expanded 229374428 still says use
+the web browser. Accessible 173449408 has seven comments. Accessible-only
+filter disabled for locked metadata: 173752721 now eight comments (previous
+seven), 173649301 two, 173584344 five, 173579258 one, 173450561 seventeen.
+Clicking October 29 newsletter comments again displayed Unlock this post /
+Join for $20/month. Locked body/comment content was not read. Instagram
+authenticated access remains unverified. No complete creator coverage.
+
+WSB new, daily 1xifqz7, earnings 1xdjnsl and DD 1xg97qh rechecked; no newly
+authenticated point-in-time fill case. Reddit statements/banbets are not
+order authorization, consensus history or authentic quote receipts.
+
+### New primary economic context
+
+BLS USDL-26-1619 released October 29 at 10:00 Eastern (EDT), 07:00 PDT /
+14:00 UTC: annual 2025 mean spending per consumer unit $81,905, +4.3%;
+pretax income $110,847, +6.4%; housing spending +5.8%. BLS used adjusted
+weights for missing October/November 2025 survey collection. These are
+annual survey estimates, not today's monthly retail sales, PCE or a new
+CPI actual. Source: https://www.bls.gov/news.release/cesan.nr0.htm .
+
+Other primary calendars were rechecked with no verified schedule change.
+ECI October 30 08:30 EDT = 05:30 PDT; SF Fed October 30 Daly welcome
+09:00 PDT / 12:00 EDT, Lane keynote 09:10 PDT / 12:10 EDT (agenda plus
+event-page PT timezone). Released GDP/PCE/claims remain prior reported
+estimates, not forecasts. No strategy retuning or operational promotion.

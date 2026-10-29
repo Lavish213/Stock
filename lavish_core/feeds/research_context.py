@@ -100,6 +100,9 @@ def classify(text: str) -> dict:
     normalized = ' '.join(text.lower().split())
     runner_update = bool(re.search(
         r'\btake\s+profits\s+and\s+leave\s+(?:a|the)\s+runner\b', normalized))
+    reported_weekly_hits = bool(re.search(
+        r'\b(?:received|gave|shared|posted)\s+(?:[a-z]{1,6}\s+)?trades?\s+'
+        r'this\s+week\s+(?:which|that)\s+hit\b', normalized))
     if runner_update or re.search(r'\b(?:take|sell|trim)\s+(?:\d+(?:\.\d+)?\s*%|half|a quarter)(?!\w)|\btake\s+\d+(?:\.\d+)?\s*%\s+(?:of\s+)?profits|\bride the rest\b', normalized):
         kind = 'position_management'
     elif re.search(r'\b(?:setup|trade)\s+(?:(?:is|has\s+been)\s+)?(?:retired|invalidated|cancelled|canceled)\b'
@@ -111,7 +114,7 @@ def classify(text: str) -> dict:
         # Retrospective performance and failed-trigger reports remain context
         # even when an adjacent screenshot supplies a complete contract.
         kind = 'progress_update'
-    elif re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
+    elif reported_weekly_hits or re.search(r'\b(?:at (?:the )?(?:first|second|third|\d+(?:st|nd|rd|th)) target|target (?:hit|reached)|(?:hit|reached) (?:the )?(?:target|second target)|was up|contracts were|current positions|i (?:bought|sold)|realized gain|realized loss|gain screenshot|loss report)\b', normalized):
         kind = 'progress_update'
     elif re.search(r'\b(?:buy|sell|exit|close)\s+\$?[a-z]{1,6}\s+(?:now|here)\b|\bbto\b', normalized) and not re.search(r'\b(?:if|when|once|tomorrow|break and hold|reclaim.*hold|only above|only below)\b', normalized):
         kind = 'instruction_candidate'
