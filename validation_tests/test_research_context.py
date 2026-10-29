@@ -4,6 +4,25 @@ from lavish_core.feeds.research_context import ResearchJournal, classify
 from lavish_core.validation.context_replay import replay_break_hold
 
 
+@pytest.mark.parametrize('text', [
+    'Take profits and leave a runner for earnings.',
+    'If SNDK loses support, take profits and leave the runner.',
+    'Ahead of CPI, take profits and leave a runner.',
+])
+def test_synthetic_runner_management_recovery(text):
+    # Invented paraphrases, not authenticated creator versions or fills.
+    result = classify(text)
+    assert result['kind'] == 'position_management'
+    assert result['execution_authorized'] is False
+    assert result['condition'] is None
+    assert 'quantity' not in result
+    assert 'trim_fraction' not in result
+
+
+def test_synthetic_ordinary_runner_discussion_is_not_management():
+    assert classify('A runner can be volatile around earnings.')['kind'] == 'research_note'
+
+
 @pytest.mark.parametrize('text,kind', [
     ('GOOGL $350C, October 9. Break and hold above $346.', 'conditional_setup'),
     ('JPM is at the second target', 'progress_update'),
