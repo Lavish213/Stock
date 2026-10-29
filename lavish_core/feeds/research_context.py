@@ -98,7 +98,9 @@ def condition_metadata(text: str) -> tuple[dict | None, str | None]:
 def classify(text: str) -> dict:
     """Return a review tag, never an execution decision."""
     normalized = ' '.join(text.lower().split())
-    if re.search(r'\b(?:take|sell|trim)\s+(?:\d+(?:\.\d+)?\s*%|half|a quarter)(?!\w)|\btake\s+\d+(?:\.\d+)?\s*%\s+(?:of\s+)?profits|\bride the rest\b', normalized):
+    runner_update = bool(re.search(
+        r'\btake\s+profits\s+and\s+leave\s+(?:a|the)\s+runner\b', normalized))
+    if runner_update or re.search(r'\b(?:take|sell|trim)\s+(?:\d+(?:\.\d+)?\s*%|half|a quarter)(?!\w)|\btake\s+\d+(?:\.\d+)?\s*%\s+(?:of\s+)?profits|\bride the rest\b', normalized):
         kind = 'position_management'
     elif re.search(r'\b(?:setup|trade)\s+(?:(?:is|has\s+been)\s+)?(?:retired|invalidated|cancelled|canceled)\b'
                    r'|\bnot\s+(?:a\s+)?new\s+entry\b', normalized):
