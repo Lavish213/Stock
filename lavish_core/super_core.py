@@ -2,7 +2,7 @@
 # Lavish "Brain": chat + retrieval + trading hooks + decision logs
 # Hybrid vector store (Chroma > FAISS > TF-IDF) and hybrid embedder (SentenceTransformer > TF-IDF)
 # Persona: witty, confident, Wall-Street mentor
-# Dry-run trading by default; auto-upgrades to live if trade_agent available and LIVE_TRADE=true
+# Dry-run trading by default; routes to TradeAgent when TRADE_MODE=paper|live
 
 import os, sys, json, time, uuid, glob, logging, traceback
 from datetime import datetime, timezone
@@ -194,7 +194,12 @@ def lavish_reply_style(raw: str) -> str:
 # ------------ Trading Bridge ------------
 class TradeBridge:
     def __init__(self):
-        self.live = os.getenv("LIVE_TRADE", "false").lower() == "true"
+        try:
+            from lavish_core.trade.trade_agent import resolve_trade_mode  # type: ignore
+            self.live = resolve_trade_mode() in ("paper", "live")
+        except Exception as e:
+            logger.warning(f"Trade mode unresolved, staying in DRY mode. ({e})")
+            self.live = False
         self.loaded = False
         self.agent = None
         try:

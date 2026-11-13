@@ -276,12 +276,19 @@ def reconcile_open_positions() -> int:
     process and starts one for each, using our own default guardrails.
     Returns the number recovered. Safe to call repeatedly - a position
     already in _watched is skipped.
+
+    Raises if the broker position list cannot be read. Returning 0 there
+    made a failed sweep indistinguishable from a clean one: startup logged
+    "no unmanaged positions found" and sent no alert, although an open
+    position could be sitting with no exit monitor. Callers
+    (run_ingest._reconcile_startup, run_periodic_reconciliation) already
+    treat an exception as a failed sweep and alert/log accordingly.
     """
     try:
         positions = get_positions()
     except Exception as e:
         log.error("reconcile: could not fetch positions: %s", e)
-        return 0
+        raise RuntimeError(f"reconcile: broker positions unavailable: {e}") from e
 
     recovered = 0
     for pos in positions:

@@ -11,7 +11,8 @@
 # ✅ Still runs clean dry/paper/live modes
 #
 # ENV (in addition to existing):
-#  LIVE_TRADE=true|false              (SuperCore already gates; agent respects too)
+#  TRADE_MODE=dry|paper|live         (single source of truth; LIVE_TRADE is removed
+#                                      and rejected if still set - see resolve_trade_mode)
 #  ORDER_SLIPPAGE_PCT_MAX=0.006       (0.6%)
 #  ORDER_PRICE_SANITY_PCT_MAX=0.02    (2%)
 #  ORDER_RETRY_MAX=4
@@ -689,15 +690,39 @@ def sha1_str(s: str) -> str:
 # TradeAgent class (SuperCore-compatible)
 # ───────────────────────────────────────────────────────────────
 
+VALID_TRADE_MODES = ("dry", "paper", "live")
+
+
+def resolve_trade_mode() -> str:
+    """The one place TradeAgent-family code learns which mode it is in.
+
+    Reads TRADE_MODE - the same variable run_ingest.py, broker_alpaca's
+    endpoint check and env.example use - so an emergency tool can never
+    silently disagree with the running bot. LIVE_TRADE used to drive this
+    instead; with TRADE_MODE=paper|live and LIVE_TRADE unset, flatten_all
+    fell back to dry mode and reported positions "closed" without touching
+    the broker. A leftover LIVE_TRADE is rejected rather than ignored so the
+    operator has to remove it consciously. Called at use time, not import
+    time, because trade_handler imports this module.
+    """
+    if os.getenv("LIVE_TRADE") is not None:
+        raise RuntimeError(
+            "LIVE_TRADE is no longer supported - remove it from the environment/.env "
+            "and set TRADE_MODE=dry|paper|live instead."
+        )
+    mode = (os.getenv("TRADE_MODE") or "dry").strip().lower()
+    if mode not in VALID_TRADE_MODES:
+        raise RuntimeError(f"Unknown TRADE_MODE={mode!r} - must be one of {VALID_TRADE_MODES}")
+    return mode
+
+
 class TradeAgent:
     """
     SuperCore expects:
         agent.place_order(symbol, side, qty, meta)
     This wraps place_trade() cleanly.
 
-    Default mode:
-      - if LIVE_TRADE=true -> "live"
-      - else -> "dry"
+    Default mode: TRADE_MODE (dry|paper|live) via resolve_trade_mode().
     """
     def __init__(
         self,
@@ -710,7 +735,7 @@ class TradeAgent:
         )
         ensure_risk_limits(self.store)
         self.bus = bus
-        self.default_mode = "live" if env("LIVE_TRADE", "false").lower() == "true" else "dry"
+        self.default_mode = resolve_trade_mode()
 
     def place_order(self, symbol: str, side: str, qty: float, meta: Optional[Dict[str, Any]] = None):
         out = place_trade(
@@ -818,6 +843,6 @@ if __name__ == "__main__":
         symbol=args.symbol,
         side=args.side.lower(),
         qty=args.qty,
-        mode=args.mode or ("live" if env("LIVE_TRADE", "false") == "true" else "dry"),
+        mode=args.mode or resolve_trade_mode(),
     )
     print(out)

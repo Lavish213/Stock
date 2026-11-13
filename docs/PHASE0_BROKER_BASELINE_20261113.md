@@ -1,5 +1,8 @@
 # Phase 0 — Broker-Path Baseline (2026-11-13)
 
+> **Status update (same day):** P0-1, P0-2, P0-3 and P0-4 are fixed on this
+> branch. See section 5. P0-5 and P0-6 remain open.
+
 Scope: read-only inventory of every code path that can reach a broker, how
 credentials and paper/live mode are selected, and the emergency controls.
 No source was changed, no broker was contacted, no orders were placed.
@@ -138,3 +141,27 @@ Ordered by risk removed per line changed:
    explicit `CLEAN/GAP/FAILED/UNKNOWN`).
 
 Each of these is a source change and needs explicit authorisation.
+
+## 5. Fixes applied (authorised 2026-11-13)
+
+| Finding | Change | Regression tests |
+|---|---|---|
+| P0-1 `flatten_all` no-op | `TradeAgent` mode comes from `TRADE_MODE`. The CLI refuses `TRADE_MODE=dry` unless `--dry-run` is given, and a dry run changes no state and sends no alert. A broker read failure now gives a FAILED alert and exit 1, and the kill switch is still set. Only `filled` closes count as closed: rejected, canceled and expired count as failed, and `new`, `accepted` and `partially_filled` count as unconfirmed. Both give exit 1. | `tests/test_flatten_all_cli.py` |
+| P0-2 side doors | New `lavish_core/utils/quarantine.py`. `executor.py` (mock only), `king_vision.py` (raises on import), `auto_signal_runner.alpaca_place_market_buy`, `superbot.AlpacaExecutor.place_order` and the legacy dashboard `AlpacaClient.submit_order` all raise `QuarantinedBrokerPath` before any network call. | `tests/test_broker_side_doors.py`: behaviour tests, plus a scan that fails if any module outside the broker layer references an order endpoint or `TradingClient` (checked by mutation). |
+| P0-3 two mode switches | `resolve_trade_mode()` is the single resolver, and any leftover `LIVE_TRADE` raises. `super_core.TradeBridge` follows `TRADE_MODE` and stays dry if the mode cannot be resolved. `env.example` documents this. | `tests/test_trade_mode_single_source.py` |
+| P0-4 startup "nothing found" | `reconcile_open_positions` raises when positions are unavailable, so startup sends its existing FAILED alert. `run_ingest._synchronize_startup()` alerts on any audit result that is not clean, and sets the kill switch if the audit itself throws. | `tests/test_startup_reconciliation_alert.py` |
+
+Suite results (local, no broker access):
+
+- `tests/`: 312 passed, 1 failed (baseline before the fixes: 274 passed, same 1 failure).
+- `validation_tests/`: 3323 passed, 26 failed. These are the same failures as before the fixes.
+
+Neither set of failures comes from these fixes. The `tests/` failure is
+`test_extract_signal::test_expiry_too_far_out_is_dropped`. It is
+date-dependent, and its fixed expiry date is now inside the allowed window.
+The 26 `validation_tests/` failures are OCR tests that need the `tesseract`
+system binary, which this container does not have.
+
+Operator action: remove any `LIVE_TRADE` line from the deployed `.env`.
+`TradeAgent`, `flatten_all.py` and `run_live_trader.py` now refuse to start
+while it is present. `run_ingest.py` does not read it.

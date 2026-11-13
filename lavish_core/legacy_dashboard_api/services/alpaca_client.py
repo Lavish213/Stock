@@ -30,6 +30,10 @@ class AlpacaClient:
                      type: str = "market", time_in_force: str = "day",
                      limit_price: Optional[float] = None, stop_price: Optional[float] = None,
                      client_order_id: Optional[str] = None):
+        # Quarantined: reachable from an unauthenticated POST /orders route
+        # with wildcard CORS, and bypasses every production order gate.
+        from lavish_core.utils.quarantine import refuse_broker_path
+        refuse_broker_path("lavish_core.legacy_dashboard_api AlpacaClient.submit_order")
         body = {
             "symbol": symbol.upper(),
             "side": side.lower(),

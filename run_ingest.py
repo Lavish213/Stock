@@ -122,6 +122,36 @@ def _log_startup_config() -> None:
         log.warning("TRADE_MODE=live - this process will submit REAL orders with real money.")
 
 
+def _synchronize_startup() -> dict:
+    """Startup broker/ledger state audit. A failed or mismatched audit
+    already turns the kill switch on inside synchronize_broker_state(); the
+    result used to be discarded here, so the operator was never told why
+    entries were halted. Any outcome other than ok=True - including an
+    exception - is now logged as an error and alerted. Never raises:
+    exit supervision must still start."""
+    from lavish_core.trade.reconcile import synchronize_broker_state
+    try:
+        result = synchronize_broker_state()
+    except Exception as e:
+        result = {"ok": False, "reasons": [f"synchronize_failed: {e}"]}
+        try:
+            store = HybridStore(duckdb_path=str(DEFAULT_DB))
+            try:
+                store.set_kill_switch(True, f"startup state audit failed: {e}")
+            finally:
+                store.con.close()
+        except Exception as halt_error:
+            log.error("Could not set kill switch after failed startup audit: %s", halt_error)
+    if not isinstance(result, dict) or result.get("ok") is not True:
+        reasons = result.get("reasons") if isinstance(result, dict) else ["invalid_audit_result"]
+        log.error("Startup broker state audit NOT clean: %s - new entries halted.", reasons)
+        post_discord(f"🚨 Lavish_bot startup broker state audit NOT clean ({reasons}). "
+                      f"New entries are halted by the kill switch until reviewed.")
+    else:
+        log.info("Startup broker state audit clean.")
+    return result
+
+
 def _reconcile_startup() -> None:
     """
     Every exit-guardrail thread lives only in this process's memory - on
@@ -162,8 +192,7 @@ def main() -> None:
     HybridStore(duckdb_path=str(DEFAULT_DB), redis_url=os.environ.get("REDIS_URL") or None)
 
     if os.getenv("TRADE_MODE","dry") in ("paper","live"):
-        from lavish_core.trade.reconcile import synchronize_broker_state
-        synchronize_broker_state()
+        _synchronize_startup()
     _reconcile_startup()
     if os.getenv('TRADE_MODE','dry') == 'paper':
         from lavish_core.trade.paper_readiness import enforce

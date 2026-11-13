@@ -184,6 +184,10 @@ def alpaca_account():
     return r.json()
 
 def alpaca_place_market_buy(symbol: str, notional: float):
+    # Quarantined: raw notional market buy with no endpoint/mode check,
+    # idempotency, journal or kill switch.
+    from lavish_core.utils.quarantine import refuse_broker_path
+    refuse_broker_path("lavish_core.trading.auto_signal_runner.alpaca_place_market_buy")
     payload = {"symbol": symbol, "notional": str(notional), "side": "buy", "type": "market", "time_in_force": "day"}
     r = requests.post(f"{ALPACA_ENDPOINT}/v2/orders",
         headers={"APCA-API-KEY-ID": ALPACA_KEY, "APCA-API-SECRET-KEY": ALPACA_SECRET, "Content-Type": "application/json"},

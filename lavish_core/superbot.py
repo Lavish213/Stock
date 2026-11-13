@@ -362,6 +362,11 @@ class AlpacaExecutor:
         return f"{self.base}/orders"
 
     def place_order(self, symbol: str, side: str, qty: float, tif="day", order_type="market") -> Tuple[bool, str, Optional[str]]:
+        # Quarantined (raised outside the try below so it cannot be turned
+        # into a soft "order error"): raw REST market orders with no
+        # endpoint/mode check, idempotency, journal or kill switch.
+        from lavish_core.utils.quarantine import refuse_broker_path
+        refuse_broker_path("lavish_core.superbot.AlpacaExecutor.place_order")
         try:
             payload = {"symbol": symbol, "side": side, "type": order_type, "time_in_force": tif, "qty": str(qty)}
             r = requests.post(self._orders_url(), headers=self._headers(), json=payload, timeout=self.timeout)

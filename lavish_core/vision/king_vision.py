@@ -1,3 +1,9 @@
+# QUARANTINED: this script market-bought every 2-5 letter uppercase token
+# OCR'd from any image in a folder, in an endless loop, with no gate at all.
+# Importing or running it now raises before any broker client is created.
+from lavish_core.utils.quarantine import refuse_broker_path
+refuse_broker_path("lavish_core.vision.king_vision")
+
 import os, re, time, pytesseract
 from PIL import Image
 from dotenv import load_dotenv
